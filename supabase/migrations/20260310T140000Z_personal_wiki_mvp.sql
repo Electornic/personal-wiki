@@ -54,6 +54,8 @@ create index if not exists document_note_cards_document_idx on public.document_n
 create or replace function public.is_owner()
 returns boolean
 language sql
+security definer
+set search_path = public
 stable
 as $$
   select exists (
@@ -92,12 +94,24 @@ on public.author_profiles
 for select
 using (id = auth.uid());
 
-drop policy if exists "author profiles managed by owner" on public.author_profiles;
-create policy "author profiles managed by owner"
+drop policy if exists "authors can insert self" on public.author_profiles;
+create policy "authors can insert self"
 on public.author_profiles
-for all
-using (public.is_owner())
-with check (public.is_owner());
+for insert
+with check (id = auth.uid());
+
+drop policy if exists "authors can update self" on public.author_profiles;
+create policy "authors can update self"
+on public.author_profiles
+for update
+using (id = auth.uid())
+with check (id = auth.uid());
+
+drop policy if exists "authors can delete self" on public.author_profiles;
+create policy "authors can delete self"
+on public.author_profiles
+for delete
+using (id = auth.uid());
 
 drop policy if exists "public can read public documents" on public.documents;
 create policy "public can read public documents"
