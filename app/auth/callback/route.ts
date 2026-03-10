@@ -1,17 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { getOwnerEmail } from "@/lib/env";
 import {
   getAdminSupabaseClient,
-  getServerSupabaseClient,
+  getRouteHandlerSupabaseClient,
 } from "@/lib/supabase/server";
 import { sanitizeNextPath } from "@/lib/wiki/navigation";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const next = sanitizeNextPath(requestUrl.searchParams.get("next"));
-  const supabase = await getServerSupabaseClient();
+  const response = NextResponse.redirect(new URL(next, requestUrl.origin));
+  const supabase = getRouteHandlerSupabaseClient(request, response);
 
   if (code && supabase) {
     await supabase.auth.exchangeCodeForSession(code);
@@ -39,5 +40,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL(next, requestUrl.origin));
+  return response;
 }
