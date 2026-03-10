@@ -147,14 +147,10 @@ export async function saveDocument(
     } satisfies DocumentFormState;
   }
 
+  let slug: string;
+
   try {
-    const slug = await upsertDocument(payload);
-
-    revalidatePath("/");
-    revalidatePath("/author");
-    revalidatePath(`/library/${slug}`);
-
-    redirect("/author?saved=1");
+    slug = await upsertDocument(payload);
   } catch (error) {
     return {
       error:
@@ -163,6 +159,12 @@ export async function saveDocument(
           : "문서를 저장하지 못했습니다.",
     } satisfies DocumentFormState;
   }
+
+  revalidatePath("/");
+  revalidatePath("/author");
+  revalidatePath(`/library/${slug}`);
+
+  redirect("/author?saved=1");
 }
 
 export async function deleteDocument(formData: FormData) {
@@ -180,12 +182,12 @@ export async function deleteDocument(formData: FormData) {
 
   try {
     await deleteDocumentById(documentId);
-
-    revalidatePath("/");
-    revalidatePath("/author");
-
-    redirect("/author?deleted=1");
   } catch {
     redirect("/author?error=delete");
   }
+
+  revalidatePath("/");
+  revalidatePath("/author");
+
+  redirect("/author?deleted=1");
 }
