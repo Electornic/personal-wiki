@@ -1,0 +1,294 @@
+import {
+  getPublicSupabaseClient,
+  getServerSupabaseClient,
+} from "@/lib/supabase/server";
+import { demoDocuments } from "@/lib/wiki/demo-data";
+import { getRelatedDocuments } from "@/lib/wiki/recommendations";
+import { createSlug } from "@/lib/wiki/slugs";
+import type {
+  DocumentNoteCard,
+  DocumentVisibility,
+  SourceType,
+  WikiDocument,
+} from "@/lib/wiki/types";
+import { filterReadableDocuments } from "@/lib/wiki/visibility";
+
+function sortByUpdatedAt(documents: WikiDocument[]) {
+  return [...documents].sort((left, right) => {
+    return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+  });
+}
+
+function mapDocument(row: Record<string, unknown>, topics: string[], noteCards: DocumentNoteCard[]) {
+  return {
+    id: String(row.id),
+    slug: String(row.slug),
+    title: String(row.title),
+    sourceType: row.source_type as SourceType,
+    visibility: row.visibility as DocumentVisibility,
+    authorName: String(row.author_name ?? ""),
+    sourceTitle: String(row.source_title ?? ""),
+    sourceUrl: (row.source_url as string | null) ?? null,
+    isbn: (row.isbn as string | null) ?? null,
+    publishedAt: (row.published_at as string | null) ?? null,
+    intro: (row.intro as string | null) ?? null,
+    topics,
+    noteCards,
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at),
+  } satisfies WikiDocument;
+}
+
+async function fetchDocumentsFromSupabase() {
+  const supabase = getPublicSupabaseClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const [{ data: documentRows, error: documentsError }, { data: topicRows, error: topicsError }, { data: noteCardRows, error: noteCardsError }] =
+    await Promise.all([
+      supabase
+        .from("documents")
+        .select("*")
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("document_topics")
+        .select("document_id, topics(name)"),
+      supabase
+        .from("document_note_cards")
+        .select("*")
+        .order("position", { ascending: true }),
+    ]);
+
+  if (documentsError || topicsError || noteCardsError || !documentRows) {
+    return null;
+  }
+
+  return documentRows.map((row) => {
+    const topics = (topicRows ?? [])
+      .filter((topicRow) => topicRow.document_id === row.id)
+      .map((topicRow) => {
+        const topic = Array.isArray(topicRow.topics)
+          ? topicRow.topics[0]
+          : topicRow.topics;
+
+        return typeof topic?.name === "string" ? topic.name : null;
+      })
+      .filter((topic): topic is string => Boolean(topic));
+
+    const noteCards = (noteCardRows ?? [])
+      .filter((noteCardRow) => noteCardRow.document_id === row.id)
+      .map((noteCardRow) => ({
+        id: noteCardRow.id,
+        heading: noteCardRow.heading,
+        content: noteCardRow.content,
+        position: noteCardRow.position,
+      }));
+
+    return mapDocument(row, topics, noteCards);
+  });
+}
+
+export async function listPublicDocuments() {
+  const documents = (await fetchDocumentsFromSupabase()) ?? demoDocuments;
+
+  return sortByUpdatedAt(filterReadableDocuments(documents));
+}
+
+export async function listAuthorDocuments() {
+  const supabase = await getServerSupabaseClient();
+
+  if (!supabase) {
+    return sortByUpdatedAt(demoDocuments);
+  }
+
+  const [{ data: documentRows, error: documentsError }, { data: topicRows, error: topicsError }, { data: noteCardRows, error: noteCardsError }] =
+    await Promise.all([
+      supabase
+        .from("documents")
+        .select("*")
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("document_topics")
+        .select("document_id, topics(name)"),
+      supabase
+        .from("document_note_cards")
+        .select("*")
+        .order("position", { ascending: true }),
+    ]);
+
+  if (documentsError || topicsError || noteCardsError || !documentRows) {
+    return [];
+  }
+
+  return sortByUpdatedAt(
+    documentRows.map((row) => {
+      const topics = (topicRows ?? [])
+        .filter((topicRow) => topicRow.document_id === row.id)
+        .map((topicRow) => {
+          const topic = Array.isArray(topicRow.topics)
+            ? topicRow.topics[0]
+            : topicRow.topics;
+
+          return typeof topic?.name === "string" ? topic.name : null;
+        })
+        .filter((topic): topic is string => Boolean(topic));
+
+      const noteCards = (noteCardRows ?? [])
+        .filter((noteCardRow) => noteCardRow.document_id === row.id)
+        .map((noteCardRow) => ({
+          id: noteCardRow.id,
+          heading: noteCardRow.heading,
+          content: noteCardRow.content,
+          position: noteCardRow.position,
+        }));
+
+      return mapDocument(row, topics, noteCards);
+    }),
+  );
+}
+
+export async function getPublicDocumentBySlug(slug: string) {
+  const documents = await listPublicDocuments();
+
+  return documents.find((document) => document.slug === slug) ?? null;
+}
+
+export async function getAuthorDocumentById(documentId: string) {
+  const documents = await listAuthorDocuments();
+
+  return documents.find((document) => document.id === documentId) ?? null;
+}
+
+export async function listRelatedDocuments(slug: string, limit = 3) {
+  const documents = await listPublicDocuments();
+  const document = documents.find((candidate) => candidate.slug === slug);
+
+  if (!document) {
+    return [];
+  }
+
+  return getRelatedDocuments(document, documents, limit);
+}
+
+type UpsertDocumentInput = {
+  documentId?: string;
+  title: string;
+  sourceType: SourceType;
+  visibility: DocumentVisibility;
+  authorName: string;
+  sourceTitle: string;
+  sourceUrl?: string | null;
+  isbn?: string | null;
+  publishedAt?: string | null;
+  intro?: string | null;
+  topics: string[];
+  noteCards: DocumentNoteCard[];
+};
+
+export async function upsertDocument(input: UpsertDocumentInput) {
+  const supabase = await getServerSupabaseClient();
+
+  if (!supabase) {
+    throw new Error("Supabase server configuration is missing.");
+  }
+
+  const slug = createSlug(input.title);
+  const payload = {
+    slug,
+    title: input.title,
+    source_type: input.sourceType,
+    visibility: input.visibility,
+    author_name: input.authorName,
+    source_title: input.sourceTitle,
+    source_url: input.sourceUrl || null,
+    isbn: input.isbn || null,
+    published_at: input.publishedAt || null,
+    intro: input.intro || null,
+  };
+
+  const { data: savedDocument, error: saveDocumentError } = input.documentId
+    ? await supabase
+        .from("documents")
+        .update(payload)
+        .eq("id", input.documentId)
+        .select("id, slug")
+        .single()
+    : await supabase
+        .from("documents")
+        .insert(payload)
+        .select("id, slug")
+        .single();
+
+  if (saveDocumentError || !savedDocument) {
+    throw new Error(saveDocumentError?.message ?? "Failed to save document.");
+  }
+
+  const documentId = savedDocument.id;
+
+  await supabase.from("document_topics").delete().eq("document_id", documentId);
+  await supabase.from("document_note_cards").delete().eq("document_id", documentId);
+
+  if (input.topics.length > 0) {
+    const normalizedTopics = [...new Set(input.topics.map((topic) => topic.trim()).filter(Boolean))];
+    const topicRecords = await Promise.all(
+      normalizedTopics.map(async (topic) => {
+        const slugValue = createSlug(topic);
+        const { data, error } = await supabase
+          .from("topics")
+          .upsert({ name: topic, slug: slugValue }, { onConflict: "slug" })
+          .select("id")
+          .single();
+
+        if (error || !data) {
+          throw new Error(error?.message ?? "Failed to save topic.");
+        }
+
+        return data;
+      }),
+    );
+
+    const { error: topicsLinkError } = await supabase.from("document_topics").insert(
+      topicRecords.map((topicRecord) => ({
+        document_id: documentId,
+        topic_id: topicRecord.id,
+      })),
+    );
+
+    if (topicsLinkError) {
+      throw new Error(topicsLinkError.message);
+    }
+  }
+
+  if (input.noteCards.length > 0) {
+    const { error: noteCardsError } = await supabase.from("document_note_cards").insert(
+      input.noteCards.map((noteCard, index) => ({
+        document_id: documentId,
+        heading: noteCard.heading || null,
+        content: noteCard.content,
+        position: index,
+      })),
+    );
+
+    if (noteCardsError) {
+      throw new Error(noteCardsError.message);
+    }
+  }
+
+  return savedDocument.slug;
+}
+
+export async function deleteDocumentById(documentId: string) {
+  const supabase = await getServerSupabaseClient();
+
+  if (!supabase) {
+    throw new Error("Supabase server configuration is missing.");
+  }
+
+  const { error } = await supabase.from("documents").delete().eq("id", documentId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
