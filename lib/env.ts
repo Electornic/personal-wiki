@@ -13,6 +13,10 @@ export function hasSupabaseAdminEnv() {
   return Boolean(publicSupabaseUrl && serviceRoleKey);
 }
 
+export function hasAuthoringEnv() {
+  return Boolean(publicSupabaseUrl && publicSupabaseAnonKey && serviceRoleKey && ownerEmail);
+}
+
 export function getSupabasePublicEnv() {
   return {
     url: publicSupabaseUrl,

@@ -2,6 +2,7 @@ import {
   getPublicSupabaseClient,
   getServerSupabaseClient,
 } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/env";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 import { createSlug } from "@/lib/wiki/slugs";
@@ -91,7 +92,15 @@ async function fetchDocumentsFromSupabase() {
 }
 
 export async function listPublicDocuments() {
-  const documents = (await fetchDocumentsFromSupabase()) ?? demoDocuments;
+  if (!hasSupabaseEnv()) {
+    return sortByUpdatedAt(filterReadableDocuments(demoDocuments));
+  }
+
+  const documents = await fetchDocumentsFromSupabase();
+
+  if (!documents) {
+    return [];
+  }
 
   return sortByUpdatedAt(filterReadableDocuments(documents));
 }

@@ -22,7 +22,8 @@
 - Supabase SQL migration
 - Vitest 기반 유틸 테스트
 
-Supabase 환경변수가 없으면 public surface는 `demoDocuments`로 동작합니다.
+Supabase public env가 없으면 public surface는 `demoDocuments`로 동작합니다.
+public env가 있는데 조회가 실패하면 demo로 숨기지 않고 빈 상태로 남겨야 합니다.
 
 ## Stack
 
@@ -49,7 +50,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   public reading + SSR auth 세션에 필요합니다.
 - `SUPABASE_SERVICE_ROLE_KEY`
-  첫 owner 로그인 시 `author_profiles` seed에 사용됩니다.
+  첫 owner 로그인 시 `author_profiles` seed에 사용됩니다. author UI는 이 값이 없으면 열리지 않습니다.
 - `SUPABASE_OWNER_EMAIL`
   author 전용 로그인 대상 이메일입니다.
 - `SUPABASE_AUTH_REDIRECT_URL`
@@ -67,6 +68,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 
 - public surface에서는 private 문서가 목록/추천/상세 어디에서도 드러나면 안 됩니다.
 - author write는 callback 이후 `author_profiles` row가 seed되어야 RLS가 맞물립니다.
+- callback의 `next` 파라미터는 로컬 상대 경로만 허용합니다.
 
 ## Local Development
 

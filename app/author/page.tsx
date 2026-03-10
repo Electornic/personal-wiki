@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
-import { getOwnerEmail, hasSupabaseEnv } from "@/lib/env";
+import { getOwnerEmail, hasAuthoringEnv } from "@/lib/env";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { listAuthorDocuments } from "@/lib/wiki/documents";
 
@@ -9,14 +9,14 @@ export default async function AuthorPage() {
   const access = await getAuthorAccess();
   const documents = access.isOwner ? await listAuthorDocuments() : [];
 
-  if (!hasSupabaseEnv()) {
+  if (!hasAuthoringEnv()) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-8 px-6 py-12 md:px-10">
         <p className="section-kicker">Author workspace</p>
         <div className="rounded-[2rem] border border-amber-300 bg-amber-50 p-8">
           <h1 className="text-3xl text-stone-900">Supabase setup required</h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
-            `.env.example`에 있는 값을 채우면 author 로그인과 저장 기능이 활성화됩니다.
+            `.env.example`에 있는 public env, service role key, owner email을 모두 채우면 author 로그인과 저장 기능이 활성화됩니다.
             public reading surface는 현재 demo data로 미리 볼 수 있습니다.
           </p>
           <ul className="mt-5 space-y-2 text-sm text-stone-600">

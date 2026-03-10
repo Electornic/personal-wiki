@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { requestMagicLink } from "@/app/author/actions";
-import { getOwnerEmail, hasSupabaseEnv } from "@/lib/env";
+import { getOwnerEmail, hasAuthoringEnv } from "@/lib/env";
 
 type PageProps = {
   searchParams: Promise<{ error?: string; sent?: string }>;
@@ -22,7 +22,7 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
           공개 문서는 비로그인으로 읽을 수 있고, 작성/수정만 author 로그인으로 보호합니다.
         </p>
 
-        {hasSupabaseEnv() ? (
+        {hasAuthoringEnv() ? (
           <form action={requestMagicLink} className="mt-8 space-y-4">
             <div className="rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm text-stone-700">
               owner email: {getOwnerEmail() ?? "SUPABASE_OWNER_EMAIL not set"}
@@ -43,7 +43,7 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
           </form>
         ) : (
           <div className="mt-8 rounded-3xl border border-amber-300 bg-amber-50 px-5 py-5 text-sm leading-7 text-stone-700">
-            Supabase 환경변수가 아직 없습니다. `.env.example`를 기준으로 설정을 먼저 채워주세요.
+            Author 로그인은 public env, service role key, owner email이 모두 있어야 켤 수 있습니다. `.env.example`를 기준으로 설정을 먼저 채워주세요.
           </div>
         )}
       </section>

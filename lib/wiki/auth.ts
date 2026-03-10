@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 
-import { getOwnerEmail, hasSupabaseEnv } from "@/lib/env";
+import { getOwnerEmail, hasAuthoringEnv } from "@/lib/env";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function getAuthorAccess() {
-  if (!hasSupabaseEnv()) {
+  if (!hasAuthoringEnv()) {
     return {
       configured: false,
       isOwner: false,

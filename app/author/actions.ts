@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getAuthRedirectUrl, getOwnerEmail } from "@/lib/env";
+import { getAuthRedirectUrl, getOwnerEmail, hasAuthoringEnv } from "@/lib/env";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import { deleteDocumentById, upsertDocument } from "@/lib/wiki/documents";
@@ -80,6 +80,10 @@ function parseDocumentPayload(formData: FormData) {
 }
 
 export async function requestMagicLink() {
+  if (!hasAuthoringEnv()) {
+    redirect("/author/sign-in?error=config");
+  }
+
   const supabase = await getServerSupabaseClient();
   const ownerEmail = getOwnerEmail();
 
