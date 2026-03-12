@@ -20,6 +20,14 @@ function sortByUpdatedAt(documents: WikiDocument[]) {
   });
 }
 
+function normalizeRouteSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
+
 function mapDocument(row: Record<string, unknown>, topics: string[], noteCards: DocumentNoteCard[]) {
   return {
     id: String(row.id),
@@ -160,8 +168,9 @@ export async function listAuthorDocuments() {
 
 export async function getPublicDocumentBySlug(slug: string) {
   const documents = await listPublicDocuments();
+  const normalizedSlug = normalizeRouteSlug(slug);
 
-  return documents.find((document) => document.slug === slug) ?? null;
+  return documents.find((document) => document.slug === normalizedSlug) ?? null;
 }
 
 export async function getAuthorDocumentById(documentId: string) {
@@ -172,7 +181,8 @@ export async function getAuthorDocumentById(documentId: string) {
 
 export async function listRelatedDocuments(slug: string, limit = 3) {
   const documents = await listPublicDocuments();
-  const document = documents.find((candidate) => candidate.slug === slug);
+  const normalizedSlug = normalizeRouteSlug(slug);
+  const document = documents.find((candidate) => candidate.slug === normalizedSlug);
 
   if (!document) {
     return [];
