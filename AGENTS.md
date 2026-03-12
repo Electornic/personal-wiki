@@ -79,7 +79,11 @@
   - `.omx/specs/deep-interview-personal-wiki-foundation.md`
   - `.omx/plans/personal-wiki-mvp-ralplan.md`
 - `docs/task` 아래의 태스크 파일은 `0_1_[major-topic].md` 같은 형식으로 만든다.
-- 새 태스크 문서를 만들거나 이름을 바꿀 때는 기존 문서와 번호/주제가 한눈에 구분되도록 유지한다.
+- 새 태스크 문서를 만들거나 이름을 바꿀 때는 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
+- 예시:
+  - `0_1_v0_1_release_status.md`
+  - `0_2_v0_2_scope_and_next_steps.md`
+- 번호와 주제는 함께 봤을 때 문서의 목적이 바로 드러나야 한다.
 
 ## Working Style
 
