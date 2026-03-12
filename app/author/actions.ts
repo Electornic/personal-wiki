@@ -14,73 +14,28 @@ import {
 } from "@/lib/wiki/profiles";
 import type { DocumentFormState, SourceType } from "@/lib/wiki/types";
 
-type NoteCardDraft = {
-  heading?: string;
-  content?: string;
-};
-
 function parseDocumentPayload(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
-  const sourceTitle = String(formData.get("sourceTitle") ?? "").trim();
-  const authorName = String(formData.get("authorName") ?? "").trim();
   const sourceType = String(formData.get("sourceType") ?? "book") as SourceType;
   const visibility = String(formData.get("visibility") ?? "private") as
     | "public"
     | "private";
-  const sourceUrl = String(formData.get("sourceUrl") ?? "").trim();
-  const isbn = String(formData.get("isbn") ?? "").trim();
-  const publishedAt = String(formData.get("publishedAt") ?? "").trim();
-  const intro = String(formData.get("intro") ?? "").trim();
-  const topics = String(formData.get("topics") ?? "")
+  const bookTitle = String(formData.get("bookTitle") ?? "").trim();
+  const contents = String(formData.get("contents") ?? "").trim();
+  const tags = String(formData.get("tags") ?? "")
     .split(",")
-    .map((topic) => topic.trim())
+    .map((tag) => tag.trim())
     .filter(Boolean);
   const documentId = String(formData.get("documentId") ?? "").trim();
-
-  const noteCards = new Map<number, NoteCardDraft>();
-
-  for (const [key, value] of formData.entries()) {
-    const match = key.match(/^card(Heading|Content)-(\d+)$/);
-
-    if (!match) {
-      continue;
-    }
-
-    const field = match[1];
-    const index = Number(match[2]);
-    const current = noteCards.get(index) ?? {};
-
-    if (field === "Heading") {
-      current.heading = String(value).trim();
-    }
-
-    if (field === "Content") {
-      current.content = String(value).trim();
-    }
-
-    noteCards.set(index, current);
-  }
 
   return {
     documentId: documentId || undefined,
     title,
-    sourceTitle,
-    authorName,
+    contents,
     sourceType,
+    bookTitle: bookTitle || null,
     visibility,
-    sourceUrl: sourceUrl || null,
-    isbn: isbn || null,
-    publishedAt: publishedAt || null,
-    intro: intro || null,
-    topics,
-    noteCards: [...noteCards.entries()]
-      .sort((left, right) => left[0] - right[0])
-      .map(([index, noteCard]) => ({
-        position: index,
-        heading: noteCard.heading || null,
-        content: noteCard.content || "",
-      }))
-      .filter((noteCard) => noteCard.content.length > 0),
+    tags,
   };
 }
 
@@ -206,21 +161,21 @@ export async function saveDocument(
 
   const payload = parseDocumentPayload(formData);
 
-  if (!payload.title || !payload.sourceTitle || !payload.authorName) {
+  if (!payload.title || !payload.contents) {
     return {
-      error: "title, source title, author name은 필수입니다.",
+      error: "title and contents are required.",
     } satisfies DocumentFormState;
   }
 
-  if (payload.topics.length === 0) {
+  if (payload.sourceType === "book" && !payload.bookTitle) {
     return {
-      error: "적어도 하나의 태그를 입력해야 추천을 만들 수 있습니다.",
+      error: "book records require a book title.",
     } satisfies DocumentFormState;
   }
 
-  if (payload.noteCards.length === 0) {
+  if (payload.tags.length === 0) {
     return {
-      error: "연결된 생각 카드가 최소 한 개는 필요합니다.",
+      error: "At least one tag is required for recommendations.",
     } satisfies DocumentFormState;
   }
 

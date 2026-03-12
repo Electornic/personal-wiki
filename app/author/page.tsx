@@ -81,7 +81,9 @@ export default async function AuthorPage() {
                   <span>{document.sourceType}</span>
                 </div>
                 <h2 className="text-2xl text-stone-900">{document.title}</h2>
-                <p className="text-sm leading-7 text-stone-600">{document.intro}</p>
+                <p className="text-sm leading-7 text-stone-600">
+                  {document.bookTitle ?? document.writerName}
+                </p>
               </div>
               <div className="flex gap-3">
                 <Link className="button-secondary" href={`/library/${document.slug}`}>

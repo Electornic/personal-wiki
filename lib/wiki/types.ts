@@ -12,23 +12,20 @@ export type WikiDocument = {
   id: string;
   slug: string;
   title: string;
+  contents: string;
   sourceType: SourceType;
+  bookTitle?: string | null;
   visibility: DocumentVisibility;
-  authorName: string;
-  sourceTitle: string;
-  sourceUrl?: string | null;
-  isbn?: string | null;
+  writerName: string;
   publishedAt?: string | null;
-  intro?: string | null;
-  topics: string[];
-  noteCards: DocumentNoteCard[];
+  tags: string[];
   createdAt: string;
   updatedAt: string;
 };
 
 export type RelatedDocument = WikiDocument & {
-  sharedTopicCount: number;
-  sharedTopics: string[];
+  sharedTagCount: number;
+  sharedTags: string[];
 };
 
 export type DocumentFormState = {

@@ -29,20 +29,31 @@ function normalizeRouteSlug(slug: string) {
 }
 
 function mapDocument(row: Record<string, unknown>, topics: string[], noteCards: DocumentNoteCard[]) {
+  const contentsFromCards = noteCards
+    .map((noteCard) =>
+      noteCard.heading
+        ? `## ${noteCard.heading}\n${noteCard.content}`
+        : noteCard.content,
+    )
+    .join("\n\n");
+
   return {
     id: String(row.id),
     slug: String(row.slug),
     title: String(row.title),
+    contents:
+      String(row.contents ?? "").trim() ||
+      String(row.intro ?? "").trim() ||
+      contentsFromCards ||
+      String(row.title),
     sourceType: row.source_type as SourceType,
+    bookTitle:
+      (row.book_title as string | null) ??
+      (row.source_type === "book" ? ((row.source_title as string | null) ?? null) : null),
     visibility: row.visibility as DocumentVisibility,
-    authorName: String(row.author_name ?? ""),
-    sourceTitle: String(row.source_title ?? ""),
-    sourceUrl: (row.source_url as string | null) ?? null,
-    isbn: (row.isbn as string | null) ?? null,
+    writerName: String(row.author_name ?? "unknown"),
     publishedAt: (row.published_at as string | null) ?? null,
-    intro: (row.intro as string | null) ?? null,
-    topics,
-    noteCards,
+    tags: topics,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   } satisfies WikiDocument;
@@ -203,16 +214,11 @@ export async function listRelatedDocuments(slug: string, limit = 3) {
 type UpsertDocumentInput = {
   documentId?: string;
   title: string;
+  contents: string;
   sourceType: SourceType;
+  bookTitle?: string | null;
   visibility: DocumentVisibility;
-  authorName: string;
-  sourceTitle: string;
-  sourceUrl?: string | null;
-  isbn?: string | null;
-  publishedAt?: string | null;
-  intro?: string | null;
-  topics: string[];
-  noteCards: DocumentNoteCard[];
+  tags: string[];
 };
 
 export async function upsertDocument(input: UpsertDocumentInput) {
@@ -235,14 +241,16 @@ export async function upsertDocument(input: UpsertDocumentInput) {
     created_by: user.id,
     slug,
     title: input.title,
+    contents: input.contents,
     source_type: input.sourceType,
+    book_title: input.sourceType === "book" ? input.bookTitle || null : null,
     visibility: input.visibility,
-    author_name: input.authorName,
-    source_title: input.sourceTitle,
-    source_url: input.sourceUrl || null,
-    isbn: input.isbn || null,
-    published_at: input.publishedAt || null,
-    intro: input.intro || null,
+    author_name: user.user_metadata?.user_name || user.email || "unknown",
+    source_title: input.sourceType === "book" ? input.bookTitle || input.title : input.title,
+    source_url: null,
+    isbn: null,
+    published_at: new Date().toISOString().slice(0, 10),
+    intro: null,
   };
 
   const { data: savedDocument, error: saveDocumentError } = input.documentId
@@ -268,8 +276,8 @@ export async function upsertDocument(input: UpsertDocumentInput) {
   await supabase.from("document_topics").delete().eq("document_id", documentId);
   await supabase.from("document_note_cards").delete().eq("document_id", documentId);
 
-  if (input.topics.length > 0) {
-    const normalizedTopics = [...new Set(input.topics.map((topic) => topic.trim()).filter(Boolean))];
+  if (input.tags.length > 0) {
+    const normalizedTopics = [...new Set(input.tags.map((topic) => topic.trim()).filter(Boolean))];
     const topicRecords = await Promise.all(
       normalizedTopics.map(async (topic) => {
         const slugValue = createSlug(topic);
@@ -299,20 +307,7 @@ export async function upsertDocument(input: UpsertDocumentInput) {
     }
   }
 
-  if (input.noteCards.length > 0) {
-    const { error: noteCardsError } = await supabase.from("document_note_cards").insert(
-      input.noteCards.map((noteCard, index) => ({
-        document_id: documentId,
-        heading: noteCard.heading || null,
-        content: noteCard.content,
-        position: index,
-      })),
-    );
-
-    if (noteCardsError) {
-      throw new Error(noteCardsError.message);
-    }
-  }
+  await supabase.from("document_note_cards").delete().eq("document_id", documentId);
 
   return savedDocument.slug;
 }

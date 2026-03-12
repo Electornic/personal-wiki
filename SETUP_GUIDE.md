@@ -48,11 +48,22 @@ SQL은 아래 순서대로 실행합니다.
 - user-based signup/login 기준 정책 정리
 - `documents` / `topics` / `document_topics` / `document_note_cards`를 `auth.uid()` ownership 기준으로 갱신
 
+### Step 3. v0.2 record model simplify
+
+실행 파일:
+- [supabase/migrations/20260312T150000Z_v0_2_record_model_simplify.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260312T150000Z_v0_2_record_model_simplify.sql)
+
+역할:
+- `documents.contents` 추가
+- `documents.book_title` 추가
+- 기존 `intro` + `document_note_cards` 기반 내용을 `contents`로 backfill
+- 기존 book record의 `source_title`을 `book_title`로 backfill
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 두 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 세 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

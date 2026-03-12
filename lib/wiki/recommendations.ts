@@ -1,8 +1,8 @@
 import type { RelatedDocument, WikiDocument } from "@/lib/wiki/types";
 import { filterReadableDocuments } from "@/lib/wiki/visibility";
 
-function normalizeTopics(topics: string[]) {
-  return topics.map((topic) => topic.trim().toLowerCase()).filter(Boolean);
+function normalizeTags(tags: string[]) {
+  return tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean);
 }
 
 export function getRelatedDocuments(
@@ -10,27 +10,27 @@ export function getRelatedDocuments(
   candidates: WikiDocument[],
   limit = 3,
 ) {
-  const documentTopics = normalizeTopics(document.topics);
+  const documentTags = normalizeTags(document.tags);
   const visibleCandidates = filterReadableDocuments(candidates).filter(
     (candidate) => candidate.id !== document.id,
   );
 
   return visibleCandidates
     .map((candidate) => {
-      const sharedTopics = normalizeTopics(candidate.topics).filter((topic) =>
-        documentTopics.includes(topic),
+      const sharedTags = normalizeTags(candidate.tags).filter((tag) =>
+        documentTags.includes(tag),
       );
 
       return {
         ...candidate,
-        sharedTopicCount: sharedTopics.length,
-        sharedTopics,
+        sharedTagCount: sharedTags.length,
+        sharedTags,
       } satisfies RelatedDocument;
     })
-    .filter((candidate) => candidate.sharedTopicCount > 0)
+    .filter((candidate) => candidate.sharedTagCount > 0)
     .sort((left, right) => {
-      if (right.sharedTopicCount !== left.sharedTopicCount) {
-        return right.sharedTopicCount - left.sharedTopicCount;
+      if (right.sharedTagCount !== left.sharedTagCount) {
+        return right.sharedTagCount - left.sharedTagCount;
       }
 
       return (

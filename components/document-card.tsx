@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { TopicPill } from "@/components/topic-pill";
+import { getExcerpt } from "@/lib/wiki/content";
 import type { WikiDocument } from "@/lib/wiki/types";
 
 type DocumentCardProps = {
@@ -16,15 +17,15 @@ export function DocumentCard({ document }: DocumentCardProps) {
       </div>
       <div className="space-y-3">
         <h3 className="text-2xl leading-tight text-stone-900">{document.title}</h3>
-        <p className="text-sm leading-7 text-stone-600">{document.intro}</p>
+        <p className="text-sm leading-7 text-stone-600">{getExcerpt(document.contents)}</p>
       </div>
       <div className="flex flex-wrap gap-2">
-        {document.topics.map((topic) => (
-          <TopicPill key={topic} label={topic} />
+        {document.tags.map((tag) => (
+          <TopicPill key={tag} label={tag} />
         ))}
       </div>
       <div className="mt-auto flex items-center justify-between text-sm text-stone-500">
-        <span>{document.authorName}</span>
+        <span>{document.writerName}</span>
         <Link
           href={`/library/${document.slug}`}
           className="font-medium text-stone-900 transition group-hover:translate-x-1"

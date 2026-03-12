@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { DocumentCard } from "@/components/document-card";
 import { TopicPill } from "@/components/topic-pill";
+import { getExcerpt } from "@/lib/wiki/content";
 import { listPublicDocuments } from "@/lib/wiki/documents";
 
 export default async function Home() {
@@ -10,8 +11,8 @@ export default async function Home() {
   const topicMap = new Map<string, number>();
 
   documents.forEach((document) => {
-    document.topics.forEach((topic) => {
-      topicMap.set(topic, (topicMap.get(topic) ?? 0) + 1);
+    document.tags.forEach((tag) => {
+      topicMap.set(tag, (topicMap.get(tag) ?? 0) + 1);
     });
   });
 
@@ -54,10 +55,10 @@ export default async function Home() {
               <p className="text-sm text-stone-600">public records available</p>
             </div>
             <div className="space-y-3">
-              <p className="text-sm font-medium text-stone-700">top topics</p>
+              <p className="text-sm font-medium text-stone-700">top tags</p>
               <div className="flex flex-wrap gap-2">
-                {topTopics.map(([topic, count]) => (
-                  <TopicPill key={topic} label={`${topic} · ${count}`} />
+                {topTopics.map(([tag, count]) => (
+                  <TopicPill key={tag} label={`${tag} · ${count}`} />
                 ))}
               </div>
             </div>
@@ -68,7 +69,7 @@ export default async function Home() {
                 </p>
                 <h2 className="mt-3 text-2xl">{featureDocument.title}</h2>
                 <p className="mt-3 text-sm leading-7 text-stone-300">
-                  {featureDocument.intro}
+                  {getExcerpt(featureDocument.contents)}
                 </p>
               </div>
             ) : null}
