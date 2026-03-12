@@ -25,10 +25,16 @@ function SubmitButton() {
 export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   const [state, formAction] = useActionState<DocumentFormState, FormData>(saveDocument, {});
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
+  const [title, setTitle] = useState(document?.title ?? "");
   const [contents, setContents] = useState(document?.contents ?? "");
   const [sourceType, setSourceType] = useState<"book" | "article">(
     document?.sourceType ?? "book",
   );
+  const [visibility, setVisibility] = useState<"public" | "private">(
+    document?.visibility ?? "private",
+  );
+  const [bookTitle, setBookTitle] = useState(document?.bookTitle ?? "");
+  const [tags, setTags] = useState(document?.tags.join(", ") ?? "");
 
   return (
     <form action={formAction} className="grid gap-8">
@@ -41,7 +47,12 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
           <div className="space-y-2">
             <label className="field">
               <span>title</span>
-              <input name="title" defaultValue={document?.title ?? ""} required />
+              <input
+                name="title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                required
+              />
             </label>
           </div>
 
@@ -65,7 +76,8 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 <span>book title</span>
                 <input
                   name="bookTitle"
-                  defaultValue={document?.bookTitle ?? ""}
+                  value={bookTitle}
+                  onChange={(event) => setBookTitle(event.target.value)}
                   placeholder="The book this is from..."
                 />
               </label>
@@ -78,7 +90,8 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
             <span>tags</span>
             <input
               name="tags"
-              defaultValue={document?.tags.join(", ") ?? ""}
+              value={tags}
+              onChange={(event) => setTags(event.target.value)}
               placeholder="philosophy, design, writing"
               required
             />
@@ -86,7 +99,14 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
 
           <div className="flex items-center gap-3 text-sm">
             <span className="text-muted-foreground">visibility</span>
-            <select name="visibility" defaultValue={document?.visibility ?? "private"} className="max-w-[180px]">
+            <select
+              name="visibility"
+              value={visibility}
+              onChange={(event) =>
+                setVisibility(event.target.value as "public" | "private")
+              }
+              className="max-w-[180px]"
+            >
               <option value="private">private</option>
               <option value="public">public</option>
             </select>

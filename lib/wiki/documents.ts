@@ -1,4 +1,5 @@
 import {
+  getAdminSupabaseClient,
   getPublicSupabaseClient,
   getServerSupabaseClient,
 } from "@/lib/supabase/server";
@@ -223,6 +224,7 @@ type UpsertDocumentInput = {
 
 export async function upsertDocument(input: UpsertDocumentInput) {
   const supabase = await getServerSupabaseClient();
+  const adminSupabase = getAdminSupabaseClient();
 
   if (!supabase) {
     throw new Error("Supabase server configuration is missing.");
@@ -278,10 +280,11 @@ export async function upsertDocument(input: UpsertDocumentInput) {
 
   if (input.tags.length > 0) {
     const normalizedTopics = [...new Set(input.tags.map((topic) => topic.trim()).filter(Boolean))];
+    const tagsClient = adminSupabase ?? supabase;
     const topicRecords = await Promise.all(
       normalizedTopics.map(async (topic) => {
         const slugValue = createSlug(topic);
-        const { data, error } = await supabase
+        const { data, error } = await tagsClient
           .from("topics")
           .upsert({ name: topic, slug: slugValue }, { onConflict: "slug" })
           .select("id")
