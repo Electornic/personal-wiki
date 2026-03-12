@@ -1,53 +1,72 @@
 # Personal Wiki Next Tasks
 
-## Immediate Next Tasks
+## v0.2 Scope
 
-1. Author CRUD real-use pass
-- Create one real document from the author workspace.
-- Edit that document and confirm updates render on the public detail page.
-- Delete a document and confirm it disappears from author/public surfaces as expected.
+### 1. Figma-based UI refinement
 
-2. Seed real starter content
-- Add 3-5 real book/article records.
-- Add shared topics intentionally so recommendation quality can be inspected visually.
+- Rebuild the current working UI around a Figma-defined visual system.
+- Refine typography, spacing, hierarchy, and reading layout.
+- Keep the reading-first product shape intact while making the public/library surfaces feel more intentional.
 
-3. Integration verification
+### 2. User-based authentication
+
+- Replace the current author-only auth assumption with user-based signup/login.
+- v0.2 auth fields should stay minimal:
+  - id
+  - password
+  - user name
+- Keep the current public-reading behavior unless a later product decision changes it.
+
+### 3. Record model simplification
+
+- Reduce the current record shape.
+- Target v0.2 record fields:
+  - `title`
+  - `contents`
+  - `sourceType` (`article` or `book`)
+  - `bookTitle` for book records only
+  - `visibility`
+  - `publishedAt` computed automatically
+  - `writer` from the logged-in user name
+- Remove or demote the current heavier metadata fields where possible:
+  - `sourceTitle`
+  - `authorName`
+  - `sourceUrl`
+  - `isbn`
+  - explicit topic-heavy shape if it is no longer core to the UX
+
+### 4. Comments for logged-in users
+
+- Logged-in users should be able to leave comments on records.
+- Comment authorship should be tied to the authenticated user account.
+
+## Follow-up Tasks
+
+### Architecture / Data
+
+- Redesign the database schema for user accounts and the simplified record model.
+- Decide how recommendation logic changes if topics are reduced or removed from the authoring model.
+- Introduce a migration path from v0.1 records to the v0.2 schema.
+
+### Verification
+
 - Add Supabase-backed integration checks for:
-  - callback -> session -> author access
-  - `author_profiles` bootstrap expectations
-  - anonymous access denial for private docs
-  - no private leakage in related-document queries
+  - signup/login
+  - session persistence
+  - record creation/edit/delete with the new schema
+  - comment creation by authenticated users
+  - public/private visibility behavior under the new auth model
 
-## Product / UX Tasks
+### Delivery / Docs
 
-4. Figma-based UI refinement
-- Translate the current working MVP into a more polished visual system.
-- Refine typography, spacing, and editorial reading layout.
-- Keep the reading-first product shape intact.
-
-5. Information architecture refinement
-- Decide whether the public home stays newest-first only.
-- Decide whether lightweight topic normalization or author-side suggestions are needed.
-
-## Technical Follow-ups
-
-6. Developer ergonomics
-- Add a deterministic local seed script.
-- Add a simple reset/cleanup script for local verification data.
-
-7. Test depth
-- Keep current Vitest unit coverage.
-- Add at least one browser/session-aware end-to-end check before deployment.
-
-8. Deployment readiness
-- Confirm production redirect URLs.
-- Confirm Supabase Auth settings for deployed domain.
-- Add a short production checklist to docs once deployment target is chosen.
+- Add a v0.2 migration note once the schema direction is fixed.
+- Add a short production checklist once deployment target and auth URLs are finalized.
 
 ## Suggested Order
 
-1. Author CRUD real-use pass
-2. Seed real starter content
-3. Integration verification
-4. Figma-based UI refinement
-5. Deployment readiness
+1. Finalize v0.2 schema and auth direction
+2. Implement user signup/login
+3. Simplify record create/read/update flows
+4. Add comments
+5. Apply Figma-based UI refinement
+6. Add integration verification and migration notes

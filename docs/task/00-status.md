@@ -12,6 +12,7 @@
   - recommendations based on shared topics/tags
 - Local app, Supabase schema, and auth foundation are implemented.
 - RLS and callback-session bugs found during verification have been fixed.
+- `v0.1` release cut is based on commit `8cf1046`.
 
 ## Completed Tasks
 
@@ -48,6 +49,7 @@
 - Private document blocked from public detail route.
 - Private document not leaked through related/public listing checks.
 - Author workspace confirmed in the browser.
+- Public article slug handling fixed for Korean/Unicode titles.
 
 ## Verified Commits
 
@@ -55,9 +57,16 @@
 - `e566df8` `fix: harden auth callback and authoring contract`
 - `c1854d7` `fix: correct personal wiki rls policies`
 - `c08af8c` `fix: persist auth callback session`
+- `c376c6a` `fix: avoid redirect errors in author actions`
+- `8cf1046` `fix: support unicode slugs for public articles`
+
+## Release Tags
+
+- `v0.1` -> `8cf1046`
 
 ## Known Gaps
 
 - Automated CLI verification still does not fully cover browser-session-based author CRUD.
 - Live Supabase-backed integration/e2e tests are not in place yet.
-- No seeded real content exists yet beyond temporary verification records that were cleaned up.
+- Current auth model is still author-only and not yet user-oriented.
+- Record schema is still heavier than the desired v0.2 shape.
