@@ -78,6 +78,8 @@
 - 현재 제품 정의의 기준 문서는 아래 두 파일이다.
   - `.omx/specs/deep-interview-personal-wiki-foundation.md`
   - `.omx/plans/personal-wiki-mvp-ralplan.md`
+- `docs/task` 아래의 태스크 파일은 `0_1_[major-topic].md` 같은 형식으로 만든다.
+- 새 태스크 문서를 만들거나 이름을 바꿀 때는 기존 문서와 번호/주제가 한눈에 구분되도록 유지한다.
 
 ## Working Style
 
@@ -89,3 +91,7 @@
 ## Git Workflow
 
 - 적당한 작업 단위가 끝날 때마다 `git add .` 후 `git commit`까지 진행해 변경을 작은 단위로 남긴다.
+- 하나의 태스크를 시작할 때는 해당 태스크 전용 브랜치를 만든다.
+- 하나의 태스크가 끝나면 PR을 만들고 `main`에 머지한 뒤, 배포는 `dist` 브랜치 기준으로 진행한다.
+- 앞으로 배포용 기준 브랜치는 `dist`다. 릴리스/배포 상태는 `dist`에서 관리한다.
+- 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서로 본다.
