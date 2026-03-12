@@ -3,6 +3,7 @@
 ## Branch
 
 - Working branch: `V0_2_UI_Auth_Record_Model_Comments`
+- Detailed schema reference: [v0_2_schema_lock_and_migration.md](/Users/leejun/Desktop/Projects/personal-wiki/docs/task/v0_2_schema_lock_and_migration.md)
 
 ## v0.2 Scope
 
