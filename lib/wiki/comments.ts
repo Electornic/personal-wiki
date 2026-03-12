@@ -1,4 +1,7 @@
-import { getServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  getAdminSupabaseClient,
+  getServerSupabaseClient,
+} from "@/lib/supabase/server";
 import { getProfileForUser } from "@/lib/wiki/profiles";
 
 export type RecordComment = {
@@ -27,6 +30,7 @@ type CommentRow = {
 
 export async function listCommentsForRecord(recordId: string) {
   const supabase = await getServerSupabaseClient();
+  const adminSupabase = getAdminSupabaseClient();
 
   if (!supabase) {
     return [] as RecordComment[];
@@ -47,7 +51,9 @@ export async function listCommentsForRecord(recordId: string) {
   const userNames = new Map<string, string>();
 
   for (const userId of uniqueUserIds) {
-    const profile = await getProfileForUser(supabase, userId);
+    const profile = adminSupabase
+      ? await getProfileForUser(adminSupabase, userId)
+      : await getProfileForUser(supabase, userId);
     userNames.set(userId, profile?.user_name ?? "unknown");
   }
 
