@@ -1,13 +1,13 @@
 import Link from "next/link";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
-import { getOwnerEmail, hasAuthoringEnv } from "@/lib/env";
+import { hasAuthoringEnv } from "@/lib/env";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { listAuthorDocuments } from "@/lib/wiki/documents";
 
 export default async function AuthorPage() {
   const access = await getAuthorAccess();
-  const documents = access.isOwner ? await listAuthorDocuments() : [];
+  const documents = access.isAuthenticated ? await listAuthorDocuments() : [];
 
   if (!hasAuthoringEnv()) {
     return (
@@ -16,28 +16,27 @@ export default async function AuthorPage() {
         <div className="rounded-[2rem] border border-amber-300 bg-amber-50 p-8">
           <h1 className="text-3xl text-stone-900">Supabase setup required</h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
-            `.env.example`에 있는 public env, service role key, owner email을 모두 채우면 author 로그인과 저장 기능이 활성화됩니다.
+            `.env.example`에 있는 public env와 service role key를 채우면 signup/login과 저장 기능이 활성화됩니다.
             public reading surface는 현재 demo data로 미리 볼 수 있습니다.
           </p>
           <ul className="mt-5 space-y-2 text-sm text-stone-600">
             <li>`NEXT_PUBLIC_SUPABASE_URL`</li>
             <li>`NEXT_PUBLIC_SUPABASE_ANON_KEY`</li>
             <li>`SUPABASE_SERVICE_ROLE_KEY`</li>
-            <li>`SUPABASE_OWNER_EMAIL`</li>
           </ul>
         </div>
       </main>
     );
   }
 
-  if (!access.isOwner) {
+  if (!access.isAuthenticated) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 px-6 py-12 md:px-10">
         <p className="section-kicker">Author workspace</p>
         <div className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_28px_80px_rgba(51,39,18,0.08)]">
-          <h1 className="text-4xl text-stone-900">Author sign-in required</h1>
+          <h1 className="text-4xl text-stone-900">Account sign-in required</h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
-            이 영역은 `SUPABASE_OWNER_EMAIL`에 지정한 author만 사용할 수 있습니다.
+            이 영역은 로그인한 사용자만 사용할 수 있습니다.
           </p>
           <Link className="button-primary mt-6 inline-flex" href="/author/sign-in">
             sign in
@@ -52,9 +51,9 @@ export default async function AuthorPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="section-kicker">Author workspace</p>
-          <h1 className="section-title">책과 아티클 기록 관리</h1>
+          <h1 className="section-title">Your record workspace</h1>
           <p className="mt-3 text-sm leading-7 text-stone-600">
-            Signed in as {access.userEmail ?? getOwnerEmail()}
+            Signed in as {access.userName ?? access.userEmail}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">

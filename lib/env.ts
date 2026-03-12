@@ -1,7 +1,6 @@
 const publicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const publicSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const ownerEmail = process.env.SUPABASE_OWNER_EMAIL;
 const authRedirectUrl =
   process.env.SUPABASE_AUTH_REDIRECT_URL ?? "http://localhost:3000/auth/callback";
 
@@ -14,7 +13,7 @@ export function hasSupabaseAdminEnv() {
 }
 
 export function hasAuthoringEnv() {
-  return Boolean(publicSupabaseUrl && publicSupabaseAnonKey && serviceRoleKey && ownerEmail);
+  return Boolean(publicSupabaseUrl && publicSupabaseAnonKey && serviceRoleKey);
 }
 
 export function getSupabasePublicEnv() {
@@ -29,10 +28,6 @@ export function getSupabaseAdminEnv() {
     url: publicSupabaseUrl,
     serviceRoleKey,
   };
-}
-
-export function getOwnerEmail() {
-  return ownerEmail?.toLowerCase() ?? null;
 }
 
 export function getAuthRedirectUrl() {

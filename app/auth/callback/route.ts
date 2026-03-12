@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getOwnerEmail } from "@/lib/env";
 import {
   getAdminSupabaseClient,
   getRouteHandlerSupabaseClient,
 } from "@/lib/supabase/server";
 import { sanitizeNextPath } from "@/lib/wiki/navigation";
+import { upsertProfileRow } from "@/lib/wiki/profiles";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -23,19 +23,18 @@ export async function GET(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const ownerEmail = getOwnerEmail();
-
-    if (user?.email && ownerEmail && user.email.toLowerCase() === ownerEmail) {
+    if (user?.email) {
       const adminSupabase = getAdminSupabaseClient();
 
       if (adminSupabase) {
-        await adminSupabase.from("author_profiles").upsert(
-          {
-            id: user.id,
-            email: user.email.toLowerCase(),
-          },
-          { onConflict: "id" },
-        );
+        await upsertProfileRow(adminSupabase, {
+          id: user.id,
+          email: user.email.toLowerCase(),
+          userName:
+            typeof user.user_metadata?.user_name === "string"
+              ? user.user_metadata.user_name
+              : null,
+        });
       }
     }
   }

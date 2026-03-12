@@ -120,11 +120,20 @@ export async function listAuthorDocuments() {
     return sortByUpdatedAt(demoDocuments);
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return [];
+  }
+
   const [{ data: documentRows, error: documentsError }, { data: topicRows, error: topicsError }, { data: noteCardRows, error: noteCardsError }] =
     await Promise.all([
       supabase
         .from("documents")
         .select("*")
+        .eq("created_by", user.id)
         .order("updated_at", { ascending: false }),
       supabase
         .from("document_topics")
@@ -213,8 +222,17 @@ export async function upsertDocument(input: UpsertDocumentInput) {
     throw new Error("Supabase server configuration is missing.");
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("You must be signed in to save a document.");
+  }
+
   const slug = createSlug(input.title);
   const payload = {
+    created_by: user.id,
     slug,
     title: input.title,
     source_type: input.sourceType,
@@ -232,6 +250,7 @@ export async function upsertDocument(input: UpsertDocumentInput) {
         .from("documents")
         .update(payload)
         .eq("id", input.documentId)
+        .eq("created_by", user.id)
         .select("id, slug")
         .single()
     : await supabase
@@ -305,7 +324,19 @@ export async function deleteDocumentById(documentId: string) {
     throw new Error("Supabase server configuration is missing.");
   }
 
-  const { error } = await supabase.from("documents").delete().eq("id", documentId);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("You must be signed in to delete a document.");
+  }
+
+  const { error } = await supabase
+    .from("documents")
+    .delete()
+    .eq("id", documentId)
+    .eq("created_by", user.id);
 
   if (error) {
     throw new Error(error.message);
