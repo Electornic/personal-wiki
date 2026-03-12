@@ -16,8 +16,12 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button className="button-primary" type="submit" disabled={pending}>
-      {pending ? "saving..." : "post comment"}
+    <button
+      className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[#2a2419]"
+      type="submit"
+      disabled={pending}
+    >
+      {pending ? "saving..." : "Post"}
     </button>
   );
 }
@@ -36,11 +40,19 @@ export function CommentForm({
       <input type="hidden" name="recordSlug" value={recordSlug} />
       <input type="hidden" name="parentCommentId" value={parentCommentId ?? ""} />
       <label className="field">
-        <span>{parentCommentId ? `reply depth ${depth + 1}` : "comment"}</span>
-        <textarea name="contents" rows={4} required />
+        <span className="sr-only">
+          {parentCommentId ? `reply depth ${depth + 1}` : "comment"}
+        </span>
+        <textarea
+          name="contents"
+          rows={parentCommentId ? 3 : 4}
+          required
+          placeholder={parentCommentId ? "Write a reply..." : "Leave a comment..."}
+          className="min-h-[104px] rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-4 py-3 text-[16px] leading-[26px] text-[#2a2419] placeholder:text-[#8b8173]"
+        />
       </label>
       {state.error ? (
-        <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+        <p className="rounded-[6px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
           {state.error}
         </p>
       ) : null}

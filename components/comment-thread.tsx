@@ -22,27 +22,26 @@ function CommentNode({
 }) {
   return (
     <div className="space-y-3">
-      <article className="surface-card px-5 py-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-200 text-sm font-medium">
-            {comment.userName.charAt(0).toUpperCase()}
+      <article className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e8e3db] text-[14px] leading-5 font-medium text-[#2a2419]">
+          {comment.userName.charAt(0).toUpperCase()}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="text-[14px] leading-5 font-medium text-[#2a2419]">
+              {comment.userName}
+            </span>
+            <time className="text-[12px] leading-4 text-[#6b6354]">
+              {formatDisplayDate(comment.createdAt)}
+            </time>
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="mb-1 flex items-baseline gap-2">
-              <span className="font-medium text-sm">{comment.userName}</span>
-              <time className="text-xs text-muted-foreground">
-                {formatDisplayDate(comment.createdAt)}
-              </time>
-            </div>
-            <p className="mb-2 whitespace-pre-wrap text-base leading-relaxed">
-              {comment.contents}
-            </p>
-            <div className="text-xs text-muted-foreground">depth {comment.depth}</div>
-          </div>
+          <p className="whitespace-pre-wrap text-[16px] leading-[26px] text-[#2a2419]">
+            {comment.contents}
+          </p>
         </div>
       </article>
       {canComment && comment.depth < 5 ? (
-        <div className="ml-6 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4">
+        <div className="ml-12">
           <CommentForm
             recordId={recordId}
             recordSlug={recordSlug}
@@ -52,7 +51,7 @@ function CommentNode({
         </div>
       ) : null}
       {comment.replies.length ? (
-        <div className="ml-6 border-l border-stone-200 pl-4">
+        <div className="ml-12 border-l border-[rgba(42,36,25,0.1)] pl-6">
           <CommentThread
             comments={comment.replies}
             recordId={recordId}
@@ -72,7 +71,7 @@ export function CommentThread({
   canComment,
 }: CommentThreadProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {comments.map((comment) => (
         <CommentNode
           key={comment.id}
