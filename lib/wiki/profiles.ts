@@ -29,30 +29,17 @@ export async function getProfileForUser(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<ProfileRow | null> {
-  const profilesResult = await supabase
+  const result = await supabase
     .from("profiles")
     .select("id, email, user_name")
     .eq("id", userId)
     .maybeSingle();
 
-  if (!profilesResult.error && profilesResult.data) {
-    return profilesResult.data as ProfileRow;
+  if (result.error || !result.data) {
+    return null;
   }
 
-  const legacyResult = await supabase
-    .from("author_profiles")
-    .select("id, email")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (!legacyResult.error && legacyResult.data) {
-    return {
-      ...(legacyResult.data as { id: string; email: string }),
-      user_name: fallbackUserName((legacyResult.data as { email: string }).email),
-    };
-  }
-
-  return null;
+  return result.data as ProfileRow;
 }
 
 export async function profileUserNameTaken(
@@ -82,7 +69,7 @@ export async function upsertProfileRow(
     input.userName || fallbackUserName(input.email),
   );
 
-  const profilesResult = await supabase
+  const result = await supabase
     .from("profiles")
     .upsert(
       {
@@ -95,28 +82,9 @@ export async function upsertProfileRow(
     .select("id, email, user_name")
     .single();
 
-  if (!profilesResult.error && profilesResult.data) {
-    return profilesResult.data as ProfileRow;
+  if (result.error || !result.data) {
+    throw new Error(result.error?.message ?? "Unable to upsert profile.");
   }
 
-  const legacyResult = await supabase
-    .from("author_profiles")
-    .upsert(
-      {
-        id: input.id,
-        email: input.email.toLowerCase(),
-      },
-      { onConflict: "id" },
-    )
-    .select("id, email")
-    .single();
-
-  if (legacyResult.error || !legacyResult.data) {
-    throw new Error(legacyResult.error?.message ?? "Unable to upsert profile.");
-  }
-
-  return {
-    ...(legacyResult.data as { id: string; email: string }),
-    user_name: normalizedUserName,
-  };
+  return result.data as ProfileRow;
 }
