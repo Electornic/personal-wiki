@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { DocumentCard } from "@/components/document-card";
 import { listPublicDocuments } from "@/lib/wiki/documents";
 
@@ -8,29 +6,23 @@ export default async function Home() {
   const publicRecords = documents.filter((record) => record.visibility === "public");
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-      <section className="mx-auto mb-16 max-w-3xl text-center">
-        <h1 className="text-5xl sm:text-6xl mb-6">
+    <main className="mx-auto w-full max-w-[1096px] px-4 pb-16 pt-12 sm:px-4 md:px-9 md:pb-20 md:pt-16 lg:px-[68px]">
+      <section className="mx-auto max-w-[768px] text-center">
+        <h1 className="mx-auto max-w-[604px] text-[48px] leading-[1] font-semibold tracking-[-0.02em] text-[#2a2419] md:text-[60px] md:leading-[60px] md:tracking-[-1.2px]">
           A Space for Reading &amp; Reflection
         </h1>
-        <p className="text-xl text-foreground/70 leading-relaxed">
+        <p className="mx-auto mt-6 max-w-[748px] text-[20px] leading-[32.5px] text-[rgba(42,36,25,0.7)]">
           Thoughtful essays, book notes, and explorations on literature, design,
           philosophy, and the art of attention.
         </p>
-        <div className="mt-8 flex items-center justify-center gap-3">
-          <Link href="/author" className="button-primary">
-            Open workspace
-          </Link>
-          <Link href="#library" className="button-secondary">
-            Browse entries
-          </Link>
-        </div>
       </section>
 
-      <section id="library" className="space-y-8">
+      <section id="library" className="mt-16 md:mt-[112px]">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-3xl">Recent Entries</h2>
-          <span className="text-sm text-muted-foreground">
+          <h2 className="text-[30px] leading-9 font-semibold tracking-[-0.3px] text-[#2a2419]">
+            Recent Entries
+          </h2>
+          <span className="text-[14px] leading-5 text-[#6b6354]">
             {publicRecords.length} {publicRecords.length === 1 ? "entry" : "entries"}
           </span>
         </div>
@@ -40,6 +32,12 @@ export default async function Home() {
             <DocumentCard key={document.id} document={document} />
           ))}
         </div>
+
+        {publicRecords.length === 0 ? (
+          <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-12 text-center text-[18px] leading-8 text-[#6b6354]">
+            No public entries yet.
+          </div>
+        ) : null}
       </section>
     </main>
   );
