@@ -11,3 +11,21 @@ export function getExcerpt(contents: string) {
 
   return plain.length > 140 ? `${plain.slice(0, 137)}...` : plain;
 }
+
+export function formatDisplayDate(value?: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}

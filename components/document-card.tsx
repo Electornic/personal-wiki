@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { TopicPill } from "@/components/topic-pill";
-import { getExcerpt } from "@/lib/wiki/content";
+import { formatDisplayDate, getExcerpt } from "@/lib/wiki/content";
 import type { WikiDocument } from "@/lib/wiki/types";
 
 type DocumentCardProps = {
@@ -10,29 +10,39 @@ type DocumentCardProps = {
 
 export function DocumentCard({ document }: DocumentCardProps) {
   return (
-    <article className="group flex h-full flex-col gap-4 rounded-[1.75rem] border border-stone-200 bg-white px-6 py-6 shadow-[0_24px_64px_rgba(51,39,18,0.06)] transition hover:-translate-y-1 hover:border-stone-400">
-      <div className="flex items-center justify-between text-xs uppercase tracking-[0.24em] text-stone-500">
-        <span>{document.sourceType}</span>
-        <span>{document.visibility}</span>
-      </div>
-      <div className="space-y-3">
-        <h3 className="text-2xl leading-tight text-stone-900">{document.title}</h3>
-        <p className="text-sm leading-7 text-stone-600">{getExcerpt(document.contents)}</p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {document.tags.map((tag) => (
-          <TopicPill key={tag} label={tag} />
-        ))}
-      </div>
-      <div className="mt-auto flex items-center justify-between text-sm text-stone-500">
-        <span>{document.writerName}</span>
-        <Link
-          href={`/library/${document.slug}`}
-          className="font-medium text-stone-900 transition group-hover:translate-x-1"
-        >
-          read
-        </Link>
-      </div>
-    </article>
+    <Link href={`/library/${document.slug}`} className="block group">
+      <article className="surface-card p-6 hover:shadow-md transition-shadow">
+        <div className="mb-3 flex items-start gap-3">
+          <div className="mt-1 text-stone-500">
+            <span className="text-sm uppercase">{document.sourceType}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="mb-1 text-2xl leading-tight text-stone-900 group-hover:text-stone-700 transition-colors">
+              {document.title}
+            </h3>
+            {document.sourceType === "book" && document.bookTitle ? (
+              <p className="mb-2 text-sm italic text-stone-500">
+                from {document.bookTitle}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <p className="mb-4 text-base leading-7 text-stone-700">
+          {getExcerpt(document.contents)}
+        </p>
+
+        <div className="mb-3 flex flex-wrap gap-2">
+          {document.tags.slice(0, 4).map((tag) => (
+            <TopicPill key={tag} label={tag} />
+          ))}
+        </div>
+
+        <div className="flex items-center justify-between text-sm text-stone-500">
+          <span className="font-medium">{document.writerName}</span>
+          <span>{formatDisplayDate(document.publishedAt)}</span>
+        </div>
+      </article>
+    </Link>
   );
 }

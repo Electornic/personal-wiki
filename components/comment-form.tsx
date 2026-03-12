@@ -40,7 +40,7 @@ export function CommentForm({
         <textarea name="contents" rows={4} required />
       </label>
       {state.error ? (
-        <p className="rounded-3xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
           {state.error}
         </p>
       ) : null}

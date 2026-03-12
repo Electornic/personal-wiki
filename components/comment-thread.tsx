@@ -1,4 +1,5 @@
 import { CommentForm } from "@/components/comment-form";
+import { formatDisplayDate } from "@/lib/wiki/content";
 import type { RecordComment } from "@/lib/wiki/comments";
 
 type CommentThreadProps = {
@@ -21,14 +22,24 @@ function CommentNode({
 }) {
   return (
     <div className="space-y-3">
-      <article className="rounded-3xl border border-stone-200 bg-white px-5 py-4">
-        <div className="flex items-center justify-between gap-4 text-sm text-stone-500">
-          <span>{comment.userName}</span>
-          <span>depth {comment.depth}</span>
+      <article className="surface-card px-5 py-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-200 text-sm font-medium">
+            {comment.userName.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-baseline gap-2">
+              <span className="font-medium text-sm">{comment.userName}</span>
+              <time className="text-xs text-muted-foreground">
+                {formatDisplayDate(comment.createdAt)}
+              </time>
+            </div>
+            <p className="mb-2 whitespace-pre-wrap text-base leading-relaxed">
+              {comment.contents}
+            </p>
+            <div className="text-xs text-muted-foreground">depth {comment.depth}</div>
+          </div>
         </div>
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-stone-700">
-          {comment.contents}
-        </p>
       </article>
       {canComment && comment.depth < 5 ? (
         <div className="ml-6 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4">
