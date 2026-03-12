@@ -40,12 +40,21 @@ alter table if exists public.profiles
 create unique index if not exists profiles_user_name_key
 on public.profiles (user_name);
 
-drop function if exists public.is_owner();
-
 drop policy if exists "authors can read self" on public.profiles;
 drop policy if exists "authors can insert self" on public.profiles;
 drop policy if exists "authors can update self" on public.profiles;
 drop policy if exists "authors can delete self" on public.profiles;
+drop policy if exists "author profiles managed by owner" on public.profiles;
+drop policy if exists "public can read public documents" on public.documents;
+drop policy if exists "owner manages documents" on public.documents;
+drop policy if exists "public can read topics tied to visible docs" on public.topics;
+drop policy if exists "owner manages topics" on public.topics;
+drop policy if exists "public can read visible document_topics" on public.document_topics;
+drop policy if exists "owner manages document_topics" on public.document_topics;
+drop policy if exists "public can read visible note cards" on public.document_note_cards;
+drop policy if exists "owner manages note cards" on public.document_note_cards;
+
+drop function if exists public.is_owner();
 
 create policy "profiles can read self"
 on public.profiles
@@ -68,9 +77,6 @@ on public.profiles
 for delete
 using (id = auth.uid());
 
-drop policy if exists "public can read public documents" on public.documents;
-drop policy if exists "owner manages documents" on public.documents;
-
 create policy "public can read public documents"
 on public.documents
 for select
@@ -81,9 +87,6 @@ on public.documents
 for all
 using (created_by = auth.uid())
 with check (created_by = auth.uid());
-
-drop policy if exists "public can read topics tied to visible docs" on public.topics;
-drop policy if exists "owner manages topics" on public.topics;
 
 create policy "public can read topics tied to visible docs"
 on public.topics
@@ -111,9 +114,6 @@ on public.topics
 for update
 using (auth.role() = 'authenticated')
 with check (auth.role() = 'authenticated');
-
-drop policy if exists "public can read visible document_topics" on public.document_topics;
-drop policy if exists "owner manages document_topics" on public.document_topics;
 
 create policy "public can read visible document_tags"
 on public.document_topics
@@ -149,9 +149,6 @@ with check (
       and public.documents.created_by = auth.uid()
   )
 );
-
-drop policy if exists "public can read visible note cards" on public.document_note_cards;
-drop policy if exists "owner manages note cards" on public.document_note_cards;
 
 create policy "public can read visible note cards"
 on public.document_note_cards
