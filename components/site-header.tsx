@@ -34,9 +34,11 @@ export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
           ) : (
             <Link
               href="/author/sign-in"
-              className="inline-flex h-8 items-center justify-center rounded-[4px] bg-[#2a2419] px-3 text-[14px] leading-5 font-medium text-[#faf8f5]"
+              className="inline-flex h-8 min-w-[70px] items-center justify-center rounded-[4px] bg-[#2a2419] px-3 text-[14px] leading-5 font-medium text-[#faf8f5] no-underline"
             >
-              Sign In
+              <span className="text-[14px] leading-5 font-medium text-[#faf8f5]">
+                Sign In
+              </span>
             </Link>
           )}
         </nav>

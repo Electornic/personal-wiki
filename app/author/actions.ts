@@ -14,6 +14,23 @@ import {
 } from "@/lib/wiki/profiles";
 import type { DocumentFormState, SourceType } from "@/lib/wiki/types";
 
+function getAuthTab(formData: FormData, fallback: "signin" | "signup") {
+  const tab = String(formData.get("tab") ?? "").trim().toLowerCase();
+  return tab === "signup" || tab === "signin" ? tab : fallback;
+}
+
+function authRedirect(tab: "signin" | "signup", params?: Record<string, string>) {
+  const search = new URLSearchParams({ tab });
+
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      search.set(key, value);
+    }
+  }
+
+  redirect(`/author/sign-in?${search.toString()}`);
+}
+
 function parseDocumentPayload(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const sourceType = String(formData.get("sourceType") ?? "book") as SourceType;
@@ -40,8 +57,10 @@ function parseDocumentPayload(formData: FormData) {
 }
 
 export async function signUpWithPassword(formData: FormData) {
+  const tab = getAuthTab(formData, "signup");
+
   if (!hasAuthoringEnv()) {
-    redirect("/author/sign-in?error=config");
+    authRedirect(tab, { error: "config" });
   }
 
   const supabase = await getServerSupabaseClient();
@@ -51,22 +70,25 @@ export async function signUpWithPassword(formData: FormData) {
   const userName = normalizeUserName(String(formData.get("userName") ?? ""));
 
   if (!supabase || !adminSupabase) {
-    redirect("/author/sign-in?error=config");
+    authRedirect(tab, { error: "config" });
   }
 
+  const safeSupabase = supabase!;
+  const safeAdminSupabase = adminSupabase!;
+
   if (!email || !password || !userName) {
-    redirect("/author/sign-in?error=missing-signup-fields");
+    authRedirect(tab, { error: "missing-signup-fields" });
   }
 
   if (password.length < 8) {
-    redirect("/author/sign-in?error=weak-password");
+    authRedirect(tab, { error: "weak-password" });
   }
 
-  if (await profileUserNameTaken(adminSupabase, userName)) {
-    redirect("/author/sign-in?error=user-name-taken");
+  if (await profileUserNameTaken(safeAdminSupabase, userName)) {
+    authRedirect(tab, { error: "user-name-taken" });
   }
 
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await safeSupabase.auth.signUp({
     email,
     password,
     options: {
@@ -78,11 +100,11 @@ export async function signUpWithPassword(formData: FormData) {
   });
 
   if (error) {
-    redirect("/author/sign-in?error=signup-failed");
+    authRedirect(tab, { error: "signup-failed" });
   }
 
   if (data.user) {
-    await upsertProfileRow(adminSupabase, {
+    await upsertProfileRow(safeAdminSupabase, {
       id: data.user.id,
       email,
       userName,
@@ -93,12 +115,14 @@ export async function signUpWithPassword(formData: FormData) {
     redirect("/author");
   }
 
-  redirect("/author/sign-in?success=signed-up");
+  authRedirect("signin", { success: "signed-up" });
 }
 
 export async function signInWithPassword(formData: FormData) {
+  const tab = getAuthTab(formData, "signin");
+
   if (!hasAuthoringEnv()) {
-    redirect("/author/sign-in?error=config");
+    authRedirect(tab, { error: "config" });
   }
 
   const supabase = await getServerSupabaseClient();
@@ -107,24 +131,27 @@ export async function signInWithPassword(formData: FormData) {
   const password = String(formData.get("password") ?? "").trim();
 
   if (!supabase || !adminSupabase) {
-    redirect("/author/sign-in?error=config");
+    authRedirect(tab, { error: "config" });
   }
+
+  const safeSupabase = supabase!;
+  const safeAdminSupabase = adminSupabase!;
 
   if (!email || !password) {
-    redirect("/author/sign-in?error=missing-login-fields");
+    authRedirect(tab, { error: "missing-login-fields" });
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await safeSupabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
-    redirect("/author/sign-in?error=login-failed");
+    authRedirect(tab, { error: "login-failed" });
   }
 
   if (data.user) {
-    await upsertProfileRow(adminSupabase, {
+    await upsertProfileRow(safeAdminSupabase, {
       id: data.user.id,
       email,
       userName:
