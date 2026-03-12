@@ -7,7 +7,9 @@ import { createCommentAction } from "@/app/library/actions";
 
 type CommentFormProps = {
   recordId: string;
+  recordSlug: string;
   parentCommentId?: string | null;
+  depth?: number;
 };
 
 function SubmitButton() {
@@ -20,15 +22,21 @@ function SubmitButton() {
   );
 }
 
-export function CommentForm({ recordId, parentCommentId }: CommentFormProps) {
+export function CommentForm({
+  recordId,
+  recordSlug,
+  parentCommentId,
+  depth = 0,
+}: CommentFormProps) {
   const [state, formAction] = useActionState(createCommentAction, {});
 
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="recordId" value={recordId} />
+      <input type="hidden" name="recordSlug" value={recordSlug} />
       <input type="hidden" name="parentCommentId" value={parentCommentId ?? ""} />
       <label className="field">
-        <span>comment</span>
+        <span>{parentCommentId ? `reply depth ${depth + 1}` : "comment"}</span>
         <textarea name="contents" rows={4} required />
       </label>
       {state.error ? (

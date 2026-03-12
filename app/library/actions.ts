@@ -9,6 +9,7 @@ export async function createCommentAction(
   formData: FormData,
 ) {
   const recordId = String(formData.get("recordId") ?? "").trim();
+  const recordSlug = String(formData.get("recordSlug") ?? "").trim();
   const parentCommentId = String(formData.get("parentCommentId") ?? "").trim();
   const contents = String(formData.get("contents") ?? "").trim();
 
@@ -30,5 +31,8 @@ export async function createCommentAction(
   }
 
   revalidatePath("/");
+  if (recordSlug) {
+    revalidatePath(`/library/${recordSlug}`);
+  }
   return {};
 }

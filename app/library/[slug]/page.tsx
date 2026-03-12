@@ -100,7 +100,12 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
         </div>
 
         {comments.length ? (
-          <CommentThread comments={comments} />
+          <CommentThread
+            comments={comments}
+            recordId={document.id}
+            recordSlug={document.slug}
+            canComment={access.isAuthenticated}
+          />
         ) : (
           <div className="rounded-3xl border border-dashed border-stone-300 px-4 py-5 text-sm leading-6 text-stone-600">
             No comments yet.
@@ -108,7 +113,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
         )}
 
         {access.isAuthenticated ? (
-          <CommentForm recordId={document.id} />
+          <CommentForm recordId={document.id} recordSlug={document.slug} />
         ) : (
           <div className="rounded-3xl border border-stone-200 bg-stone-50 px-5 py-5 text-sm leading-7 text-stone-700">
             Log in to leave a comment.
