@@ -71,7 +71,7 @@ Acceptance criteria:
   - own records
   - write comments
 - Minimal account fields:
-  - `email` or login id
+  - `email`
   - `password`
   - `userName`
 
@@ -79,7 +79,7 @@ Acceptance criteria:
 
 - Primary record fields:
   - `title`
-  - `contents`
+  - `contents` (`markdown`)
   - `sourceType`
   - `bookTitle` only when `sourceType = book`
   - `visibility`
@@ -89,23 +89,26 @@ Acceptance criteria:
 - `publishedAt` should be system-managed instead of hand-entered.
 - `writer` should come from the authenticated user, not a free input field.
 - `contents` replaces the current split between `intro` and card-based connected-thought editing as the main authoring field.
+- `contents` is fixed as `markdown` for v0.2.
 
 ### 3. Comments model
 
 - Only authenticated users can create comments.
 - Public readers can read comments on public records.
 - Private-record comments follow the same visibility boundary as the parent record.
+- Comments should support replies in v0.2.
 - Minimal comment fields:
   - `recordId`
   - `userId`
   - `userName`
   - `contents`
+  - `parentCommentId`
   - `createdAt`
   - `updatedAt`
 
 ### 4. Recommendation direction
 
-- v0.2 should not commit to removing recommendations.
+- v0.2 keeps recommendations.
 - If the explicit `topics` authoring UI is reduced, recommendation input should move to one of:
   - hidden/internal extracted keywords
   - lightweight relation labels
@@ -156,12 +159,55 @@ Acceptance criteria:
 - `source_title`, `author_name`, `source_url`, `isbn` should be removed from the primary v0.2 record model unless a strong requirement reappears
 - existing `topics` / `document_topics` need an explicit keep/remove decision before migration is implemented
 
-## Open Questions To Resolve Before Implementation
+## Contents Editor Options
 
-1. Is login id strictly email, or do you want a separate username-style login id?
-2. Does `contents` mean one rich text body, markdown body, or plain textarea body in v0.2?
-3. Do comments need nested replies, or only flat comments in v0.2?
-4. Do recommendations stay visible in v0.2 if tags are removed from the visible authoring form?
+### Plain textarea
+
+Pros:
+- simplest implementation
+- lowest migration risk
+- easiest validation and storage
+- lowest UI complexity for v0.2
+
+Cons:
+- weak reading structure for long records
+- no lightweight formatting beyond raw line breaks
+- comments and records can start to feel visually flat
+
+### Markdown
+
+Pros:
+- still stores as plain text
+- good balance of simplicity and structure
+- supports headings, lists, quotes, links, and code blocks if needed
+- easy to render on public record pages
+- much lighter than a full rich text editor
+
+Cons:
+- users must learn a little syntax
+- toolbar/preview UX still needs design if you want it friendly
+- sanitization/rendering rules need to be defined
+
+### Rich text
+
+Pros:
+- easiest for non-technical users to format visually
+- strongest authoring UX on paper
+- good fit if comments and records should feel polished and social
+
+Cons:
+- highest implementation complexity
+- harder schema/migration story
+- harder validation, serialization, and long-term editor maintenance
+- easiest way for v0.2 scope to bloat
+
+## Recommendation
+
+- `markdown` is selected for v0.2.
+- Reason:
+  - `plain textarea` is probably too bare for a wiki that is meant to be read publicly.
+  - `rich text` is too expensive for this phase because auth, record schema, and comments are already changing together.
+  - `markdown` gives enough structure without pushing v0.2 into editor-heavy work.
 
 ### Phase 2. Authentication rewrite
 
