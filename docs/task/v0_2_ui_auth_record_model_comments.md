@@ -218,7 +218,9 @@ Cons:
 - login id: `email`
 - `contents`: `markdown`
 - comments: replies allowed, max depth `5`
+- public-record comments are readable without login
 - recommendation model: explicit `tags` retained in v0.2
+- recommendation tags remain directly editable in the UI
 
 ### Phase 2. Authentication rewrite
 

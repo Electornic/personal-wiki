@@ -119,6 +119,8 @@ Rules:
 - top-level comment: `parent_comment_id is null`, `depth = 0`
 - replies increment depth from parent
 - max reply depth is `5`
+- comments on `public` records are readable without login
+- comment creation still requires authentication
 
 ## RLS Direction
 
@@ -140,7 +142,7 @@ Rules:
 
 ### Comments
 
-- public can read comments only when parent record is public
+- public can read comments when parent record is public
 - authenticated users can create comments on public records
 - authenticated users can manage their own comments
 - private record comments must not leak through public queries
@@ -232,12 +234,14 @@ Fallback:
 - login session exposes `user_name`
 - record create/edit/delete works with the new schema
 - book/article branching works correctly
-- tags still power recommendations
+- tags remain directly editable in the UI and still power recommendations
 - comment creation works for authenticated users only
+- anonymous users can read comments on public records
 - reply depth > 5 is blocked
 - private records and their comments do not leak publicly
 
-## Open Questions
+## Locked Decisions
 
-1. Should public comments be readable without login on public records, or only visible to logged-in users?
-2. Should recommendation tags stay visibly editable in the UI, or become a lighter, secondary field in the editor?
+- public-record comments are readable without login
+- comment creation requires authentication
+- recommendation tags remain explicitly editable in the v0.2 UI
