@@ -97,6 +97,7 @@ Acceptance criteria:
 - Public readers can read comments on public records.
 - Private-record comments follow the same visibility boundary as the parent record.
 - Comments should support replies in v0.2.
+- Reply depth is capped at `5`.
 - Minimal comment fields:
   - `recordId`
   - `userId`
@@ -109,11 +110,8 @@ Acceptance criteria:
 ### 4. Recommendation direction
 
 - v0.2 keeps recommendations.
-- If the explicit `topics` authoring UI is reduced, recommendation input should move to one of:
-  - hidden/internal extracted keywords
-  - lightweight relation labels
-  - deferred recommendation simplification for v0.2
-- Until that choice is finalized, keep recommendation logic as a follow-up dependency when redesigning the schema.
+- Recommendation input model stays with explicit `tags` in v0.2.
+- Tag-based recommendation remains the primary recommendation source during the v0.2 transition.
 
 ## Proposed Schema Draft
 
@@ -147,8 +145,13 @@ Acceptance criteria:
   - `record_id`
   - `user_id`
   - `contents`
+  - `parent_comment_id`
+  - `depth`
   - `created_at`
   - `updated_at`
+
+Comment rule:
+- reply depth maximum is `5`
 
 ## Migration Direction From v0.1
 
@@ -157,7 +160,7 @@ Acceptance criteria:
 - `author_profiles` should be replaced by a user/profile model for all members
 - `intro` + `document_note_cards` should be merged or transformed into `contents`
 - `source_title`, `author_name`, `source_url`, `isbn` should be removed from the primary v0.2 record model unless a strong requirement reappears
-- existing `topics` / `document_topics` need an explicit keep/remove decision before migration is implemented
+- existing `topics` / `document_topics` stay in v0.2 as the recommendation input model
 
 ## Contents Editor Options
 
@@ -208,6 +211,13 @@ Cons:
   - `plain textarea` is probably too bare for a wiki that is meant to be read publicly.
   - `rich text` is too expensive for this phase because auth, record schema, and comments are already changing together.
   - `markdown` gives enough structure without pushing v0.2 into editor-heavy work.
+
+## Locked Decisions
+
+- login id: `email`
+- `contents`: `markdown`
+- comments: replies allowed, max depth `5`
+- recommendation model: explicit `tags` retained in v0.2
 
 ### Phase 2. Authentication rewrite
 
