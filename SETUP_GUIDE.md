@@ -59,11 +59,22 @@ SQL은 아래 순서대로 실행합니다.
 - 기존 `intro` + `document_note_cards` 기반 내용을 `contents`로 backfill
 - 기존 book record의 `source_title`을 `book_title`로 backfill
 
+### Step 4. v0.2 record comments
+
+실행 파일:
+- [supabase/migrations/20260312T170000Z_v0_2_record_comments.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260312T170000Z_v0_2_record_comments.sql)
+
+역할:
+- `record_comments` 테이블 추가
+- public record comment read 정책 추가
+- authenticated user comment create/update/delete 정책 추가
+- reply depth 최대 `5` 제한
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 세 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 네 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash
@@ -79,6 +90,7 @@ pnpm dev
 3. signup 후 `profiles` row 생성 확인
 4. 로그인 후 `/author` 접근 가능 여부 확인
 5. public/private visibility 규칙 확인
+6. public record comment read / authenticated comment create 확인
 
 ## 6. Rule For Future SQL Changes
 

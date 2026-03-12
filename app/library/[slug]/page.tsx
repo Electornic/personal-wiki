@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CommentForm } from "@/components/comment-form";
+import { CommentThread } from "@/components/comment-thread";
 import { MarkdownContent } from "@/components/markdown-content";
 import { TopicPill } from "@/components/topic-pill";
+import { getAuthorAccess } from "@/lib/wiki/auth";
+import { listCommentsForRecord } from "@/lib/wiki/comments";
 import { getPublicDocumentBySlug, listRelatedDocuments } from "@/lib/wiki/documents";
 
 type PageProps = {
@@ -18,6 +22,8 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   }
 
   const relatedDocuments = await listRelatedDocuments(slug, 3);
+  const comments = await listCommentsForRecord(document.id);
+  const access = await getAuthorAccess();
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-10 px-6 py-10 md:px-10">
@@ -82,6 +88,32 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
             )}
           </div>
         </aside>
+      </section>
+
+      <section className="space-y-6 rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_28px_80px_rgba(51,39,18,0.08)]">
+        <div className="space-y-2">
+          <p className="section-kicker">Comments</p>
+          <h2 className="text-3xl text-stone-900">Reader conversation</h2>
+          <p className="text-sm leading-7 text-stone-600">
+            Public comments are readable without login. Posting requires an account.
+          </p>
+        </div>
+
+        {comments.length ? (
+          <CommentThread comments={comments} />
+        ) : (
+          <div className="rounded-3xl border border-dashed border-stone-300 px-4 py-5 text-sm leading-6 text-stone-600">
+            No comments yet.
+          </div>
+        )}
+
+        {access.isAuthenticated ? (
+          <CommentForm recordId={document.id} />
+        ) : (
+          <div className="rounded-3xl border border-stone-200 bg-stone-50 px-5 py-5 text-sm leading-7 text-stone-700">
+            Log in to leave a comment.
+          </div>
+        )}
       </section>
     </main>
   );
