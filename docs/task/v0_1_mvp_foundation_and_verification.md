@@ -1,4 +1,4 @@
-# Personal Wiki Task Status
+# Personal Wiki v0.1 MVP Foundation And Verification
 
 ## Current State
 
