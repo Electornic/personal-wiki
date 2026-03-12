@@ -1,5 +1,9 @@
 # Personal Wiki v0.2 UI, Auth, Record Model, Comments
 
+## Branch
+
+- Working branch: `V0_2_UI_Auth_Record_Model_Comments`
+
 ## v0.2 Scope
 
 ### 1. Figma-based UI refinement
@@ -55,6 +59,109 @@
 Acceptance criteria:
 - v0.2 schema is written down before implementation starts.
 - migration strategy from v0.1 to v0.2 is explicit.
+
+## Proposed v0.2 Decisions
+
+### 1. Auth model
+
+- v0.2 no longer assumes a single author-only account.
+- Every user should be able to:
+  - sign up
+  - log in
+  - own records
+  - write comments
+- Minimal account fields:
+  - `email` or login id
+  - `password`
+  - `userName`
+
+### 2. Record model
+
+- Primary record fields:
+  - `title`
+  - `contents`
+  - `sourceType`
+  - `bookTitle` only when `sourceType = book`
+  - `visibility`
+  - `publishedAt`
+  - `writerUserId`
+  - `writerUserName`
+- `publishedAt` should be system-managed instead of hand-entered.
+- `writer` should come from the authenticated user, not a free input field.
+- `contents` replaces the current split between `intro` and card-based connected-thought editing as the main authoring field.
+
+### 3. Comments model
+
+- Only authenticated users can create comments.
+- Public readers can read comments on public records.
+- Private-record comments follow the same visibility boundary as the parent record.
+- Minimal comment fields:
+  - `recordId`
+  - `userId`
+  - `userName`
+  - `contents`
+  - `createdAt`
+  - `updatedAt`
+
+### 4. Recommendation direction
+
+- v0.2 should not commit to removing recommendations.
+- If the explicit `topics` authoring UI is reduced, recommendation input should move to one of:
+  - hidden/internal extracted keywords
+  - lightweight relation labels
+  - deferred recommendation simplification for v0.2
+- Until that choice is finalized, keep recommendation logic as a follow-up dependency when redesigning the schema.
+
+## Proposed Schema Draft
+
+### users / profiles
+
+- `profiles`
+  - `id`
+  - `user_name`
+  - `created_at`
+  - `updated_at`
+
+### records
+
+- `records`
+  - `id`
+  - `slug`
+  - `title`
+  - `contents`
+  - `source_type`
+  - `book_title`
+  - `visibility`
+  - `published_at`
+  - `writer_user_id`
+  - `created_at`
+  - `updated_at`
+
+### comments
+
+- `record_comments`
+  - `id`
+  - `record_id`
+  - `user_id`
+  - `contents`
+  - `created_at`
+  - `updated_at`
+
+## Migration Direction From v0.1
+
+- `documents` -> `records`
+- `created_by` -> `writer_user_id`
+- `author_profiles` should be replaced by a user/profile model for all members
+- `intro` + `document_note_cards` should be merged or transformed into `contents`
+- `source_title`, `author_name`, `source_url`, `isbn` should be removed from the primary v0.2 record model unless a strong requirement reappears
+- existing `topics` / `document_topics` need an explicit keep/remove decision before migration is implemented
+
+## Open Questions To Resolve Before Implementation
+
+1. Is login id strictly email, or do you want a separate username-style login id?
+2. Does `contents` mean one rich text body, markdown body, or plain textarea body in v0.2?
+3. Do comments need nested replies, or only flat comments in v0.2?
+4. Do recommendations stay visible in v0.2 if tags are removed from the visible authoring form?
 
 ### Phase 2. Authentication rewrite
 
