@@ -44,19 +44,17 @@ acceptance criteria:
 - markdown 작성/수정 UX가 불안정하게 느껴진다
 - `Markdown supported` 문구는 사용자를 돕기보다 불완전한 editor처럼 보이게 만들 수 있다
 
-추천 방향:
-- `v0.3`에서는 lightweight rich text / block editor를 우선 검토한다
-- 후보:
-  - `Tiptap`
-  - markdown 유지 + toolbar 강화
+locked decision:
+- `v0.3` editor는 `improved markdown`로 간다
+- rich text / block editor 전환은 `v0.3` 범위에서 제외한다
 
-권장 결정:
-- 가능하면 `Tiptap` 같은 lightweight rich text editor로 전환
-- 만약 범위가 커지면 fallback으로:
-  - markdown 유지
-  - toolbar 추가
-  - preview 개선
-  - `Markdown supported` 문구 제거
+구현 방향:
+- markdown 유지
+- toolbar 추가
+- preview 안정화
+- shortcut / insert helpers 검토
+- `Markdown supported` 문구 제거
+- 작성 surface가 form보다 editor처럼 느껴지도록 인터랙션 개선
 
 acceptance criteria:
 - 작성/수정 중 formatting UX가 지금보다 명확하게 좋아진다
@@ -72,7 +70,7 @@ acceptance criteria:
 포함 범위:
 - public record detail에서 bookmark toggle
 - 로그인 사용자 기준 bookmark 저장/해제
-- workspace 또는 별도 personal library surface에서 bookmark 모아보기
+- 별도 personal library surface에서 bookmark 모아보기
 
 acceptance criteria:
 - 로그인 유저는 public record를 bookmark할 수 있다
@@ -83,12 +81,12 @@ acceptance criteria:
 
 목표:
 - `like`를 가벼운 반응으로 추가하고,
-- bookmark / like 결과를 다시 볼 수 있는 최소한의 personal library surface를 만든다.
+- bookmark / like 결과를 다시 볼 수 있는 별도 `my library` surface를 만든다.
 
 포함 범위:
 - public record detail에서 like toggle
 - like count 또는 like state 표시
-- 내 activity / saved view의 최소 버전
+- 별도 `my library` 화면의 최소 버전
   - liked records
   - bookmarked records
 
@@ -123,10 +121,12 @@ acceptance criteria:
 
 ### Editor UX
 
-- preferred:
-  - lightweight rich text editor
-- fallback:
-  - markdown 유지 + toolbar
+- keep:
+  - markdown
+- improve:
+  - toolbar
+  - preview stability
+  - writing-focused interactions
 - remove:
   - `Markdown supported` 같은 설명성 문구를 기본 surface에 크게 노출하는 방식
 
@@ -141,6 +141,7 @@ acceptance criteria:
 
 ### Personal Library Surface
 
+- workspace와 분리된 별도 화면으로 둔다
 - full social profile까지는 가지 않는다
 - 최소한 아래는 필요하다
   - My Bookmarks
@@ -151,8 +152,8 @@ acceptance criteria:
 ### Phase 1. UX Lock
 
 - comment input / reply behavior 확정
-- editor 방향(`rich text` vs `improved markdown`) 확정
-- bookmark / like surface 최소 범위 확정
+- improved markdown 범위 확정
+- `my library` 화면 범위 확정
 
 ### Phase 2. Reading / Comment UX
 
@@ -161,7 +162,7 @@ acceptance criteria:
 
 ### Phase 3. Editor UX
 
-- editor 교체 또는 개선
+- improved markdown editor 개선
 - record create/edit flow 안정화
 
 ### Phase 4. Reactions
@@ -175,11 +176,17 @@ acceptance criteria:
 - bookmarked / liked records 모아보기
 - workspace와 충돌하지 않는 개인 기록 surface 설계
 
+## Locked Decisions
+
+- editor는 `improved markdown`
+- bookmark / like 결과는 `workspace`와 분리된 별도 `my library` 화면
+
 ## Recommended Next Step
 
-`v0.3`는 바로 구현에 들어가기보다 아래 두 결정만 먼저 닫는 것이 좋다.
+`v0.3`는 이제 구현 계획 단계로 바로 넘어갈 수 있다.
 
-1. editor를 `rich text`로 갈지, `improved markdown`로 갈지
-2. bookmark / like 결과를 `workspace 내부 탭`으로 둘지, `별도 my library 화면`으로 둘지
-
-이 두 개가 정해지면 implementation plan을 더 정확히 자를 수 있다.
+다음으로 정리할 것:
+1. comment input / reply UI interaction spec
+2. improved markdown editor feature list
+3. bookmark / like 데이터 모델
+4. `my library` 화면의 정보 구조
