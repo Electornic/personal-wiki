@@ -166,39 +166,51 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     });
   }
 
-  function prefixSelection(prefix: string, placeholder: string) {
+  function insertBlock(
+    formatter: (selected: string) => string,
+    placeholder: string,
+  ) {
     updateContentsFromTextarea((currentValue, selectionStart, selectionEnd) => {
-      const selected = currentValue.slice(selectionStart, selectionEnd) || placeholder;
-      const nextValue =
-        currentValue.slice(0, selectionStart) +
-        prefix +
-        selected +
-        currentValue.slice(selectionEnd);
+      const blockStart =
+        currentValue.lastIndexOf("\n", Math.max(0, selectionStart - 1)) + 1;
+      const blockEndIndex = currentValue.indexOf("\n", selectionEnd);
+      const blockEnd =
+        blockEndIndex === -1 ? currentValue.length : blockEndIndex;
+      const selected =
+        currentValue.slice(blockStart, blockEnd).trim() || placeholder;
+      const before = currentValue.slice(0, blockStart);
+      const after = currentValue.slice(blockEnd);
+      const needsLeadingBreak =
+        before.length > 0 && !before.endsWith("\n\n");
+      const needsTrailingBreak =
+        after.length > 0 && !after.startsWith("\n\n");
+      const leading = needsLeadingBreak
+        ? before.endsWith("\n")
+          ? "\n"
+          : "\n\n"
+        : "";
+      const trailing = needsTrailingBreak
+        ? after.startsWith("\n")
+          ? "\n"
+          : "\n\n"
+        : "";
+      const inserted = formatter(selected);
+      const nextValue = before + leading + inserted + trailing + after;
+      const nextStart = (before + leading).length;
 
       return {
         nextValue,
-        nextSelectionStart: selectionStart + prefix.length,
-        nextSelectionEnd: selectionStart + prefix.length + selected.length,
+        nextSelectionStart: nextStart,
+        nextSelectionEnd: nextStart + inserted.length,
       };
     });
   }
 
   function insertList(marker: "- " | "1. ", placeholder: string) {
-    updateContentsFromTextarea((currentValue, selectionStart, selectionEnd) => {
-      const selected = currentValue.slice(selectionStart, selectionEnd) || placeholder;
+    insertBlock((selected) => {
       const lines = selected.split("\n").map((line) => `${marker}${line}`);
-      const inserted = lines.join("\n");
-      const nextValue =
-        currentValue.slice(0, selectionStart) +
-        inserted +
-        currentValue.slice(selectionEnd);
-
-      return {
-        nextValue,
-        nextSelectionStart: selectionStart,
-        nextSelectionEnd: selectionStart + inserted.length,
-      };
-    });
+      return lines.join("\n");
+    }, placeholder);
   }
 
   function insertLink() {
@@ -376,21 +388,21 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
               <div className="flex flex-wrap items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => prefixSelection("# ", "Heading")}
+                  onClick={() => insertBlock((selected) => `# ${selected}`, "Heading")}
                   className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-white"
                 >
                   H1
                 </button>
                 <button
                   type="button"
-                  onClick={() => prefixSelection("## ", "Heading")}
+                  onClick={() => insertBlock((selected) => `## ${selected}`, "Heading")}
                   className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-white"
                 >
                   H2
                 </button>
                 <button
                   type="button"
-                  onClick={() => prefixSelection("### ", "Heading")}
+                  onClick={() => insertBlock((selected) => `### ${selected}`, "Heading")}
                   className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-white"
                 >
                   H3
@@ -412,7 +424,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => prefixSelection("> ", "Quote")}
+                  onClick={() => insertBlock((selected) => `> ${selected}`, "Quote")}
                   className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
                 >
                   “”
