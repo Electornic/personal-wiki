@@ -100,7 +100,10 @@ export async function signUpWithPassword(formData: FormData) {
   });
 
   if (error) {
-    authRedirect(tab, { error: "signup-failed" });
+    authRedirect(tab, {
+      error: "signup-failed",
+      message: error.message,
+    });
   }
 
   if (data.user) {
@@ -147,7 +150,10 @@ export async function signInWithPassword(formData: FormData) {
   });
 
   if (error) {
-    authRedirect(tab, { error: "login-failed" });
+    authRedirect(tab, {
+      error: "login-failed",
+      message: error.message,
+    });
   }
 
   if (data.user) {

@@ -4,11 +4,16 @@ import { signInWithPassword, signUpWithPassword } from "@/app/author/actions";
 import { hasAuthoringEnv } from "@/lib/env";
 
 type PageProps = {
-  searchParams: Promise<{ error?: string; success?: string; tab?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    success?: string;
+    tab?: string;
+    message?: string;
+  }>;
 };
 
 export default async function AuthorSignInPage({ searchParams }: PageProps) {
-  const { error, success, tab } = await searchParams;
+  const { error, success, tab, message } = await searchParams;
   const activeTab = tab === "signup" ? "signup" : "signin";
   const isSignUp = activeTab === "signup";
 
@@ -21,6 +26,8 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
           ? "Fill in all required fields."
           : error === "config"
             ? "Authentication is not configured yet."
+            : message
+              ? message
             : error
               ? "Authentication failed. Check the form values and Supabase settings."
               : null;
