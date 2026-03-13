@@ -89,6 +89,19 @@ function PublishIcon() {
   );
 }
 
+function ChevronDownIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4 text-[#6b6354]"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
 export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   const [state, formAction] = useActionState<DocumentFormState, FormData>(saveDocument, {});
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
@@ -173,17 +186,22 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
               <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
                 Source Type
               </span>
-              <select
-                name="sourceType"
-                value={sourceType}
-                onChange={(event) =>
-                  setSourceType(event.target.value as "book" | "article")
-                }
-                className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-[13px] py-px text-[14px] leading-5 font-medium text-[#2a2419]"
-              >
-                <option value="article">Article</option>
-                <option value="book">Book</option>
-              </select>
+              <div className="relative mt-2">
+                <select
+                  name="sourceType"
+                  value={sourceType}
+                  onChange={(event) =>
+                    setSourceType(event.target.value as "book" | "article")
+                  }
+                  className="h-9 appearance-none rounded-[4px] border border-transparent bg-white px-[13px] pr-10 py-px text-[14px] leading-5 font-medium text-[#2a2419]"
+                >
+                  <option value="article">Article</option>
+                  <option value="book">Book</option>
+                </select>
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                  <ChevronDownIcon />
+                </span>
+              </div>
             </label>
 
             {sourceType === "book" ? (
