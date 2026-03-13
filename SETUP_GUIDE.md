@@ -70,11 +70,24 @@ SQL은 아래 순서대로 실행합니다.
 - authenticated user comment create/update/delete 정책 추가
 - reply depth 최대 `5` 제한
 
+### Step 5. v0.2 records and tags transition
+
+실행 파일:
+- [supabase/migrations/20260313T210000Z_v0_2_records_tags_transition.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260313T210000Z_v0_2_records_tags_transition.sql)
+
+역할:
+- `documents` -> `records` 테이블 전환
+- `topics` -> `tags` 테이블 전환
+- `document_topics` -> `record_tags` 전환
+- `created_by` -> `writer_user_id` 컬럼 전환
+- comments 정책을 `records` 기준으로 갱신
+- 앱 read/write가 v0.2 데이터 모델을 직접 사용하도록 준비
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 네 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 다섯 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

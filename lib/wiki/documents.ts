@@ -8,7 +8,6 @@ import { demoDocuments } from "@/lib/wiki/demo-data";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 import { createSlug } from "@/lib/wiki/slugs";
 import type {
-  DocumentNoteCard,
   DocumentVisibility,
   SourceType,
   WikiDocument,
@@ -29,24 +28,12 @@ function normalizeRouteSlug(slug: string) {
   }
 }
 
-function mapDocument(row: Record<string, unknown>, topics: string[], noteCards: DocumentNoteCard[]) {
-  const contentsFromCards = noteCards
-    .map((noteCard) =>
-      noteCard.heading
-        ? `## ${noteCard.heading}\n${noteCard.content}`
-        : noteCard.content,
-    )
-    .join("\n\n");
-
+function mapRecord(row: Record<string, unknown>, tags: string[]) {
   return {
     id: String(row.id),
     slug: String(row.slug),
     title: String(row.title),
-    contents:
-      String(row.contents ?? "").trim() ||
-      String(row.intro ?? "").trim() ||
-      contentsFromCards ||
-      String(row.title),
+    contents: String(row.contents ?? "").trim() || String(row.title),
     sourceType: row.source_type as SourceType,
     bookTitle:
       (row.book_title as string | null) ??
@@ -54,60 +41,45 @@ function mapDocument(row: Record<string, unknown>, topics: string[], noteCards: 
     visibility: row.visibility as DocumentVisibility,
     writerName: String(row.author_name ?? "unknown"),
     publishedAt: (row.published_at as string | null) ?? null,
-    tags: topics,
+    tags,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   } satisfies WikiDocument;
 }
 
-async function fetchDocumentsFromSupabase() {
+async function fetchRecordsFromSupabase() {
   const supabase = getPublicSupabaseClient();
 
   if (!supabase) {
     return null;
   }
 
-  const [{ data: documentRows, error: documentsError }, { data: topicRows, error: topicsError }, { data: noteCardRows, error: noteCardsError }] =
+  const [{ data: recordRows, error: recordsError }, { data: tagRows, error: tagsError }] =
     await Promise.all([
       supabase
-        .from("documents")
+        .from("records")
         .select("*")
         .order("updated_at", { ascending: false }),
       supabase
-        .from("document_topics")
-        .select("document_id, topics(name)"),
-      supabase
-        .from("document_note_cards")
-        .select("*")
-        .order("position", { ascending: true }),
+        .from("record_tags")
+        .select("record_id, tags(name)"),
     ]);
 
-  if (documentsError || topicsError || noteCardsError || !documentRows) {
+  if (recordsError || tagsError || !recordRows) {
     return null;
   }
 
-  return documentRows.map((row) => {
-    const topics = (topicRows ?? [])
-      .filter((topicRow) => topicRow.document_id === row.id)
-      .map((topicRow) => {
-        const topic = Array.isArray(topicRow.topics)
-          ? topicRow.topics[0]
-          : topicRow.topics;
+  return recordRows.map((row) => {
+    const tags = (tagRows ?? [])
+      .filter((tagRow) => tagRow.record_id === row.id)
+      .map((tagRow) => {
+        const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
 
-        return typeof topic?.name === "string" ? topic.name : null;
+        return typeof tag?.name === "string" ? tag.name : null;
       })
-      .filter((topic): topic is string => Boolean(topic));
+      .filter((tag): tag is string => Boolean(tag));
 
-    const noteCards = (noteCardRows ?? [])
-      .filter((noteCardRow) => noteCardRow.document_id === row.id)
-      .map((noteCardRow) => ({
-        id: noteCardRow.id,
-        heading: noteCardRow.heading,
-        content: noteCardRow.content,
-        position: noteCardRow.position,
-      }));
-
-    return mapDocument(row, topics, noteCards);
+    return mapRecord(row, tags);
   });
 }
 
@@ -116,7 +88,7 @@ export async function listPublicDocuments() {
     return sortByUpdatedAt(filterReadableDocuments(demoDocuments));
   }
 
-  const documents = await fetchDocumentsFromSupabase();
+  const documents = await fetchRecordsFromSupabase();
 
   if (!documents) {
     return [];
@@ -140,49 +112,34 @@ export async function listAuthorDocuments() {
     return [];
   }
 
-  const [{ data: documentRows, error: documentsError }, { data: topicRows, error: topicsError }, { data: noteCardRows, error: noteCardsError }] =
+  const [{ data: recordRows, error: recordsError }, { data: tagRows, error: tagsError }] =
     await Promise.all([
       supabase
-        .from("documents")
+        .from("records")
         .select("*")
-        .eq("created_by", user.id)
+        .eq("writer_user_id", user.id)
         .order("updated_at", { ascending: false }),
       supabase
-        .from("document_topics")
-        .select("document_id, topics(name)"),
-      supabase
-        .from("document_note_cards")
-        .select("*")
-        .order("position", { ascending: true }),
+        .from("record_tags")
+        .select("record_id, tags(name)"),
     ]);
 
-  if (documentsError || topicsError || noteCardsError || !documentRows) {
+  if (recordsError || tagsError || !recordRows) {
     return [];
   }
 
   return sortByUpdatedAt(
-    documentRows.map((row) => {
-      const topics = (topicRows ?? [])
-        .filter((topicRow) => topicRow.document_id === row.id)
-        .map((topicRow) => {
-          const topic = Array.isArray(topicRow.topics)
-            ? topicRow.topics[0]
-            : topicRow.topics;
+    recordRows.map((row) => {
+      const tags = (tagRows ?? [])
+        .filter((tagRow) => tagRow.record_id === row.id)
+        .map((tagRow) => {
+          const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
 
-          return typeof topic?.name === "string" ? topic.name : null;
+          return typeof tag?.name === "string" ? tag.name : null;
         })
-        .filter((topic): topic is string => Boolean(topic));
+        .filter((tag): tag is string => Boolean(tag));
 
-      const noteCards = (noteCardRows ?? [])
-        .filter((noteCardRow) => noteCardRow.document_id === row.id)
-        .map((noteCardRow) => ({
-          id: noteCardRow.id,
-          heading: noteCardRow.heading,
-          content: noteCardRow.content,
-          position: noteCardRow.position,
-        }));
-
-      return mapDocument(row, topics, noteCards);
+      return mapRecord(row, tags);
     }),
   );
 }
@@ -240,7 +197,7 @@ export async function upsertDocument(input: UpsertDocumentInput) {
 
   const slug = createSlug(input.title);
   const payload = {
-    created_by: user.id,
+    writer_user_id: user.id,
     slug,
     title: input.title,
     contents: input.contents,
@@ -257,14 +214,14 @@ export async function upsertDocument(input: UpsertDocumentInput) {
 
   const { data: savedDocument, error: saveDocumentError } = input.documentId
     ? await supabase
-        .from("documents")
+        .from("records")
         .update(payload)
         .eq("id", input.documentId)
-        .eq("created_by", user.id)
+        .eq("writer_user_id", user.id)
         .select("id, slug")
         .single()
     : await supabase
-        .from("documents")
+        .from("records")
         .insert(payload)
         .select("id, slug")
         .single();
@@ -275,42 +232,39 @@ export async function upsertDocument(input: UpsertDocumentInput) {
 
   const documentId = savedDocument.id;
 
-  await supabase.from("document_topics").delete().eq("document_id", documentId);
-  await supabase.from("document_note_cards").delete().eq("document_id", documentId);
+  await supabase.from("record_tags").delete().eq("record_id", documentId);
 
   if (input.tags.length > 0) {
-    const normalizedTopics = [...new Set(input.tags.map((topic) => topic.trim()).filter(Boolean))];
+    const normalizedTags = [...new Set(input.tags.map((tag) => tag.trim()).filter(Boolean))];
     const tagsClient = adminSupabase ?? supabase;
-    const topicRecords = await Promise.all(
-      normalizedTopics.map(async (topic) => {
-        const slugValue = createSlug(topic);
+    const tagRecords = await Promise.all(
+      normalizedTags.map(async (tag) => {
+        const slugValue = createSlug(tag);
         const { data, error } = await tagsClient
-          .from("topics")
-          .upsert({ name: topic, slug: slugValue }, { onConflict: "slug" })
+          .from("tags")
+          .upsert({ name: tag, slug: slugValue }, { onConflict: "slug" })
           .select("id")
           .single();
 
         if (error || !data) {
-          throw new Error(error?.message ?? "Failed to save topic.");
+          throw new Error(error?.message ?? "Failed to save tag.");
         }
 
         return data;
       }),
     );
 
-    const { error: topicsLinkError } = await supabase.from("document_topics").insert(
-      topicRecords.map((topicRecord) => ({
-        document_id: documentId,
-        topic_id: topicRecord.id,
+    const { error: tagsLinkError } = await supabase.from("record_tags").insert(
+      tagRecords.map((tagRecord) => ({
+        record_id: documentId,
+        tag_id: tagRecord.id,
       })),
     );
 
-    if (topicsLinkError) {
-      throw new Error(topicsLinkError.message);
+    if (tagsLinkError) {
+      throw new Error(tagsLinkError.message);
     }
   }
-
-  await supabase.from("document_note_cards").delete().eq("document_id", documentId);
 
   return savedDocument.slug;
 }
@@ -331,10 +285,10 @@ export async function deleteDocumentById(documentId: string) {
   }
 
   const { error } = await supabase
-    .from("documents")
+    .from("records")
     .delete()
     .eq("id", documentId)
-    .eq("created_by", user.id);
+    .eq("writer_user_id", user.id);
 
   if (error) {
     throw new Error(error.message);

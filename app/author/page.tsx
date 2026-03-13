@@ -8,7 +8,12 @@ import { listAuthorDocuments } from "@/lib/wiki/documents";
 
 function NewRecordIcon() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4 text-[#faf8f5]"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
       <path d="M8 3.333v9.334M3.333 8h9.334" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   );
