@@ -168,7 +168,9 @@ export default async function AuthorPage() {
               href="/author/documents/new"
             >
               <NewRecordIcon />
-              New Record
+              <span className="text-[15px] leading-[22.5px] font-medium text-[#faf8f5]">
+                New Record
+              </span>
             </Link>
             <form action={signOut}>
               <button
@@ -279,7 +281,9 @@ export default async function AuthorPage() {
               href="/author/documents/new"
             >
               <NewRecordIcon />
-              New Record
+              <span className="text-[15px] leading-[22.5px] font-medium text-[#faf8f5]">
+                New Record
+              </span>
             </Link>
           </div>
         ) : null}
