@@ -2,6 +2,13 @@ import { getServerSupabaseClient } from "@/lib/supabase/server";
 import type { LibraryTab } from "@/lib/wiki/library";
 import type { RecordReactionState } from "@/lib/wiki/types";
 
+export class ReactionAuthError extends Error {
+  constructor(message = "You must be signed in to react.") {
+    super(message);
+    this.name = "ReactionAuthError";
+  }
+}
+
 function emptyReactionState(): RecordReactionState {
   return {
     isBookmarked: false,
@@ -84,7 +91,7 @@ export async function toggleBookmarkForRecord(recordId: string) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("You must be signed in to bookmark.");
+    throw new ReactionAuthError("You must be signed in to bookmark.");
   }
 
   const existing = await supabase
@@ -132,7 +139,7 @@ export async function toggleLikeForRecord(recordId: string) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("You must be signed in to like.");
+    throw new ReactionAuthError("You must be signed in to like.");
   }
 
   const existing = await supabase

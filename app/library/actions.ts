@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createCommentForRecord } from "@/lib/wiki/comments";
-import { toggleBookmarkForRecord, toggleLikeForRecord } from "@/lib/wiki/reactions";
+import {
+  ReactionAuthError,
+  toggleBookmarkForRecord,
+  toggleLikeForRecord,
+} from "@/lib/wiki/reactions";
 
 export async function createCommentAction(
   _previousState: { error?: string },
@@ -58,8 +62,12 @@ export async function toggleBookmarkAction(formData: FormData) {
 
   try {
     await toggleBookmarkForRecord(recordId);
-  } catch {
-    redirect("/author/sign-in");
+  } catch (error) {
+    if (error instanceof ReactionAuthError) {
+      redirect("/author/sign-in");
+    }
+
+    throw error;
   }
 
   revalidatePath("/");
@@ -74,8 +82,12 @@ export async function toggleLikeAction(formData: FormData) {
 
   try {
     await toggleLikeForRecord(recordId);
-  } catch {
-    redirect("/author/sign-in");
+  } catch (error) {
+    if (error instanceof ReactionAuthError) {
+      redirect("/author/sign-in");
+    }
+
+    throw error;
   }
 
   revalidatePath("/");

@@ -176,7 +176,9 @@ export async function listDocumentsByIds(recordIds: string[]) {
     return [];
   }
 
-  const supabase = getPublicSupabaseClient();
+  const serverSupabase = await getServerSupabaseClient();
+  const publicSupabase = getPublicSupabaseClient();
+  const supabase = serverSupabase ?? publicSupabase;
 
   if (!supabase) {
     return demoDocuments.filter((document) => uniqueRecordIds.includes(document.id));
