@@ -40,39 +40,44 @@ export function RecordReactions({
   state,
   canReact,
 }: RecordReactionsProps) {
+  const bookmarkLabel = state.isBookmarked ? "Bookmarked" : "Bookmark";
+  const likeLabel = state.isLiked ? "Liked" : "Like";
+
   if (!canReact) {
     return (
-      <div className="flex items-center gap-3 text-[14px] leading-5 text-[#2a2419]">
+      <div className="flex items-center gap-3 text-[12px] leading-4 text-[#2a2419]">
         <Link
           href="/author/sign-in"
-          className="inline-flex items-center gap-2 rounded-[4px] px-2 py-1 text-[#2a2419]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-[4px] px-1 text-[#6b6354] transition hover:text-[#2a2419]"
         >
           <BookmarkIcon />
-          Bookmark
+          {bookmarkLabel}
         </Link>
         <div className="h-4 w-px bg-[rgba(42,36,25,0.1)]" />
         <Link
           href="/author/sign-in"
-          className="inline-flex items-center gap-2 rounded-[4px] px-2 py-1 text-[#2a2419]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-[4px] px-1 text-[#6b6354] transition hover:text-[#2a2419]"
         >
           <LikeIcon />
-          Like
+          {likeLabel}
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 text-[14px] leading-5 text-[#2a2419]">
+    <div className="flex items-center gap-3 text-[12px] leading-4 text-[#2a2419]">
       <form action={toggleBookmarkAction}>
         <input type="hidden" name="recordId" value={recordId} />
         <input type="hidden" name="recordSlug" value={recordSlug} />
         <button
           type="submit"
-          className="inline-flex items-center gap-2 rounded-[4px] px-2 py-1 text-[#2a2419]"
+          className={`inline-flex h-8 items-center gap-1.5 rounded-[4px] px-1 transition ${
+            state.isBookmarked ? "text-[#2a2419]" : "text-[#6b6354] hover:text-[#2a2419]"
+          }`}
         >
           <BookmarkIcon />
-          {state.isBookmarked ? "Bookmarked" : "Bookmark"}
+          {bookmarkLabel}
         </button>
       </form>
       <div className="h-4 w-px bg-[rgba(42,36,25,0.1)]" />
@@ -81,10 +86,12 @@ export function RecordReactions({
         <input type="hidden" name="recordSlug" value={recordSlug} />
         <button
           type="submit"
-          className="inline-flex items-center gap-2 rounded-[4px] px-2 py-1 text-[#2a2419]"
+          className={`inline-flex h-8 items-center gap-1.5 rounded-[4px] px-1 transition ${
+            state.isLiked ? "text-[#2a2419]" : "text-[#6b6354] hover:text-[#2a2419]"
+          }`}
         >
           <LikeIcon />
-          {state.isLiked ? "Liked" : "Like"}
+          {likeLabel}
         </button>
       </form>
     </div>
