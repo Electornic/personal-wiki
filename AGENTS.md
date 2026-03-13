@@ -114,3 +114,4 @@ v0.2 branch note:
 - 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서로 본다.
 - GitHub 관련 작업은 가능하면 `gh` CLI를 우선 사용한다.
 - PR 조회, 리뷰 확인, 코멘트 확인, PR 생성 같은 작업은 `gh` 기준으로 수행한다.
+- PR review 사항을 반영한 뒤에는 해당 review thread에 답글을 달고, resolve 처리까지 진행한다.
