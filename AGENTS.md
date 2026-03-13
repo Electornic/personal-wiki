@@ -93,6 +93,7 @@ v0.2 branch note:
 - 예시:
   - `v0_1_mvp_foundation_and_verification.md`
   - `v0_2_ui_auth_record_model_comments.md`
+  - `v0_3_reading_editor_reactions_and_library.md`
   - `v0_2_public_reading_auth_editor_comments.md`
   - `v0_2_final_smoke_checklist.md`
 - 번호와 주제는 함께 봤을 때 문서의 목적이 바로 드러나야 한다.
