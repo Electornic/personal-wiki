@@ -32,3 +32,8 @@ export type DocumentFormState = {
   error?: string;
   success?: string;
 };
+
+export type RecordReactionState = {
+  isBookmarked: boolean;
+  isLiked: boolean;
+};

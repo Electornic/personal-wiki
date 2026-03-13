@@ -93,11 +93,22 @@ SQL은 아래 순서대로 실행합니다.
 - `record_comments` update 정책 제거
 - comment row의 `updated_at` touch trigger 추가
 
+### Step 7. v0.3 record reactions
+
+실행 파일:
+- [supabase/migrations/20260313T233000Z_v0_3_record_reactions.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260313T233000Z_v0_3_record_reactions.sql)
+
+역할:
+- `record_bookmarks` 테이블 추가
+- `record_likes` 테이블 추가
+- 로그인 사용자 기준 bookmark / like 저장 정책 추가
+- `My Library` 및 record detail reaction 동작 준비
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 여섯 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 일곱 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

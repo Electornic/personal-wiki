@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { createCommentForRecord } from "@/lib/wiki/comments";
+import { toggleBookmarkForRecord, toggleLikeForRecord } from "@/lib/wiki/reactions";
 
 export async function createCommentAction(
   _previousState: { error?: string },
@@ -35,4 +37,50 @@ export async function createCommentAction(
     revalidatePath(`/library/${recordSlug}`);
   }
   return {};
+}
+
+function getReactionPayload(formData: FormData) {
+  const recordId = String(formData.get("recordId") ?? "").trim();
+  const recordSlug = String(formData.get("recordSlug") ?? "").trim();
+
+  if (!recordId) {
+    throw new Error("recordId is required.");
+  }
+
+  return {
+    recordId,
+    recordSlug,
+  };
+}
+
+export async function toggleBookmarkAction(formData: FormData) {
+  const { recordId, recordSlug } = getReactionPayload(formData);
+
+  try {
+    await toggleBookmarkForRecord(recordId);
+  } catch {
+    redirect("/author/sign-in");
+  }
+
+  revalidatePath("/");
+  revalidatePath("/me/library");
+  if (recordSlug) {
+    revalidatePath(`/library/${recordSlug}`);
+  }
+}
+
+export async function toggleLikeAction(formData: FormData) {
+  const { recordId, recordSlug } = getReactionPayload(formData);
+
+  try {
+    await toggleLikeForRecord(recordId);
+  } catch {
+    redirect("/author/sign-in");
+  }
+
+  revalidatePath("/");
+  revalidatePath("/me/library");
+  if (recordSlug) {
+    revalidatePath(`/library/${recordSlug}`);
+  }
 }

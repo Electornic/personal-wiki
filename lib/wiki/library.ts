@@ -1,4 +1,5 @@
-import { listPublicDocuments } from "@/lib/wiki/documents";
+import { listDocumentsByIds } from "@/lib/wiki/documents";
+import { listReactionRecordIds } from "@/lib/wiki/reactions";
 import type { WikiDocument } from "@/lib/wiki/types";
 
 export type LibraryTab = "bookmarks" | "likes";
@@ -17,11 +18,8 @@ function uniqueById(documents: WikiDocument[]) {
 }
 
 export async function listMyLibraryPreview(tab: LibraryTab) {
-  const documents = await listPublicDocuments();
+  const recordIds = await listReactionRecordIds(tab);
+  const documents = await listDocumentsByIds(recordIds);
 
-  if (tab === "likes") {
-    return uniqueById([...documents].reverse()).slice(0, 3);
-  }
-
-  return uniqueById(documents).slice(0, 3);
+  return uniqueById(documents);
 }
