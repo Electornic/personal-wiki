@@ -2,7 +2,7 @@ import {
   getAdminSupabaseClient,
   getServerSupabaseClient,
 } from "@/lib/supabase/server";
-import { getProfileForUser } from "@/lib/wiki/profiles";
+import { getProfilesForUsers } from "@/lib/wiki/profiles";
 
 export type RecordComment = {
   id: string;
@@ -48,20 +48,15 @@ export async function listCommentsForRecord(recordId: string) {
 
   const rows = data as CommentRow[];
   const uniqueUserIds = [...new Set(rows.map((row) => row.user_id))];
-  const userNames = new Map<string, string>();
-
-  for (const userId of uniqueUserIds) {
-    const profile = adminSupabase
-      ? await getProfileForUser(adminSupabase, userId)
-      : await getProfileForUser(supabase, userId);
-    userNames.set(userId, profile?.user_name ?? "unknown");
-  }
+  const profiles = adminSupabase
+    ? await getProfilesForUsers(adminSupabase, uniqueUserIds)
+    : await getProfilesForUsers(supabase, uniqueUserIds);
 
   const comments = rows.map<RecordComment>((row) => ({
     id: row.id,
     recordId: row.record_id,
     userId: row.user_id,
-    userName: userNames.get(row.user_id) ?? "unknown",
+    userName: profiles.get(row.user_id)?.user_name ?? "unknown",
     contents: row.contents,
     parentCommentId: row.parent_comment_id,
     depth: row.depth,

@@ -83,11 +83,21 @@ SQL은 아래 순서대로 실행합니다.
 - comments 정책을 `records` 기준으로 갱신
 - 앱 read/write가 v0.2 데이터 모델을 직접 사용하도록 준비
 
+### Step 6. v0.2 PR review fixes
+
+실행 파일:
+- [supabase/migrations/20260313T220000Z_v0_2_pr_review_fixes.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260313T220000Z_v0_2_pr_review_fixes.sql)
+
+역할:
+- `tags` 직접 update 정책 제거
+- `record_comments` update 정책 제거
+- comment row의 `updated_at` touch trigger 추가
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 다섯 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 여섯 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

@@ -42,6 +42,30 @@ export async function getProfileForUser(
   return result.data as ProfileRow;
 }
 
+export async function getProfilesForUsers(
+  supabase: SupabaseClient,
+  userIds: string[],
+) {
+  const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+
+  if (uniqueUserIds.length === 0) {
+    return new Map<string, ProfileRow>();
+  }
+
+  const result = await supabase
+    .from("profiles")
+    .select("id, email, user_name")
+    .in("id", uniqueUserIds);
+
+  if (result.error || !result.data) {
+    return new Map<string, ProfileRow>();
+  }
+
+  return new Map(
+    (result.data as ProfileRow[]).map((profile) => [profile.id, profile]),
+  );
+}
+
 export async function profileUserNameTaken(
   supabase: SupabaseClient,
   userName: string,
