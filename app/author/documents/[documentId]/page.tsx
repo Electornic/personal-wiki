@@ -23,9 +23,7 @@ export default async function EditAuthorDocumentPage({ params }: PageProps) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-6 py-10 md:px-10">
-      <p className="section-kicker">Author workspace</p>
-      <h1 className="section-title">Edit record</h1>
+    <main className="mx-auto w-full max-w-[1096px] px-4 pb-20 pt-[154px] sm:px-4 md:px-4 lg:px-8">
       <AuthorDocumentForm document={document} />
     </main>
   );
