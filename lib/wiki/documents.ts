@@ -28,7 +28,7 @@ function normalizeRouteSlug(slug: string) {
   }
 }
 
-function mapRecord(row: Record<string, unknown>, tags: string[]) {
+function mapRecord(row: Record<string, unknown>, tags: string[]): WikiDocument {
   return {
     id: String(row.id),
     slug: String(row.slug),
@@ -167,6 +167,57 @@ export async function listRelatedDocuments(slug: string, limit = 3) {
   }
 
   return getRelatedDocuments(document, documents, limit);
+}
+
+export async function listDocumentsByIds(recordIds: string[]) {
+  const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];
+
+  if (uniqueRecordIds.length === 0) {
+    return [];
+  }
+
+  const serverSupabase = await getServerSupabaseClient();
+  const publicSupabase = getPublicSupabaseClient();
+  const supabase = serverSupabase ?? publicSupabase;
+
+  if (!supabase) {
+    return demoDocuments.filter((document) => uniqueRecordIds.includes(document.id));
+  }
+
+  const [{ data: recordRows, error: recordsError }, { data: tagRows, error: tagsError }] =
+    await Promise.all([
+      supabase.from("records").select("*").in("id", uniqueRecordIds),
+      supabase.from("record_tags").select("record_id, tags(name)").in("record_id", uniqueRecordIds),
+    ]);
+
+  if (recordsError || tagsError || !recordRows) {
+    return [];
+  }
+
+  const documents = recordRows.map((row) => {
+    const tags = (tagRows ?? [])
+      .filter((tagRow) => tagRow.record_id === row.id)
+      .map((tagRow) => {
+        const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
+
+        return typeof tag?.name === "string" ? tag.name : null;
+      })
+      .filter((tag): tag is string => Boolean(tag));
+
+    return mapRecord(row, tags);
+  });
+
+  const orderedDocuments: WikiDocument[] = [];
+
+  for (const recordId of uniqueRecordIds) {
+    const document = documents.find((candidate) => candidate.id === recordId);
+
+    if (document) {
+      orderedDocuments.push(document);
+    }
+  }
+
+  return orderedDocuments;
 }
 
 type UpsertDocumentInput = {

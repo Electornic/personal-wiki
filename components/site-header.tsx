@@ -16,6 +16,18 @@ function WorkspaceIcon() {
   );
 }
 
+function MyLibraryIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+      <path
+        d="M4.667 2.667h6.666A1.333 1.333 0 0 1 12.667 4v9.333L8 10.667l-4.667 2.666V4a1.333 1.333 0 0 1 1.334-1.333Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+    </svg>
+  );
+}
+
 function WriteIcon() {
   return (
     <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
@@ -43,6 +55,15 @@ export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
         <nav className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
+              <Link
+                href="/me/library"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)] md:gap-2 md:px-[10px]"
+              >
+                <MyLibraryIcon />
+                <span className="hidden text-[14px] leading-5 font-medium md:inline">
+                  My Library
+                </span>
+              </Link>
               <Link
                 href="/author"
                 className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)] md:gap-2 md:px-[10px]"

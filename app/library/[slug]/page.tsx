@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 import { CommentForm } from "@/components/comment-form";
 import { CommentThread } from "@/components/comment-thread";
 import { MarkdownContent } from "@/components/markdown-content";
+import { RecordReactions } from "@/components/record-reactions";
 import { TopicPill } from "@/components/topic-pill";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { listCommentsForRecord } from "@/lib/wiki/comments";
 import { formatDisplayDate, formatLongDisplayDate } from "@/lib/wiki/content";
 import { getPublicDocumentBySlug, listRelatedDocuments } from "@/lib/wiki/documents";
+import { getReactionStateForRecord } from "@/lib/wiki/reactions";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -98,6 +100,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   const relatedDocuments = await listRelatedDocuments(slug, 3);
   const comments = await listCommentsForRecord(document.id);
   const access = await getAuthorAccess();
+  const reactionState = await getReactionStateForRecord(document.id);
 
   return (
     <main className="mx-auto w-full max-w-[1096px] px-4 pb-20 pt-8 sm:px-4 md:px-[100px]">
@@ -144,6 +147,15 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
                 "prose-ol:my-6 prose-ol:pl-6 prose-li:mb-2 prose-li:text-[18px] prose-li:leading-[29.25px] prose-li:text-[#2a2419]",
                 "prose-strong:text-[#2a2419]",
               ].join(" ")}
+            />
+          </section>
+
+          <section className="mt-12 border-b border-t border-[rgba(42,36,25,0.1)] py-6">
+            <RecordReactions
+              recordId={document.id}
+              recordSlug={document.slug}
+              state={reactionState}
+              canReact={access.isAuthenticated}
             />
           </section>
 
@@ -199,7 +211,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
             </div>
 
             {access.isAuthenticated ? (
-              <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6">
+              <div className="mt-8">
                 <CommentForm recordId={document.id} recordSlug={document.slug} />
               </div>
             ) : (

@@ -1,4 +1,4 @@
-import { CommentForm } from "@/components/comment-form";
+import { CommentReplyToggle } from "@/components/comment-reply-toggle";
 import { formatDisplayDate } from "@/lib/wiki/content";
 import type { RecordComment } from "@/lib/wiki/comments";
 
@@ -38,18 +38,16 @@ function CommentNode({
           <p className="whitespace-pre-wrap text-[16px] leading-[26px] text-[#2a2419]">
             {comment.contents}
           </p>
+          {canComment && comment.depth < 5 ? (
+            <CommentReplyToggle
+              recordId={recordId}
+              recordSlug={recordSlug}
+              parentCommentId={comment.id}
+              depth={comment.depth}
+            />
+          ) : null}
         </div>
       </article>
-      {canComment && comment.depth < 5 ? (
-        <div className="ml-12">
-          <CommentForm
-            recordId={recordId}
-            recordSlug={recordSlug}
-            parentCommentId={comment.id}
-            depth={comment.depth}
-          />
-        </div>
-      ) : null}
       {comment.replies.length ? (
         <div className="ml-12 border-l border-[rgba(42,36,25,0.1)] pl-6">
           <CommentThread
