@@ -49,14 +49,14 @@ function BookIcon() {
 export function MyLibraryCard({ document }: MyLibraryCardProps) {
   return (
     <Link href={`/library/${document.slug}`} className="block group">
-      <article className="min-h-[224px] rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition-shadow duration-150 group-hover:shadow-[0_6px_20px_rgba(42,36,25,0.08)]">
+      <article className="min-h-[224px] rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition-shadow duration-150 group-hover:shadow-[0_6px_20px_rgba(42,36,25,0.08)] md:min-h-[224px]">
         <div className="flex min-h-full flex-col">
           <div className="flex items-start gap-3">
             <div className="mt-1 shrink-0">
               {document.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-[24px] leading-8 font-semibold tracking-[-0.01em] text-[#2a2419]">
+              <h2 className="max-w-[284px] text-[24px] leading-8 font-semibold tracking-[-0.01em] text-[#2a2419] md:max-w-none">
                 {document.title}
               </h2>
             </div>
