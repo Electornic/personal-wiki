@@ -297,13 +297,16 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 Source Type
               </span>
               <div className="relative mt-2">
+                <span className="pointer-events-none absolute inset-y-0 left-[13px] flex items-center text-[14px] leading-5 font-medium text-[#2a2419]">
+                  {sourceType === "article" ? "Article" : "Book"}
+                </span>
                 <select
                   name="sourceType"
                   value={sourceType}
                   onChange={(event) =>
                     setSourceType(event.target.value as "book" | "article")
                   }
-                  className="h-9 appearance-none rounded-[4px] border border-transparent bg-white px-[13px] pr-10 py-px text-[14px] leading-5 font-medium text-[#2a2419]"
+                  className="h-9 appearance-none rounded-[4px] border border-transparent bg-white px-[13px] pr-10 py-px text-[14px] leading-5 font-medium text-transparent"
                 >
                   <option value="article">Article</option>
                   <option value="book">Book</option>
