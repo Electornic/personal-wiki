@@ -1,4 +1,5 @@
 import {
+  getAdminSupabaseClient,
   getPublicSupabaseClient,
   getServerSupabaseClient,
 } from "@/lib/supabase/server";
@@ -7,7 +8,6 @@ import { demoDocuments } from "@/lib/wiki/demo-data";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 import { createSlug } from "@/lib/wiki/slugs";
 import type {
-  DocumentNoteCard,
   DocumentVisibility,
   SourceType,
   WikiDocument,
@@ -28,74 +28,58 @@ function normalizeRouteSlug(slug: string) {
   }
 }
 
-function mapDocument(row: Record<string, unknown>, topics: string[], noteCards: DocumentNoteCard[]) {
+function mapRecord(row: Record<string, unknown>, tags: string[]) {
   return {
     id: String(row.id),
     slug: String(row.slug),
     title: String(row.title),
+    contents: String(row.contents ?? "").trim() || String(row.title),
     sourceType: row.source_type as SourceType,
+    bookTitle:
+      (row.book_title as string | null) ??
+      (row.source_type === "book" ? ((row.source_title as string | null) ?? null) : null),
     visibility: row.visibility as DocumentVisibility,
-    authorName: String(row.author_name ?? ""),
-    sourceTitle: String(row.source_title ?? ""),
-    sourceUrl: (row.source_url as string | null) ?? null,
-    isbn: (row.isbn as string | null) ?? null,
+    writerName: String(row.author_name ?? "unknown"),
     publishedAt: (row.published_at as string | null) ?? null,
-    intro: (row.intro as string | null) ?? null,
-    topics,
-    noteCards,
+    tags,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   } satisfies WikiDocument;
 }
 
-async function fetchDocumentsFromSupabase() {
+async function fetchRecordsFromSupabase() {
   const supabase = getPublicSupabaseClient();
 
   if (!supabase) {
     return null;
   }
 
-  const [{ data: documentRows, error: documentsError }, { data: topicRows, error: topicsError }, { data: noteCardRows, error: noteCardsError }] =
+  const [{ data: recordRows, error: recordsError }, { data: tagRows, error: tagsError }] =
     await Promise.all([
       supabase
-        .from("documents")
+        .from("records")
         .select("*")
         .order("updated_at", { ascending: false }),
       supabase
-        .from("document_topics")
-        .select("document_id, topics(name)"),
-      supabase
-        .from("document_note_cards")
-        .select("*")
-        .order("position", { ascending: true }),
+        .from("record_tags")
+        .select("record_id, tags(name)"),
     ]);
 
-  if (documentsError || topicsError || noteCardsError || !documentRows) {
+  if (recordsError || tagsError || !recordRows) {
     return null;
   }
 
-  return documentRows.map((row) => {
-    const topics = (topicRows ?? [])
-      .filter((topicRow) => topicRow.document_id === row.id)
-      .map((topicRow) => {
-        const topic = Array.isArray(topicRow.topics)
-          ? topicRow.topics[0]
-          : topicRow.topics;
+  return recordRows.map((row) => {
+    const tags = (tagRows ?? [])
+      .filter((tagRow) => tagRow.record_id === row.id)
+      .map((tagRow) => {
+        const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
 
-        return typeof topic?.name === "string" ? topic.name : null;
+        return typeof tag?.name === "string" ? tag.name : null;
       })
-      .filter((topic): topic is string => Boolean(topic));
+      .filter((tag): tag is string => Boolean(tag));
 
-    const noteCards = (noteCardRows ?? [])
-      .filter((noteCardRow) => noteCardRow.document_id === row.id)
-      .map((noteCardRow) => ({
-        id: noteCardRow.id,
-        heading: noteCardRow.heading,
-        content: noteCardRow.content,
-        position: noteCardRow.position,
-      }));
-
-    return mapDocument(row, topics, noteCards);
+    return mapRecord(row, tags);
   });
 }
 
@@ -104,7 +88,7 @@ export async function listPublicDocuments() {
     return sortByUpdatedAt(filterReadableDocuments(demoDocuments));
   }
 
-  const documents = await fetchDocumentsFromSupabase();
+  const documents = await fetchRecordsFromSupabase();
 
   if (!documents) {
     return [];
@@ -120,48 +104,42 @@ export async function listAuthorDocuments() {
     return sortByUpdatedAt(demoDocuments);
   }
 
-  const [{ data: documentRows, error: documentsError }, { data: topicRows, error: topicsError }, { data: noteCardRows, error: noteCardsError }] =
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return [];
+  }
+
+  const [{ data: recordRows, error: recordsError }, { data: tagRows, error: tagsError }] =
     await Promise.all([
       supabase
-        .from("documents")
+        .from("records")
         .select("*")
+        .eq("writer_user_id", user.id)
         .order("updated_at", { ascending: false }),
       supabase
-        .from("document_topics")
-        .select("document_id, topics(name)"),
-      supabase
-        .from("document_note_cards")
-        .select("*")
-        .order("position", { ascending: true }),
+        .from("record_tags")
+        .select("record_id, tags(name)"),
     ]);
 
-  if (documentsError || topicsError || noteCardsError || !documentRows) {
+  if (recordsError || tagsError || !recordRows) {
     return [];
   }
 
   return sortByUpdatedAt(
-    documentRows.map((row) => {
-      const topics = (topicRows ?? [])
-        .filter((topicRow) => topicRow.document_id === row.id)
-        .map((topicRow) => {
-          const topic = Array.isArray(topicRow.topics)
-            ? topicRow.topics[0]
-            : topicRow.topics;
+    recordRows.map((row) => {
+      const tags = (tagRows ?? [])
+        .filter((tagRow) => tagRow.record_id === row.id)
+        .map((tagRow) => {
+          const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
 
-          return typeof topic?.name === "string" ? topic.name : null;
+          return typeof tag?.name === "string" ? tag.name : null;
         })
-        .filter((topic): topic is string => Boolean(topic));
+        .filter((tag): tag is string => Boolean(tag));
 
-      const noteCards = (noteCardRows ?? [])
-        .filter((noteCardRow) => noteCardRow.document_id === row.id)
-        .map((noteCardRow) => ({
-          id: noteCardRow.id,
-          heading: noteCardRow.heading,
-          content: noteCardRow.content,
-          position: noteCardRow.position,
-        }));
-
-      return mapDocument(row, topics, noteCards);
+      return mapRecord(row, tags);
     }),
   );
 }
@@ -194,48 +172,56 @@ export async function listRelatedDocuments(slug: string, limit = 3) {
 type UpsertDocumentInput = {
   documentId?: string;
   title: string;
+  contents: string;
   sourceType: SourceType;
+  bookTitle?: string | null;
   visibility: DocumentVisibility;
-  authorName: string;
-  sourceTitle: string;
-  sourceUrl?: string | null;
-  isbn?: string | null;
-  publishedAt?: string | null;
-  intro?: string | null;
-  topics: string[];
-  noteCards: DocumentNoteCard[];
+  tags: string[];
 };
 
 export async function upsertDocument(input: UpsertDocumentInput) {
   const supabase = await getServerSupabaseClient();
+  const adminSupabase = getAdminSupabaseClient();
 
   if (!supabase) {
     throw new Error("Supabase server configuration is missing.");
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("You must be signed in to save a document.");
+  }
+
   const slug = createSlug(input.title);
   const payload = {
+    writer_user_id: user.id,
     slug,
     title: input.title,
+    contents: input.contents,
     source_type: input.sourceType,
+    book_title: input.sourceType === "book" ? input.bookTitle || null : null,
     visibility: input.visibility,
-    author_name: input.authorName,
-    source_title: input.sourceTitle,
-    source_url: input.sourceUrl || null,
-    isbn: input.isbn || null,
-    published_at: input.publishedAt || null,
-    intro: input.intro || null,
+    author_name: user.user_metadata?.user_name || user.email || "unknown",
+    source_title: input.sourceType === "book" ? input.bookTitle || input.title : input.title,
+    source_url: null,
+    isbn: null,
+    published_at: new Date().toISOString().slice(0, 10),
+    intro: null,
   };
 
   const { data: savedDocument, error: saveDocumentError } = input.documentId
     ? await supabase
-        .from("documents")
+        .from("records")
         .update(payload)
         .eq("id", input.documentId)
+        .eq("writer_user_id", user.id)
         .select("id, slug")
         .single()
     : await supabase
-        .from("documents")
+        .from("records")
         .insert(payload)
         .select("id, slug")
         .single();
@@ -246,52 +232,37 @@ export async function upsertDocument(input: UpsertDocumentInput) {
 
   const documentId = savedDocument.id;
 
-  await supabase.from("document_topics").delete().eq("document_id", documentId);
-  await supabase.from("document_note_cards").delete().eq("document_id", documentId);
+  await supabase.from("record_tags").delete().eq("record_id", documentId);
 
-  if (input.topics.length > 0) {
-    const normalizedTopics = [...new Set(input.topics.map((topic) => topic.trim()).filter(Boolean))];
-    const topicRecords = await Promise.all(
-      normalizedTopics.map(async (topic) => {
-        const slugValue = createSlug(topic);
-        const { data, error } = await supabase
-          .from("topics")
-          .upsert({ name: topic, slug: slugValue }, { onConflict: "slug" })
+  if (input.tags.length > 0) {
+    const normalizedTags = [...new Set(input.tags.map((tag) => tag.trim()).filter(Boolean))];
+    const tagsClient = adminSupabase ?? supabase;
+    const tagRecords = await Promise.all(
+      normalizedTags.map(async (tag) => {
+        const slugValue = createSlug(tag);
+        const { data, error } = await tagsClient
+          .from("tags")
+          .upsert({ name: tag, slug: slugValue }, { onConflict: "slug" })
           .select("id")
           .single();
 
         if (error || !data) {
-          throw new Error(error?.message ?? "Failed to save topic.");
+          throw new Error(error?.message ?? "Failed to save tag.");
         }
 
         return data;
       }),
     );
 
-    const { error: topicsLinkError } = await supabase.from("document_topics").insert(
-      topicRecords.map((topicRecord) => ({
-        document_id: documentId,
-        topic_id: topicRecord.id,
+    const { error: tagsLinkError } = await supabase.from("record_tags").insert(
+      tagRecords.map((tagRecord) => ({
+        record_id: documentId,
+        tag_id: tagRecord.id,
       })),
     );
 
-    if (topicsLinkError) {
-      throw new Error(topicsLinkError.message);
-    }
-  }
-
-  if (input.noteCards.length > 0) {
-    const { error: noteCardsError } = await supabase.from("document_note_cards").insert(
-      input.noteCards.map((noteCard, index) => ({
-        document_id: documentId,
-        heading: noteCard.heading || null,
-        content: noteCard.content,
-        position: index,
-      })),
-    );
-
-    if (noteCardsError) {
-      throw new Error(noteCardsError.message);
+    if (tagsLinkError) {
+      throw new Error(tagsLinkError.message);
     }
   }
 
@@ -305,7 +276,19 @@ export async function deleteDocumentById(documentId: string) {
     throw new Error("Supabase server configuration is missing.");
   }
 
-  const { error } = await supabase.from("documents").delete().eq("id", documentId);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("You must be signed in to delete a document.");
+  }
+
+  const { error } = await supabase
+    .from("records")
+    .delete()
+    .eq("id", documentId)
+    .eq("writer_user_id", user.id);
 
   if (error) {
     throw new Error(error.message);

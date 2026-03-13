@@ -1,14 +1,17 @@
 import { redirect } from "next/navigation";
 
-import { getOwnerEmail, hasAuthoringEnv } from "@/lib/env";
+import { hasAuthoringEnv } from "@/lib/env";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getProfileForUser } from "@/lib/wiki/profiles";
 
 export async function getAuthorAccess() {
   if (!hasAuthoringEnv()) {
     return {
       configured: false,
-      isOwner: false,
+      isAuthenticated: false,
+      userId: null as string | null,
       userEmail: null as string | null,
+      userName: null as string | null,
     };
   }
 
@@ -17,8 +20,10 @@ export async function getAuthorAccess() {
   if (!supabase) {
     return {
       configured: false,
-      isOwner: false,
+      isAuthenticated: false,
+      userId: null as string | null,
       userEmail: null as string | null,
+      userName: null as string | null,
     };
   }
 
@@ -27,12 +32,14 @@ export async function getAuthorAccess() {
   } = await supabase.auth.getUser();
 
   const email = user?.email?.toLowerCase() ?? null;
-  const ownerEmail = getOwnerEmail();
+  const profile = user ? await getProfileForUser(supabase, user.id) : null;
 
   return {
     configured: true,
-    isOwner: Boolean(email && ownerEmail && email === ownerEmail),
+    isAuthenticated: Boolean(user),
+    userId: user?.id ?? null,
     userEmail: email,
+    userName: profile?.user_name ?? null,
   };
 }
 
@@ -43,7 +50,7 @@ export async function requireAuthorAccess() {
     return access;
   }
 
-  if (!access.isOwner) {
+  if (!access.isAuthenticated) {
     redirect("/author/sign-in");
   }
 

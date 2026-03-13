@@ -3,106 +3,171 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getAuthRedirectUrl, getOwnerEmail, hasAuthoringEnv } from "@/lib/env";
-import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getAuthRedirectUrl, hasAuthoringEnv } from "@/lib/env";
+import { getAdminSupabaseClient, getServerSupabaseClient } from "@/lib/supabase/server";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import { deleteDocumentById, upsertDocument } from "@/lib/wiki/documents";
+import {
+  normalizeUserName,
+  profileUserNameTaken,
+  upsertProfileRow,
+} from "@/lib/wiki/profiles";
 import type { DocumentFormState, SourceType } from "@/lib/wiki/types";
 
-type NoteCardDraft = {
-  heading?: string;
-  content?: string;
-};
+function getAuthTab(formData: FormData, fallback: "signin" | "signup") {
+  const tab = String(formData.get("tab") ?? "").trim().toLowerCase();
+  return tab === "signup" || tab === "signin" ? tab : fallback;
+}
+
+function authRedirect(tab: "signin" | "signup", params?: Record<string, string>) {
+  const search = new URLSearchParams({ tab });
+
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      search.set(key, value);
+    }
+  }
+
+  redirect(`/author/sign-in?${search.toString()}`);
+}
 
 function parseDocumentPayload(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
-  const sourceTitle = String(formData.get("sourceTitle") ?? "").trim();
-  const authorName = String(formData.get("authorName") ?? "").trim();
   const sourceType = String(formData.get("sourceType") ?? "book") as SourceType;
   const visibility = String(formData.get("visibility") ?? "private") as
     | "public"
     | "private";
-  const sourceUrl = String(formData.get("sourceUrl") ?? "").trim();
-  const isbn = String(formData.get("isbn") ?? "").trim();
-  const publishedAt = String(formData.get("publishedAt") ?? "").trim();
-  const intro = String(formData.get("intro") ?? "").trim();
-  const topics = String(formData.get("topics") ?? "")
+  const bookTitle = String(formData.get("bookTitle") ?? "").trim();
+  const contents = String(formData.get("contents") ?? "").trim();
+  const tags = String(formData.get("tags") ?? "")
     .split(",")
-    .map((topic) => topic.trim())
+    .map((tag) => tag.trim())
     .filter(Boolean);
   const documentId = String(formData.get("documentId") ?? "").trim();
-
-  const noteCards = new Map<number, NoteCardDraft>();
-
-  for (const [key, value] of formData.entries()) {
-    const match = key.match(/^card(Heading|Content)-(\d+)$/);
-
-    if (!match) {
-      continue;
-    }
-
-    const field = match[1];
-    const index = Number(match[2]);
-    const current = noteCards.get(index) ?? {};
-
-    if (field === "Heading") {
-      current.heading = String(value).trim();
-    }
-
-    if (field === "Content") {
-      current.content = String(value).trim();
-    }
-
-    noteCards.set(index, current);
-  }
 
   return {
     documentId: documentId || undefined,
     title,
-    sourceTitle,
-    authorName,
+    contents,
     sourceType,
+    bookTitle: bookTitle || null,
     visibility,
-    sourceUrl: sourceUrl || null,
-    isbn: isbn || null,
-    publishedAt: publishedAt || null,
-    intro: intro || null,
-    topics,
-    noteCards: [...noteCards.entries()]
-      .sort((left, right) => left[0] - right[0])
-      .map(([index, noteCard]) => ({
-        position: index,
-        heading: noteCard.heading || null,
-        content: noteCard.content || "",
-      }))
-      .filter((noteCard) => noteCard.content.length > 0),
+    tags,
   };
 }
 
-export async function requestMagicLink() {
+export async function signUpWithPassword(formData: FormData) {
+  const tab = getAuthTab(formData, "signup");
+
   if (!hasAuthoringEnv()) {
-    redirect("/author/sign-in?error=config");
+    authRedirect(tab, { error: "config" });
   }
 
   const supabase = await getServerSupabaseClient();
-  const ownerEmail = getOwnerEmail();
+  const adminSupabase = getAdminSupabaseClient();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "").trim();
+  const userName = normalizeUserName(String(formData.get("userName") ?? ""));
 
-  if (!supabase || !ownerEmail) {
-    redirect("/author/sign-in?error=config");
+  if (!supabase || !adminSupabase) {
+    authRedirect(tab, { error: "config" });
   }
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email: ownerEmail,
+  const safeSupabase = supabase!;
+  const safeAdminSupabase = adminSupabase!;
+
+  if (!email || !password || !userName) {
+    authRedirect(tab, { error: "missing-signup-fields" });
+  }
+
+  if (password.length < 8) {
+    authRedirect(tab, { error: "weak-password" });
+  }
+
+  if (await profileUserNameTaken(safeAdminSupabase, userName)) {
+    authRedirect(tab, { error: "user-name-taken" });
+  }
+
+  const { data, error } = await safeSupabase.auth.signUp({
+    email,
+    password,
     options: {
       emailRedirectTo: getAuthRedirectUrl(),
+      data: {
+        user_name: userName,
+      },
     },
   });
 
   if (error) {
-    redirect("/author/sign-in?error=send");
+    authRedirect(tab, {
+      error: "signup-failed",
+      message: error.message,
+    });
   }
 
-  redirect("/author/sign-in?sent=1");
+  if (data.user) {
+    await upsertProfileRow(safeAdminSupabase, {
+      id: data.user.id,
+      email,
+      userName,
+    });
+  }
+
+  if (data.session) {
+    redirect("/author");
+  }
+
+  authRedirect("signin", { success: "signed-up" });
+}
+
+export async function signInWithPassword(formData: FormData) {
+  const tab = getAuthTab(formData, "signin");
+
+  if (!hasAuthoringEnv()) {
+    authRedirect(tab, { error: "config" });
+  }
+
+  const supabase = await getServerSupabaseClient();
+  const adminSupabase = getAdminSupabaseClient();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "").trim();
+
+  if (!supabase || !adminSupabase) {
+    authRedirect(tab, { error: "config" });
+  }
+
+  const safeSupabase = supabase!;
+  const safeAdminSupabase = adminSupabase!;
+
+  if (!email || !password) {
+    authRedirect(tab, { error: "missing-login-fields" });
+  }
+
+  const { data, error } = await safeSupabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    authRedirect(tab, {
+      error: "login-failed",
+      message: error.message,
+    });
+  }
+
+  if (data.user) {
+    await upsertProfileRow(safeAdminSupabase, {
+      id: data.user.id,
+      email,
+      userName:
+        typeof data.user.user_metadata?.user_name === "string"
+          ? data.user.user_metadata.user_name
+          : null,
+    });
+  }
+
+  redirect("/author");
 }
 
 export async function signOut() {
@@ -129,21 +194,21 @@ export async function saveDocument(
 
   const payload = parseDocumentPayload(formData);
 
-  if (!payload.title || !payload.sourceTitle || !payload.authorName) {
+  if (!payload.title || !payload.contents) {
     return {
-      error: "title, source title, author name은 필수입니다.",
+      error: "title and contents are required.",
     } satisfies DocumentFormState;
   }
 
-  if (payload.topics.length === 0) {
+  if (payload.sourceType === "book" && !payload.bookTitle) {
     return {
-      error: "적어도 하나의 태그를 입력해야 추천을 만들 수 있습니다.",
+      error: "book records require a book title.",
     } satisfies DocumentFormState;
   }
 
-  if (payload.noteCards.length === 0) {
+  if (payload.tags.length === 0) {
     return {
-      error: "연결된 생각 카드가 최소 한 개는 필요합니다.",
+      error: "At least one tag is required for recommendations.",
     } satisfies DocumentFormState;
   }
 

@@ -1,196 +1,319 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { saveDocument } from "@/app/author/actions";
+import { MarkdownContent } from "@/components/markdown-content";
 import type { DocumentFormState, WikiDocument } from "@/lib/wiki/types";
 
 type AuthorDocumentFormProps = {
   document?: WikiDocument;
 };
 
-type NoteCardDraft = {
-  heading: string;
-  content: string;
-};
-
 function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button className="button-primary" type="submit" disabled={pending}>
-      {pending ? "saving..." : "save document"}
+    <button
+      className="inline-flex h-9 items-center justify-center rounded-[4px] bg-[#2a2419] px-4 text-[14px] leading-5 font-medium text-[#faf8f5] disabled:opacity-50"
+      type="submit"
+      disabled={pending}
+    >
+      {pending ? "Saving..." : "Publish"}
     </button>
+  );
+}
+
+function PreviewIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M1.333 8s2.424-4 6.667-4 6.667 4 6.667 4-2.424 4-6.667 4-6.667-4-6.667-4Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <circle cx="8" cy="8" r="1.75" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+function CancelIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M10 3.333 5.333 8 10 12.667"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <path d="M6 8h6" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+function PublishIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M3.333 12.667h9.334"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <path
+        d="M8 2.667v7.666"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <path
+        d="M5.333 7.667 8 10.333l2.667-2.666"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4 text-[#6b6354]"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
   );
 }
 
 export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   const [state, formAction] = useActionState<DocumentFormState, FormData>(saveDocument, {});
-  const [isPending, startTransition] = useTransition();
-  const [cards, setCards] = useState<NoteCardDraft[]>(
-    document?.noteCards.length
-      ? document.noteCards.map((noteCard) => ({
-          heading: noteCard.heading ?? "",
-          content: noteCard.content,
-        }))
-      : [{ heading: "", content: "" }],
+  const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
+  const [title, setTitle] = useState(document?.title ?? "");
+  const [contents, setContents] = useState(document?.contents ?? "");
+  const [sourceType, setSourceType] = useState<"book" | "article">(
+    document?.sourceType ?? "book",
   );
+  const [visibility, setVisibility] = useState<"public" | "private">(
+    document?.visibility ?? "private",
+  );
+  const [bookTitle, setBookTitle] = useState(document?.bookTitle ?? "");
+  const [tags, setTags] = useState(document?.tags.join(", ") ?? "");
 
   return (
-    <form action={formAction} className="grid gap-6 rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_28px_80px_rgba(51,39,18,0.08)]">
+    <form action={formAction} className="grid gap-8">
       <input type="hidden" name="documentId" defaultValue={document?.id ?? ""} />
+      <input type="hidden" name="visibility" value={visibility} />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <label className="field">
-          <span>title</span>
-          <input name="title" defaultValue={document?.title ?? ""} required />
-        </label>
-        <label className="field">
-          <span>source title</span>
-          <input
-            name="sourceTitle"
-            defaultValue={document?.sourceTitle ?? ""}
-            required
-          />
-        </label>
-        <label className="field">
-          <span>author name</span>
-          <input
-            name="authorName"
-            defaultValue={document?.authorName ?? ""}
-            required
-          />
-        </label>
-        <label className="field">
-          <span>published at</span>
-          <input
-            name="publishedAt"
-            type="date"
-            defaultValue={document?.publishedAt ?? ""}
-          />
-        </label>
-        <label className="field">
-          <span>source type</span>
-          <select name="sourceType" defaultValue={document?.sourceType ?? "book"}>
-            <option value="book">book</option>
-            <option value="article">article</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>visibility</span>
-          <select name="visibility" defaultValue={document?.visibility ?? "private"}>
-            <option value="private">private</option>
-            <option value="public">public</option>
-          </select>
-        </label>
-        <label className="field md:col-span-2">
-          <span>source url</span>
-          <input
-            name="sourceUrl"
-            type="url"
-            defaultValue={document?.sourceUrl ?? ""}
-            placeholder="https://example.com/article"
-          />
-        </label>
-        <label className="field md:col-span-2">
-          <span>isbn</span>
-          <input name="isbn" defaultValue={document?.isbn ?? ""} />
-        </label>
-        <label className="field md:col-span-2">
-          <span>topics</span>
-          <input
-            name="topics"
-            defaultValue={document?.topics.join(", ") ?? ""}
-            placeholder="creativity, practice, notes"
-            required
-          />
-        </label>
-        <label className="field md:col-span-2">
-          <span>intro</span>
-          <textarea
-            name="intro"
-            defaultValue={document?.intro ?? ""}
-            rows={4}
-            placeholder="이 기록이 왜 남을 가치가 있는지 짧게 적습니다."
-          />
-        </label>
-      </div>
-
-      <div className="grid gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="section-kicker">Connected thoughts</p>
-            <h2 className="text-2xl text-stone-900">카드/불릿 메모</h2>
-          </div>
-          <button
-            type="button"
-            className="button-secondary"
-            disabled={isPending}
-            onClick={() =>
-              startTransition(() => {
-                setCards((current) => [...current, { heading: "", content: "" }]);
-              })
-            }
+      <div className="-mt-8 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.95)] px-4 py-3 backdrop-blur-sm sm:px-4 md:px-8">
+        <div className="mx-auto flex w-full max-w-[1032px] items-center justify-between">
+          <Link
+            href="/author"
+            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)]"
           >
-            add card
-          </button>
-        </div>
+            <CancelIcon />
+            Cancel
+          </Link>
 
-        {cards.map((card, index) => (
-          <div
-            key={`card-${index}`}
-            className="grid gap-4 rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5"
-          >
-            <label className="field">
-              <span>heading</span>
-              <input
-                name={`cardHeading-${index}`}
-                defaultValue={card.heading}
-                placeholder="짧은 카드 제목"
-              />
-            </label>
-            <label className="field">
-              <span>content</span>
-              <textarea
-                name={`cardContent-${index}`}
-                defaultValue={card.content}
-                rows={4}
-                placeholder="읽고 난 뒤 생긴 연결된 생각을 적습니다."
-                required={index === 0}
-              />
-            </label>
-            <div className="flex justify-end">
+          <div className="flex items-center gap-3">
+            <label className="inline-flex items-center gap-2 text-[14px] leading-[14px] font-medium text-[#2a2419]">
               <button
                 type="button"
-                className="text-sm text-stone-500 transition hover:text-stone-900"
-                disabled={cards.length === 1 || isPending}
+                aria-pressed={visibility === "public"}
                 onClick={() =>
-                  startTransition(() => {
-                    setCards((current) => current.filter((_, cardIndex) => cardIndex !== index));
-                  })
+                  setVisibility((current) =>
+                    current === "public" ? "private" : "public",
+                  )
                 }
+                className={`relative inline-flex h-[18px] w-8 items-center rounded-full border border-transparent ${
+                  visibility === "public" ? "bg-[#2a2419]" : "bg-[#d9d2c8]"
+                }`}
               >
-                remove card
+                <span
+                  className={`h-4 w-4 rounded-full bg-white transition-transform ${
+                    visibility === "public" ? "translate-x-[14px]" : "translate-x-[1px]"
+                  }`}
+                />
+              </button>
+              {visibility === "public" ? "Public" : "Private"}
+            </label>
+            <div className="inline-flex items-center gap-2 rounded-[4px] bg-[#2a2419] px-3 text-[#faf8f5]">
+              <PublishIcon />
+              <SubmitButton />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[24px] py-[24px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] md:px-[25px] md:py-[25px]">
+        <h2 className="text-[20px] leading-7 font-semibold tracking-[-0.2px] text-[#2a2419]">
+          Entry Details
+        </h2>
+
+        <div className="mt-6 space-y-5">
+          <label className="block">
+            <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+              Title
+            </span>
+            <input
+              name="title"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Give your entry a title..."
+              className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[14px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] md:text-[20px]"
+              required
+            />
+          </label>
+
+          <div className={`grid gap-4 ${sourceType === "book" ? "md:grid-cols-2" : ""}`}>
+            <label className="block">
+              <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                Source Type
+              </span>
+              <div className="relative mt-2">
+                <select
+                  name="sourceType"
+                  value={sourceType}
+                  onChange={(event) =>
+                    setSourceType(event.target.value as "book" | "article")
+                  }
+                  className="h-9 appearance-none rounded-[4px] border border-transparent bg-white px-[13px] pr-10 py-px text-[14px] leading-5 font-medium text-[#2a2419]"
+                >
+                  <option value="article">Article</option>
+                  <option value="book">Book</option>
+                </select>
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </label>
+
+            {sourceType === "book" ? (
+              <label className="block">
+                <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                  Book Title
+                </span>
+                <input
+                  name="bookTitle"
+                  value={bookTitle}
+                  onChange={(event) => setBookTitle(event.target.value)}
+                  placeholder="The book this entry comes from..."
+                  className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[14px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                />
+              </label>
+            ) : null}
+          </div>
+
+          <label className="block">
+            <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+              Tags
+            </span>
+            <input
+              name="tags"
+              value={tags}
+              onChange={(event) => setTags(event.target.value)}
+              placeholder="philosophy, design, writing (comma-separated)"
+              className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+              required
+            />
+            <p className="mt-2 text-[12px] leading-4 text-[#6b6354]">
+              Separate tags with commas to help readers discover related entries
+            </p>
+          </label>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[20px] leading-7 font-semibold tracking-[-0.2px] text-[#2a2419]">
+            Content
+          </h2>
+          <div className="rounded-[10px] bg-[#e8e3db] p-[3px]">
+            <div className="flex items-center">
+              <button
+                type="button"
+                className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
+                  activeTab === "write" ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
+                }`}
+                onClick={() => setActiveTab("write")}
+              >
+                Write
+              </button>
+              <button
+                type="button"
+                className={`inline-flex h-[29px] items-center justify-center gap-1.5 rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
+                  activeTab === "preview" ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
+                }`}
+                onClick={() => setActiveTab("preview")}
+              >
+                <PreviewIcon />
+                Preview
               </button>
             </div>
           </div>
-        ))}
+        </div>
+
+        {activeTab === "write" ? (
+          <div className="space-y-3">
+            <textarea
+              name="contents"
+              value={contents}
+              onChange={(event) => setContents(event.target.value)}
+              rows={18}
+              placeholder="Begin writing... Markdown is supported."
+              className="min-h-[600px] rounded-[4px] border border-transparent bg-white px-3 py-2 text-[18px] leading-[29.25px] text-[#2a2419] placeholder:text-[#6b6354]"
+              required
+            />
+            <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
+              Markdown supported: **bold**, *italic*, # headings, &gt;
+              blockquotes, - lists
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="min-h-[600px] rounded-[4px] border border-transparent bg-white px-6 py-6">
+              {contents ? (
+                <MarkdownContent contents={contents} />
+              ) : (
+                <p className="text-[18px] leading-[29.25px] text-[#6b6354]">
+                  Nothing to preview yet.
+                </p>
+              )}
+            </div>
+            <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
+              Markdown supported: **bold**, *italic*, # headings, &gt;
+              blockquotes, - lists
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-5 py-5 text-sm leading-7 text-stone-700">
+        Published date is set automatically. Writer comes from the logged-in
+        user profile.
       </div>
 
       {state.error ? (
-        <p className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-900">
+        <p className="rounded-[6px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-900">
           {state.error}
         </p>
       ) : null}
-
-      <div className="flex flex-wrap gap-3">
-        <SubmitButton />
-        <Link className="button-secondary" href="/author">
-          back to workspace
-        </Link>
-      </div>
     </form>
   );
 }

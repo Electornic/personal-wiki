@@ -4,7 +4,7 @@ type TopicPillProps = {
 
 export function TopicPill({ label }: TopicPillProps) {
   return (
-    <span className="inline-flex rounded-full border border-stone-300 bg-stone-100 px-3 py-1 text-xs uppercase tracking-[0.22em] text-stone-700">
+    <span className="inline-flex h-[26px] items-center justify-center rounded-full bg-[rgba(232,227,219,0.6)] px-[13px] text-[12px] leading-4 font-normal text-[#2a2419] transition-colors hover:bg-[rgba(232,227,219,0.85)]">
       {label}
     </span>
   );

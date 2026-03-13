@@ -18,6 +18,9 @@
 - 문서의 핵심 가치는 `원문 요약`보다 `읽고 난 뒤 연결된 생각`에 둔다.
 - 문서 내부 생각 단위는 `카드/불릿 메모` 중심으로 다룬다.
 
+v0.2 branch note:
+- `V0_2_*` 브랜치에서는 위 author-only 가정을 일반 사용자 signup/login 모델로 바꾸는 작업을 진행한다.
+
 ## Recommendation Rules
 
 - 추천은 v1에서 반드시 포함한다.
@@ -75,15 +78,23 @@
 ## Docs
 
 - 아키텍처, 환경변수, 인증 흐름, 데이터 모델, 주요 사용자 플로우가 바뀌면 문서를 함께 갱신한다.
+- 새 SQL migration을 만들거나 순서를 바꾸면 `SETUP_GUIDE.md`도 함께 갱신한다.
 - 현재 제품 정의의 기준 문서는 아래 두 파일이다.
   - `.omx/specs/deep-interview-personal-wiki-foundation.md`
   - `.omx/plans/personal-wiki-mvp-ralplan.md`
-- `docs/task` 아래의 태스크 파일은 `0_1_[major-topic].md` 같은 형식으로 만든다.
+- `docs/task` 아래의 태스크 파일은 `v0_1_[major-topic].md` 같은 형식으로 만든다.
+- `docs/figma_prompts` 아래의 프롬프트 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
+- `docs/test_guide` 아래의 테스트 가이드 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
+- PR을 만들 때는 `.github/pull_request_template.md` 템플릿을 따른다.
 - 새 태스크 문서를 만들거나 이름을 바꿀 때는 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
+- 새 Figma 프롬프트 문서를 만들거나 이름을 바꿀 때도 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
+- 새 테스트 가이드 문서를 만들거나 이름을 바꿀 때도 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
 - `status`, `notes`, `next-steps`처럼 추상적인 이름보다 실제 주요 작업 주제를 드러내는 이름을 우선한다.
 - 예시:
-  - `0_1_v0_1_mvp_foundation_and_verification.md`
-  - `0_2_v0_2_ui_auth_record_model_comments.md`
+  - `v0_1_mvp_foundation_and_verification.md`
+  - `v0_2_ui_auth_record_model_comments.md`
+  - `v0_2_public_reading_auth_editor_comments.md`
+  - `v0_2_final_smoke_checklist.md`
 - 번호와 주제는 함께 봤을 때 문서의 목적이 바로 드러나야 한다.
 
 ## Working Style
@@ -97,6 +108,10 @@
 
 - 적당한 작업 단위가 끝날 때마다 `git add .` 후 `git commit`까지 진행해 변경을 작은 단위로 남긴다.
 - 하나의 태스크를 시작할 때는 해당 태스크 전용 브랜치를 만든다.
+- 브랜치 이름은 `V0_2_[Major_Topic]` 형식을 따른다.
 - 하나의 태스크가 끝나면 PR을 만들고 `main`에 머지한 뒤, 배포는 `dist` 브랜치 기준으로 진행한다.
 - 앞으로 배포용 기준 브랜치는 `dist`다. 릴리스/배포 상태는 `dist`에서 관리한다.
 - 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서로 본다.
+- GitHub 관련 작업은 가능하면 `gh` CLI를 우선 사용한다.
+- PR 조회, 리뷰 확인, 코멘트 확인, PR 생성 같은 작업은 `gh` 기준으로 수행한다.
+- PR review 사항을 반영한 뒤에는 해당 review thread에 답글을 달고, resolve 처리까지 진행한다.

@@ -6,22 +6,20 @@ afterEach(() => {
 });
 
 describe("hasAuthoringEnv", () => {
-  it("requires service role and owner email", async () => {
+  it("requires the service role in addition to public env", async () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
-    vi.stubEnv("SUPABASE_OWNER_EMAIL", "owner@example.com");
 
     const { hasAuthoringEnv } = await import("@/lib/env");
 
     expect(hasAuthoringEnv()).toBe(false);
   });
 
-  it("returns true when the full authoring contract exists", async () => {
+  it("returns true when public env and service role exist", async () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role");
-    vi.stubEnv("SUPABASE_OWNER_EMAIL", "owner@example.com");
 
     const { hasAuthoringEnv } = await import("@/lib/env");
 

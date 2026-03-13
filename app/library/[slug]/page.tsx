@@ -1,13 +1,91 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { NoteCardList } from "@/components/note-card-list";
+import { CommentForm } from "@/components/comment-form";
+import { CommentThread } from "@/components/comment-thread";
+import { MarkdownContent } from "@/components/markdown-content";
 import { TopicPill } from "@/components/topic-pill";
+import { getAuthorAccess } from "@/lib/wiki/auth";
+import { listCommentsForRecord } from "@/lib/wiki/comments";
+import { formatDisplayDate, formatLongDisplayDate } from "@/lib/wiki/content";
 import { getPublicDocumentBySlug, listRelatedDocuments } from "@/lib/wiki/documents";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
+
+function BackIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M10 3.333 5.333 8 10 12.667"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <path d="M6 8h6" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+function ArticleIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-5 w-5 text-[#6b6354]"
+      fill="none"
+      viewBox="0 0 20 20"
+    >
+      <path
+        d="M6.667 2.5h5l3.333 3.333v10A1.667 1.667 0 0 1 13.333 17.5H6.667A1.667 1.667 0 0 1 5 15.833V4.167A1.667 1.667 0 0 1 6.667 2.5Z"
+        stroke="currentColor"
+        strokeWidth="1.25"
+      />
+      <path d="M11.667 2.5v3.333H15" stroke="currentColor" strokeWidth="1.25" />
+      <path d="M7.5 9.167h5" stroke="currentColor" strokeWidth="1.25" />
+      <path d="M7.5 12.5h5" stroke="currentColor" strokeWidth="1.25" />
+    </svg>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-5 w-5 text-[#6b6354]"
+      fill="none"
+      viewBox="0 0 20 20"
+    >
+      <path
+        d="M5.833 3.333h6.25A2.083 2.083 0 0 1 14.167 5.417v10.416a1.667 1.667 0 0 0-1.667-1.666h-6.25A1.667 1.667 0 0 0 4.583 15.833V4.583a1.25 1.25 0 0 1 1.25-1.25Z"
+        stroke="currentColor"
+        strokeWidth="1.25"
+      />
+      <path d="M14.167 5v10.833" stroke="currentColor" strokeWidth="1.25" />
+    </svg>
+  );
+}
+
+function CommentIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-5 w-5 text-[#6b6354]"
+      fill="none"
+      viewBox="0 0 20 20"
+    >
+      <path
+        d="M5 6.667A1.667 1.667 0 0 1 6.667 5h6.666A1.667 1.667 0 0 1 15 6.667v4.166a1.667 1.667 0 0 1-1.667 1.667H9.167L6.25 15V12.5H6.667A1.667 1.667 0 0 1 5 10.833V6.667Z"
+        stroke="currentColor"
+        strokeWidth="1.25"
+      />
+    </svg>
+  );
+}
 
 export default async function LibraryDocumentPage({ params }: PageProps) {
   const { slug } = await params;
@@ -18,80 +96,141 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   }
 
   const relatedDocuments = await listRelatedDocuments(slug, 3);
+  const comments = await listCommentsForRecord(document.id);
+  const access = await getAuthorAccess();
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-10 px-6 py-10 md:px-10">
-      <div className="flex items-center justify-between text-sm text-stone-500">
-        <Link href="/" className="transition hover:text-stone-900">
-          home
+    <main className="mx-auto w-full max-w-[1096px] px-4 pb-20 pt-8 sm:px-4 md:px-[100px]">
+      <div className="mx-auto max-w-[896px]">
+        <Link
+          href="/"
+          className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)]"
+        >
+          <BackIcon />
+          Library
         </Link>
-        <span>{document.sourceType}</span>
-      </div>
 
-      <section className="grid gap-8 rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_28px_80px_rgba(51,39,18,0.08)] md:grid-cols-[1.5fr_0.7fr]">
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <p className="section-kicker">Record</p>
-            <h1 className="text-4xl leading-tight text-stone-900 md:text-6xl">
+        <article className="mx-auto mt-8 max-w-[832px]">
+          <header>
+            <div className="flex items-center">
+              {document.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
+            </div>
+            <h1 className="mt-4 text-[36px] leading-[45px] font-semibold tracking-[-0.02em] text-[#2a2419] md:text-[48px] md:leading-[60px] md:tracking-[-0.96px]">
               {document.title}
             </h1>
-            <p className="max-w-2xl text-lg leading-8 text-stone-700">
-              {document.intro}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {document.topics.map((topic) => (
-              <TopicPill key={topic} label={topic} />
-            ))}
-          </div>
-          <NoteCardList noteCards={document.noteCards} />
-        </div>
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[16px] leading-6">
+              <span className="font-medium text-[#2a2419]">{document.writerName}</span>
+              <span className="text-[#6b6354]">·</span>
+              <span className="text-[#6b6354]">
+                {formatLongDisplayDate(document.publishedAt)}
+              </span>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {document.tags.map((tag) => (
+                <TopicPill key={tag} label={tag} />
+              ))}
+            </div>
+          </header>
 
-        <aside className="space-y-6 rounded-[1.5rem] bg-stone-100/80 p-6">
-          <div className="space-y-2">
-            <p className="text-sm uppercase tracking-[0.25em] text-stone-500">
-              Source
-            </p>
-            <p className="text-lg text-stone-900">{document.sourceTitle}</p>
-            <p className="text-sm text-stone-600">{document.authorName}</p>
-            {document.sourceUrl ? (
-              <a
-                href={document.sourceUrl}
-                className="inline-block text-sm text-stone-700 underline-offset-4 transition hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                원문 링크
-              </a>
-            ) : null}
-          </div>
-          <div className="space-y-3">
-            <p className="text-sm uppercase tracking-[0.25em] text-stone-500">
-              Related documents
-            </p>
+          <section className="mt-12">
+            <MarkdownContent
+              contents={document.contents}
+              className={[
+                "prose-p:mb-[28px] prose-p:text-[18px] prose-p:leading-[29.25px] prose-p:text-[#2a2419]",
+                "prose-headings:mt-11 prose-headings:mb-3 prose-headings:text-[#2a2419]",
+                "prose-h1:text-[30px] prose-h1:leading-9 prose-h1:tracking-[-0.3px]",
+                "prose-h2:text-[24px] prose-h2:leading-8",
+                "prose-blockquote:my-8 prose-blockquote:border-l-4 prose-blockquote:border-[rgba(42,36,25,0.1)] prose-blockquote:pl-7 prose-blockquote:text-[18px] prose-blockquote:leading-[29.25px] prose-blockquote:italic prose-blockquote:text-[rgba(42,36,25,0.8)]",
+                "prose-ol:my-6 prose-ol:pl-6 prose-li:mb-2 prose-li:text-[18px] prose-li:leading-[29.25px] prose-li:text-[#2a2419]",
+                "prose-strong:text-[#2a2419]",
+              ].join(" ")}
+            />
+          </section>
+
+          <section className="mt-16 border-t border-[rgba(42,36,25,0.1)] pt-12">
+            <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+              Related Reading
+            </h2>
             {relatedDocuments.length > 0 ? (
-              <div className="space-y-3">
+              <div className="mt-6 space-y-4">
                 {relatedDocuments.map((relatedDocument) => (
                   <Link
                     key={relatedDocument.id}
                     href={`/library/${relatedDocument.slug}`}
-                    className="block rounded-3xl border border-stone-200 bg-white px-4 py-4 transition hover:-translate-y-0.5 hover:border-stone-400"
+                    className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-[21px] py-[21px] transition hover:bg-[rgba(232,227,219,0.45)]"
                   >
-                    <p className="text-base text-stone-900">{relatedDocument.title}</p>
-                    <p className="mt-2 text-sm leading-6 text-stone-600">
-                      {relatedDocument.sharedTopics.join(" · ")}
-                    </p>
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 shrink-0">
+                        {relatedDocument.sourceType === "book" ? (
+                          <BookIcon />
+                        ) : (
+                          <ArticleIcon />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[18px] leading-7 font-semibold text-[#2a2419]">
+                          {relatedDocument.title}
+                        </p>
+                        <p className="mt-1 text-[14px] leading-5 text-[#6b6354]">
+                          {relatedDocument.writerName} ·{" "}
+                          {formatDisplayDate(relatedDocument.publishedAt)}
+                        </p>
+                      </div>
+                    </div>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="rounded-3xl border border-dashed border-stone-300 px-4 py-5 text-sm leading-6 text-stone-600">
+              <div className="mt-6 rounded-[6px] border border-dashed border-[rgba(42,36,25,0.18)] px-4 py-5 text-[14px] leading-6 text-[#6b6354]">
                 아직 충분히 겹치는 태그가 없습니다. 추천은 빈 상태를 그대로 보여줍니다.
               </div>
             )}
-          </div>
-        </aside>
-      </section>
+          </section>
+
+          <section className="mt-16 border-t border-[rgba(42,36,25,0.1)] pt-12">
+            <div className="flex items-center gap-2">
+              <CommentIcon />
+              <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+                Comments
+                <span className="ml-0.5 text-[18px] leading-7 text-[#6b6354]">
+                  ({comments.length})
+                </span>
+              </h2>
+            </div>
+
+            {access.isAuthenticated ? (
+              <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6">
+                <CommentForm recordId={document.id} recordSlug={document.slug} />
+              </div>
+            ) : (
+              <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
+                <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
+                  Sign in to join the conversation
+                </p>
+                <Link
+                  href="/author/sign-in"
+                  className="mt-4 inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[#2a2419]"
+                >
+                  Sign In
+                </Link>
+              </div>
+            )}
+
+            <div className="mt-10">
+              {comments.length ? (
+                <CommentThread
+                  comments={comments}
+                  recordId={document.id}
+                  recordSlug={document.slug}
+                  canComment={access.isAuthenticated}
+                />
+              ) : (
+                <div className="text-[14px] leading-6 text-[#6b6354]">No comments yet.</div>
+              )}
+            </div>
+          </section>
+        </article>
+      </div>
     </main>
   );
 }

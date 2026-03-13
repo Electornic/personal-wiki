@@ -1,52 +1,190 @@
 import Link from "next/link";
 
-import { requestMagicLink } from "@/app/author/actions";
-import { getOwnerEmail, hasAuthoringEnv } from "@/lib/env";
+import { signInWithPassword, signUpWithPassword } from "@/app/author/actions";
+import { hasAuthoringEnv } from "@/lib/env";
 
 type PageProps = {
-  searchParams: Promise<{ error?: string; sent?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    success?: string;
+    tab?: string;
+    message?: string;
+  }>;
 };
 
 export default async function AuthorSignInPage({ searchParams }: PageProps) {
-  const { error, sent } = await searchParams;
+  const { error, success, tab, message } = await searchParams;
+  const activeTab = tab === "signup" ? "signup" : "signin";
+  const isSignUp = activeTab === "signup";
+
+  const errorMessage =
+    error === "user-name-taken"
+      ? "That user name is already taken."
+      : error === "weak-password"
+        ? "Password must be at least 8 characters."
+        : error === "missing-signup-fields" || error === "missing-login-fields"
+          ? "Fill in all required fields."
+          : error === "config"
+            ? "Authentication is not configured yet."
+            : message
+              ? message
+            : error
+              ? "Authentication failed. Check the form values and Supabase settings."
+              : null;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 px-6 py-12 md:px-10">
-      <Link href="/" className="text-sm text-stone-500 transition hover:text-stone-900">
-        home
-      </Link>
-      <section className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_28px_80px_rgba(51,39,18,0.08)]">
-        <p className="section-kicker">Author sign-in</p>
-        <h1 className="mt-4 text-4xl text-stone-900">Magic link only for the owner</h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
-          공개 문서는 비로그인으로 읽을 수 있고, 작성/수정만 author 로그인으로 보호합니다.
-        </p>
+    <div className="min-h-[calc(100vh-4rem)] bg-[#faf8f5] px-4 py-8 md:px-0 md:py-16">
+      <div className="mx-auto flex min-h-full w-full max-w-[1096px] items-center justify-center px-0 md:px-[324px]">
+        <div className="w-full max-w-[448px]">
+          <Link
+            href="/"
+            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)]"
+          >
+            <span aria-hidden="true" className="text-[18px] leading-none">
+              ←
+            </span>
+            Back to Library
+          </Link>
 
-        {hasAuthoringEnv() ? (
-          <form action={requestMagicLink} className="mt-8 space-y-4">
-            <div className="rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm text-stone-700">
-              owner email: {getOwnerEmail() ?? "SUPABASE_OWNER_EMAIL not set"}
+          <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[32px] py-[32px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] md:px-[33px] md:py-[33px]">
+            <div className="text-center">
+              <h1 className="text-[30px] leading-9 font-semibold tracking-[-0.6px] text-[#2a2419]">
+                Welcome
+              </h1>
+              <p className="mt-3 text-[16px] leading-6 text-[#6b6354]">
+                Sign in to write and share your thoughts
+              </p>
             </div>
-            {sent ? (
-              <p className="rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
-                매직 링크를 보냈습니다. 메일에서 로그인 링크를 열어주세요.
+
+            <div className="mt-8 rounded-[10px] bg-[#e8e3db] p-[3px]">
+              <div className="grid grid-cols-2 gap-0.5">
+                <Link
+                  href="/author/sign-in?tab=signin"
+                  className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
+                    !isSignUp ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
+                  }`}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/author/sign-in?tab=signup"
+                  className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
+                    isSignUp ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
+                  }`}
+                >
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+
+            {success ? (
+              <p className="mt-6 rounded-[6px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
+                Account created. If email confirmation is enabled, verify the email
+                and then log in.
               </p>
             ) : null}
-            {error ? (
-              <p className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-900">
-                로그인 링크를 보내지 못했습니다. 환경변수와 Supabase Auth 설정을 확인해주세요.
+
+            {errorMessage ? (
+              <p className="mt-6 rounded-[6px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-900">
+                {errorMessage}
               </p>
             ) : null}
-            <button className="button-primary" type="submit">
-              send magic link
-            </button>
-          </form>
-        ) : (
-          <div className="mt-8 rounded-3xl border border-amber-300 bg-amber-50 px-5 py-5 text-sm leading-7 text-stone-700">
-            Author 로그인은 public env, service role key, owner email이 모두 있어야 켤 수 있습니다. `.env.example`를 기준으로 설정을 먼저 채워주세요.
+
+            {isSignUp ? (
+              <form action={signUpWithPassword} className="mt-8 space-y-4">
+                <input type="hidden" name="tab" value="signup" />
+                <label className="block">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                    Name
+                  </span>
+                  <input
+                    name="userName"
+                    required
+                    placeholder="Your name"
+                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                    Email
+                  </span>
+                  <input
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="your@email.com"
+                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                    Password
+                  </span>
+                  <input
+                    name="password"
+                    type="password"
+                    minLength={8}
+                    required
+                    placeholder="••••••••"
+                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                  />
+                </label>
+                <button
+                  className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-[4px] bg-[#2a2419] text-[14px] leading-5 font-medium text-[#faf8f5]"
+                  type="submit"
+                >
+                  Create Account
+                </button>
+              </form>
+            ) : (
+              <form action={signInWithPassword} className="mt-8 space-y-4">
+                <input type="hidden" name="tab" value="signin" />
+                <label className="block">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                    Email
+                  </span>
+                  <input
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="your@email.com"
+                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                    Password
+                  </span>
+                  <input
+                    name="password"
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                  />
+                </label>
+                <button
+                  className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-[4px] bg-[#2a2419] text-[14px] leading-5 font-medium text-[#faf8f5]"
+                  type="submit"
+                >
+                  Sign In
+                </button>
+              </form>
+            )}
           </div>
-        )}
-      </section>
-    </main>
+
+          <p className="mx-auto mt-6 max-w-[344px] text-center text-[14px] leading-5 text-[#6b6354] md:max-w-none">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
+        </div>
+
+        {!hasAuthoringEnv() ? (
+          <div className="mt-6 rounded-[6px] border border-amber-300 bg-amber-50 px-5 py-5 text-sm leading-7 text-stone-700">
+            Signup/login requires `NEXT_PUBLIC_SUPABASE_URL`,
+            `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
+          </div>
+        ) : null}
+      </div>
+    </div>
   );
 }
