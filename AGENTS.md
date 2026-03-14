@@ -85,10 +85,14 @@ v0.2 branch note:
 - `docs/task` 아래의 태스크 파일은 `v0_1_[major-topic].md` 같은 형식으로 만든다.
 - `docs/figma_prompts` 아래의 프롬프트 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
 - `docs/test_guide` 아래의 테스트 가이드 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
+- `docs/idea` 아래의 아이디어 파일은 `YYYY_MM_DD_NN_Idea.md` 형식으로 만든다.
+- `docs/idea` 문서는 버전 작업 문서와 별개이며, 특정 버전의 확정 범위를 의미하지 않는다.
 - PR을 만들 때는 `.github/pull_request_template.md` 템플릿을 따른다.
 - 새 태스크 문서를 만들거나 이름을 바꿀 때는 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
 - 새 Figma 프롬프트 문서를 만들거나 이름을 바꿀 때도 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
 - 새 테스트 가이드 문서를 만들거나 이름을 바꿀 때도 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
+- 새 아이디어 문서를 만들거나 이름을 바꿀 때도 `docs/idea/YYYY_MM_DD_NN_Idea.md` 규칙을 유지한다.
+- 아이디어는 생각날 때 기록하는 백로그 성격으로 관리하고, 실제 버전 작업 범위는 별도 태스크/브랜치/계획 문서에서 정한다.
 - `status`, `notes`, `next-steps`처럼 추상적인 이름보다 실제 주요 작업 주제를 드러내는 이름을 우선한다.
 - 예시:
   - `v0_1_mvp_foundation_and_verification.md`
