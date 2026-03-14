@@ -72,19 +72,16 @@ function BookIcon() {
   );
 }
 
-function CommentIcon() {
+function ArrowRightIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[#6b6354]"
+      className="h-4 w-4"
       fill="none"
-      viewBox="0 0 20 20"
+      viewBox="0 0 16 16"
     >
-      <path
-        d="M5 6.667A1.667 1.667 0 0 1 6.667 5h6.666A1.667 1.667 0 0 1 15 6.667v4.166a1.667 1.667 0 0 1-1.667 1.667H9.167L6.25 15V12.5H6.667A1.667 1.667 0 0 1 5 10.833V6.667Z"
-        stroke="currentColor"
-        strokeWidth="1.25"
-      />
+      <path d="M3.333 8h9.334" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M9.333 5.333 12 8l-2.667 2.667" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -101,10 +98,12 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   }
 
   const [relatedDocuments, comments, reactionState] = await Promise.all([
-    listRelatedDocuments(slug, 3),
+    listRelatedDocuments(slug, 1),
     listCommentsForRecord(document.id),
     getReactionStateForRecord(document.id),
   ]);
+  const nextDocument = relatedDocuments[0] ?? null;
+  const nextSharedTag = nextDocument?.sharedTags[0] ?? null;
 
   return (
     <main className="site-shell pb-20 pt-8">
@@ -165,54 +164,90 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
 
           <section className="mt-16 border-t border-[rgba(42,36,25,0.1)] pt-12">
             <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
-              Related Reading
+              Continue Reading
             </h2>
-            {relatedDocuments.length > 0 ? (
-              <div className="mt-6 space-y-4">
-                {relatedDocuments.map((relatedDocument) => (
-                  <Link
-                    key={relatedDocument.id}
-                    href={`/library/${relatedDocument.slug}`}
-                    className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-[21px] py-[21px] transition hover:bg-[rgba(232,227,219,0.45)]"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 shrink-0">
-                        {relatedDocument.sourceType === "book" ? (
-                          <BookIcon />
-                        ) : (
-                          <ArticleIcon />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[18px] leading-7 font-semibold text-[#2a2419]">
-                          {relatedDocument.title}
-                        </p>
-                        <p className="mt-1 text-[14px] leading-5 text-[#6b6354]">
-                          {relatedDocument.writerName} ·{" "}
-                          {formatDisplayDate(relatedDocument.publishedAt)}
-                        </p>
+            {nextDocument ? (
+              <>
+                <p className="mt-2 text-[16px] leading-6 text-[#6b6354]">
+                  Related records from your library
+                </p>
+
+                <Link
+                  href={`/library/${nextDocument.slug}`}
+                  className="mt-8 block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition hover:bg-[rgba(232,227,219,0.12)]"
+                >
+                  <div className="flex items-center gap-2 text-[12px] leading-4 text-[#6b6354]">
+                    <span className="font-medium tracking-[0.3px] uppercase">Read Next</span>
+                    <span className="text-[rgba(107,99,84,0.5)]">·</span>
+                    {nextSharedTag ? (
+                      <span className="inline-flex h-5 items-center rounded-full bg-[rgba(232,227,219,0.5)] px-2 text-[12px] leading-4">
+                        {nextSharedTag}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 flex items-start gap-4">
+                    <div className="mt-1 shrink-0">
+                      {nextDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[20px] leading-[25px] font-semibold text-[#2a2419]">
+                        {nextDocument.title}
+                      </p>
+                      <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+                        {nextDocument.writerName} · {formatDisplayDate(nextDocument.publishedAt)}
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {nextDocument.tags.slice(0, 4).map((tag) => (
+                          <TopicPill key={tag} label={tag} />
+                        ))}
                       </div>
                     </div>
+                    <div className="mt-1 shrink-0 text-[#6b6354]">
+                      <ArrowRightIcon />
+                    </div>
+                  </div>
+                </Link>
+
+                <div className="mt-8 flex justify-center">
+                  <Link
+                    href="/#library"
+                    className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#6b6354] transition hover:text-[#2a2419]"
+                  >
+                    Browse all records
+                    <ArrowRightIcon />
                   </Link>
-                ))}
-              </div>
+                </div>
+              </>
             ) : (
-              <div className="mt-6 rounded-[6px] border border-dashed border-[rgba(42,36,25,0.18)] px-4 py-5 text-[14px] leading-6 text-[#6b6354]">
-                아직 충분히 겹치는 태그가 없습니다. 추천은 빈 상태를 그대로 보여줍니다.
+              <div className="mt-6 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-6 py-12 text-center">
+                <p className="text-[16px] leading-6 text-[#6b6354]">
+                  No related reading found at the moment.
+                </p>
+                <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+                  Check back later for more connections.
+                </p>
+                <Link
+                  href="/#library"
+                  className="mt-10 inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
+                >
+                  Browse all records
+                  <ArrowRightIcon />
+                </Link>
               </div>
             )}
           </section>
 
           <section className="mt-16 border-t border-[rgba(42,36,25,0.1)] pt-12">
-            <div className="flex items-center gap-2">
-              <CommentIcon />
-              <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
-                Comments
-                <span className="ml-0.5 text-[18px] leading-7 text-[#6b6354]">
-                  ({comments.length})
-                </span>
-              </h2>
-            </div>
+            <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+              Conversation
+              <span className="ml-1 text-[18px] leading-7 font-normal text-[#6b6354]">
+                {comments.length}
+              </span>
+            </h2>
+            <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+              Share your reflections on this piece
+            </p>
 
             {access.isAuthenticated ? (
               <div className="mt-8">
