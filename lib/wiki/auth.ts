@@ -44,6 +44,33 @@ export const getAuthorAccess = cache(async function getAuthorAccess() {
   };
 });
 
+export const getHeaderAuthState = cache(async function getHeaderAuthState() {
+  if (!hasAuthoringEnv()) {
+    return {
+      configured: false,
+      isAuthenticated: false,
+    };
+  }
+
+  const supabase = await getServerSupabaseClient();
+
+  if (!supabase) {
+    return {
+      configured: false,
+      isAuthenticated: false,
+    };
+  }
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return {
+    configured: true,
+    isAuthenticated: Boolean(session?.user),
+  };
+});
+
 export async function requireAuthorAccess() {
   const access = await getAuthorAccess();
 

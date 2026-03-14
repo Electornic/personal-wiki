@@ -1,4 +1,5 @@
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getAuthorAccess } from "@/lib/wiki/auth";
 import type { LibraryTab } from "@/lib/wiki/library";
 import type { RecordReactionState } from "@/lib/wiki/types";
 
@@ -39,11 +40,10 @@ export async function listReactionStatesForRecords(recordIds: string[]) {
     return stateMap;
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const access = await getAuthorAccess();
+  const userId = access.userId;
 
-  if (!user) {
+  if (!userId) {
     return stateMap;
   }
 
@@ -51,12 +51,12 @@ export async function listReactionStatesForRecords(recordIds: string[]) {
     supabase
       .from("record_bookmarks")
       .select("record_id")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .in("record_id", uniqueRecordIds),
     supabase
       .from("record_likes")
       .select("record_id")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .in("record_id", uniqueRecordIds),
   ]);
 
@@ -182,11 +182,10 @@ export async function listReactionRecordIds(tab: LibraryTab) {
     return [];
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const access = await getAuthorAccess();
+  const userId = access.userId;
 
-  if (!user) {
+  if (!userId) {
     return [];
   }
 
@@ -194,7 +193,7 @@ export async function listReactionRecordIds(tab: LibraryTab) {
   const result = await supabase
     .from(table)
     .select("record_id, created_at")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (result.error || !result.data) {
