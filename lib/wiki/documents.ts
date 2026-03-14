@@ -3,6 +3,7 @@ import {
   getPublicSupabaseClient,
   getServerSupabaseClient,
 } from "@/lib/supabase/server";
+import { cache } from "react";
 import { hasSupabaseEnv } from "@/lib/env";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
@@ -47,7 +48,7 @@ function mapRecord(row: Record<string, unknown>, tags: string[]): WikiDocument {
   } satisfies WikiDocument;
 }
 
-async function fetchRecordsFromSupabase() {
+const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase() {
   const supabase = getPublicSupabaseClient();
 
   if (!supabase) {
@@ -81,9 +82,9 @@ async function fetchRecordsFromSupabase() {
 
     return mapRecord(row, tags);
   });
-}
+});
 
-export async function listPublicDocuments() {
+export const listPublicDocuments = cache(async function listPublicDocuments() {
   if (!hasSupabaseEnv()) {
     return sortByUpdatedAt(filterReadableDocuments(demoDocuments));
   }
@@ -95,9 +96,9 @@ export async function listPublicDocuments() {
   }
 
   return sortByUpdatedAt(filterReadableDocuments(documents));
-}
+});
 
-export async function listAuthorDocuments() {
+export const listAuthorDocuments = cache(async function listAuthorDocuments() {
   const supabase = await getServerSupabaseClient();
 
   if (!supabase) {
@@ -142,22 +143,29 @@ export async function listAuthorDocuments() {
       return mapRecord(row, tags);
     }),
   );
-}
+});
 
-export async function getPublicDocumentBySlug(slug: string) {
+export const getPublicDocumentBySlug = cache(async function getPublicDocumentBySlug(
+  slug: string,
+) {
   const documents = await listPublicDocuments();
   const normalizedSlug = normalizeRouteSlug(slug);
 
   return documents.find((document) => document.slug === normalizedSlug) ?? null;
-}
+});
 
-export async function getAuthorDocumentById(documentId: string) {
+export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
+  documentId: string,
+) {
   const documents = await listAuthorDocuments();
 
   return documents.find((document) => document.id === documentId) ?? null;
-}
+});
 
-export async function listRelatedDocuments(slug: string, limit = 3) {
+export const listRelatedDocuments = cache(async function listRelatedDocuments(
+  slug: string,
+  limit = 3,
+) {
   const documents = await listPublicDocuments();
   const normalizedSlug = normalizeRouteSlug(slug);
   const document = documents.find((candidate) => candidate.slug === normalizedSlug);
@@ -167,7 +175,7 @@ export async function listRelatedDocuments(slug: string, limit = 3) {
   }
 
   return getRelatedDocuments(document, documents, limit);
-}
+});
 
 export async function listDocumentsByIds(recordIds: string[]) {
   const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];

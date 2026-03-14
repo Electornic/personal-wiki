@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { hasAuthoringEnv } from "@/lib/env";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getProfileForUser } from "@/lib/wiki/profiles";
 
-export async function getAuthorAccess() {
+export const getAuthorAccess = cache(async function getAuthorAccess() {
   if (!hasAuthoringEnv()) {
     return {
       configured: false,
@@ -41,7 +42,7 @@ export async function getAuthorAccess() {
     userEmail: email,
     userName: profile?.user_name ?? null,
   };
-}
+});
 
 export async function requireAuthorAccess() {
   const access = await getAuthorAccess();

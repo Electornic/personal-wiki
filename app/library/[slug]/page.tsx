@@ -91,16 +91,20 @@ function CommentIcon() {
 
 export default async function LibraryDocumentPage({ params }: PageProps) {
   const { slug } = await params;
-  const document = await getPublicDocumentBySlug(slug);
+  const [document, access] = await Promise.all([
+    getPublicDocumentBySlug(slug),
+    getAuthorAccess(),
+  ]);
 
   if (!document) {
     notFound();
   }
 
-  const relatedDocuments = await listRelatedDocuments(slug, 3);
-  const comments = await listCommentsForRecord(document.id);
-  const access = await getAuthorAccess();
-  const reactionState = await getReactionStateForRecord(document.id);
+  const [relatedDocuments, comments, reactionState] = await Promise.all([
+    listRelatedDocuments(slug, 3),
+    listCommentsForRecord(document.id),
+    getReactionStateForRecord(document.id),
+  ]);
 
   return (
     <main className="site-shell pb-20 pt-8">
