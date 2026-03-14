@@ -49,7 +49,7 @@ function CommentNode({
         </div>
       </article>
       {comment.replies.length ? (
-        <div className="ml-12 border-l border-[rgba(42,36,25,0.1)] pl-6">
+        <div className="ml-12 border-l-2 border-[rgba(42,36,25,0.1)] pl-[26px] pt-3">
           <CommentThread
             comments={comment.replies}
             recordId={recordId}

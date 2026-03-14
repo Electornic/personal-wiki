@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { getAuthorAccess } from "@/lib/wiki/auth";
+import { getHeaderAuthState } from "@/lib/wiki/auth";
 
 export const metadata: Metadata = {
   title: "Personal Wiki",
@@ -15,7 +15,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const access = await getAuthorAccess();
+  const access = await getHeaderAuthState();
 
   return (
     <html lang="ko">

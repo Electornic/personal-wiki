@@ -1,17 +1,15 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { hasAuthoringEnv } from "@/lib/env";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getProfileForUser } from "@/lib/wiki/profiles";
 
-export async function getAuthorAccess() {
+const getVerifiedAuthUser = cache(async function getVerifiedAuthUser() {
   if (!hasAuthoringEnv()) {
     return {
       configured: false,
-      isAuthenticated: false,
-      userId: null as string | null,
-      userEmail: null as string | null,
-      userName: null as string | null,
+      user: null,
     };
   }
 
@@ -20,10 +18,7 @@ export async function getAuthorAccess() {
   if (!supabase) {
     return {
       configured: false,
-      isAuthenticated: false,
-      userId: null as string | null,
-      userEmail: null as string | null,
-      userName: null as string | null,
+      user: null,
     };
   }
 
@@ -31,8 +26,28 @@ export async function getAuthorAccess() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  return {
+    configured: true,
+    user: user ?? null,
+  };
+});
+
+export const getAuthorAccess = cache(async function getAuthorAccess() {
+  const { configured, user } = await getVerifiedAuthUser();
+
+  if (!configured) {
+    return {
+      configured: false,
+      isAuthenticated: false,
+      userId: null as string | null,
+      userEmail: null as string | null,
+      userName: null as string | null,
+    };
+  }
+
   const email = user?.email?.toLowerCase() ?? null;
-  const profile = user ? await getProfileForUser(supabase, user.id) : null;
+  const supabase = user ? await getServerSupabaseClient() : null;
+  const profile = user && supabase ? await getProfileForUser(supabase, user.id) : null;
 
   return {
     configured: true,
@@ -41,7 +56,23 @@ export async function getAuthorAccess() {
     userEmail: email,
     userName: profile?.user_name ?? null,
   };
-}
+});
+
+export const getHeaderAuthState = cache(async function getHeaderAuthState() {
+  const { configured, user } = await getVerifiedAuthUser();
+
+  if (!configured) {
+    return {
+      configured: false,
+      isAuthenticated: false,
+    };
+  }
+
+  return {
+    configured: true,
+    isAuthenticated: Boolean(user),
+  };
+});
 
 export async function requireAuthorAccess() {
   const access = await getAuthorAccess();

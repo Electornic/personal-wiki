@@ -153,7 +153,7 @@ export default async function AuthorPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1096px] px-6 pb-20 pt-20 md:px-[60px]">
+    <main className="site-shell pb-20 pt-20">
       <section className="space-y-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>

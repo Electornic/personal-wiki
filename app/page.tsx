@@ -6,7 +6,7 @@ export default async function Home() {
   const publicRecords = documents.filter((record) => record.visibility === "public");
 
   return (
-    <main className="mx-auto w-full max-w-[1096px] px-4 pb-16 pt-12 sm:px-4 md:px-9 md:pb-20 md:pt-16 lg:px-[68px]">
+    <main className="site-shell pb-16 pt-12 md:pb-20 md:pt-16">
       <section className="mx-auto max-w-[768px] text-center">
         <h1 className="mx-auto max-w-[604px] text-[48px] leading-[1] font-semibold tracking-[-0.02em] text-[#2a2419] md:text-[60px] md:leading-[60px] md:tracking-[-1.2px]">
           A Space for Reading &amp; Reflection
