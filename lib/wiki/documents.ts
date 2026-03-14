@@ -48,6 +48,74 @@ function mapRecord(row: Record<string, unknown>, tags: string[]): WikiDocument {
   } satisfies WikiDocument;
 }
 
+type RecordTagRow = {
+  record_id: string;
+  tag_id?: string;
+  tags?: { name?: string | null } | Array<{ name?: string | null }> | null;
+};
+
+function getTagNameFromRow(tagRow: RecordTagRow) {
+  const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
+  return typeof tag?.name === "string" ? tag.name : null;
+}
+
+function buildTagMap(tagRows: RecordTagRow[]) {
+  const tagMap = new Map<string, string[]>();
+
+  for (const tagRow of tagRows) {
+    const tagName = getTagNameFromRow(tagRow);
+
+    if (!tagName) {
+      continue;
+    }
+
+    const current = tagMap.get(tagRow.record_id) ?? [];
+    current.push(tagName);
+    tagMap.set(tagRow.record_id, current);
+  }
+
+  return tagMap;
+}
+
+function mapRowsToDocuments(
+  recordRows: Array<Record<string, unknown>>,
+  tagRows: RecordTagRow[],
+) {
+  const tagMap = buildTagMap(tagRows);
+
+  return recordRows.map((row) => mapRecord(row, tagMap.get(String(row.id)) ?? []));
+}
+
+async function fetchTagRowsForRecordIds(
+  recordIds: string[],
+  useServerClient = false,
+) {
+  const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];
+
+  if (uniqueRecordIds.length === 0) {
+    return [] as RecordTagRow[];
+  }
+
+  const supabase = useServerClient
+    ? await getServerSupabaseClient()
+    : getPublicSupabaseClient();
+
+  if (!supabase) {
+    return [] as RecordTagRow[];
+  }
+
+  const { data, error } = await supabase
+    .from("record_tags")
+    .select("record_id, tag_id, tags(name)")
+    .in("record_id", uniqueRecordIds);
+
+  if (error || !data) {
+    return [] as RecordTagRow[];
+  }
+
+  return data as RecordTagRow[];
+}
+
 const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase() {
   const supabase = getPublicSupabaseClient();
 
@@ -55,33 +123,18 @@ const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase()
     return null;
   }
 
-  const [{ data: recordRows, error: recordsError }, { data: tagRows, error: tagsError }] =
-    await Promise.all([
-      supabase
-        .from("records")
-        .select("*")
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("record_tags")
-        .select("record_id, tags(name)"),
-    ]);
+  const { data: recordRows, error: recordsError } = await supabase
+    .from("records")
+    .select("*")
+    .order("updated_at", { ascending: false });
 
-  if (recordsError || tagsError || !recordRows) {
+  if (recordsError || !recordRows) {
     return null;
   }
 
-  return recordRows.map((row) => {
-    const tags = (tagRows ?? [])
-      .filter((tagRow) => tagRow.record_id === row.id)
-      .map((tagRow) => {
-        const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
+  const tagRows = await fetchTagRowsForRecordIds(recordRows.map((row) => String(row.id)));
 
-        return typeof tag?.name === "string" ? tag.name : null;
-      })
-      .filter((tag): tag is string => Boolean(tag));
-
-    return mapRecord(row, tags);
-  });
+  return mapRowsToDocuments(recordRows, tagRows);
 });
 
 export const listPublicDocuments = cache(async function listPublicDocuments() {
@@ -113,45 +166,53 @@ export const listAuthorDocuments = cache(async function listAuthorDocuments() {
     return [];
   }
 
-  const [{ data: recordRows, error: recordsError }, { data: tagRows, error: tagsError }] =
-    await Promise.all([
-      supabase
-        .from("records")
-        .select("*")
-        .eq("writer_user_id", user.id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("record_tags")
-        .select("record_id, tags(name)"),
-    ]);
+  const { data: recordRows, error: recordsError } = await supabase
+    .from("records")
+    .select("*")
+    .eq("writer_user_id", user.id)
+    .order("updated_at", { ascending: false });
 
-  if (recordsError || tagsError || !recordRows) {
+  if (recordsError || !recordRows) {
     return [];
   }
 
-  return sortByUpdatedAt(
-    recordRows.map((row) => {
-      const tags = (tagRows ?? [])
-        .filter((tagRow) => tagRow.record_id === row.id)
-        .map((tagRow) => {
-          const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
-
-          return typeof tag?.name === "string" ? tag.name : null;
-        })
-        .filter((tag): tag is string => Boolean(tag));
-
-      return mapRecord(row, tags);
-    }),
+  const tagRows = await fetchTagRowsForRecordIds(
+    recordRows.map((row) => String(row.id)),
+    true,
   );
+
+  return sortByUpdatedAt(mapRowsToDocuments(recordRows, tagRows));
 });
 
 export const getPublicDocumentBySlug = cache(async function getPublicDocumentBySlug(
   slug: string,
 ) {
-  const documents = await listPublicDocuments();
   const normalizedSlug = normalizeRouteSlug(slug);
 
-  return documents.find((document) => document.slug === normalizedSlug) ?? null;
+  if (!hasSupabaseEnv()) {
+    const documents = await listPublicDocuments();
+    return documents.find((document) => document.slug === normalizedSlug) ?? null;
+  }
+
+  const supabase = getPublicSupabaseClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const { data: row, error } = await supabase
+    .from("records")
+    .select("*")
+    .eq("slug", normalizedSlug)
+    .eq("visibility", "public")
+    .maybeSingle();
+
+  if (error || !row) {
+    return null;
+  }
+
+  const tagRows = await fetchTagRowsForRecordIds([String(row.id)]);
+  return mapRowsToDocuments([row], tagRows)[0] ?? null;
 });
 
 export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
@@ -166,15 +227,60 @@ export const listRelatedDocuments = cache(async function listRelatedDocuments(
   slug: string,
   limit = 3,
 ) {
-  const documents = await listPublicDocuments();
-  const normalizedSlug = normalizeRouteSlug(slug);
-  const document = documents.find((candidate) => candidate.slug === normalizedSlug);
+  const document = await getPublicDocumentBySlug(slug);
 
   if (!document) {
     return [];
   }
 
-  return getRelatedDocuments(document, documents, limit);
+  if (!hasSupabaseEnv()) {
+    const documents = await listPublicDocuments();
+    return getRelatedDocuments(document, documents, limit);
+  }
+
+  const supabase = getPublicSupabaseClient();
+
+  if (!supabase || document.tags.length === 0) {
+    return [];
+  }
+
+  const sourceTagRows = await fetchTagRowsForRecordIds([document.id]);
+  const sourceTagIds = [...new Set(sourceTagRows.map((row) => row.tag_id).filter(Boolean))];
+
+  if (sourceTagIds.length === 0) {
+    return [];
+  }
+
+  const { data: candidateTagRows, error: candidateTagsError } = await supabase
+    .from("record_tags")
+    .select("record_id, tag_id, tags(name)")
+    .in("tag_id", sourceTagIds)
+    .neq("record_id", document.id);
+
+  if (candidateTagsError || !candidateTagRows) {
+    return [];
+  }
+
+  const candidateIds = [...new Set(candidateTagRows.map((row) => row.record_id).filter(Boolean))];
+
+  if (candidateIds.length === 0) {
+    return [];
+  }
+
+  const { data: candidateRows, error: candidatesError } = await supabase
+    .from("records")
+    .select("*")
+    .in("id", candidateIds)
+    .eq("visibility", "public");
+
+  if (candidatesError || !candidateRows) {
+    return [];
+  }
+
+  const candidateTagDetails = await fetchTagRowsForRecordIds(candidateIds);
+  const candidateDocuments = mapRowsToDocuments(candidateRows, candidateTagDetails);
+
+  return getRelatedDocuments(document, candidateDocuments, limit);
 });
 
 export async function listDocumentsByIds(recordIds: string[]) {
@@ -192,28 +298,17 @@ export async function listDocumentsByIds(recordIds: string[]) {
     return demoDocuments.filter((document) => uniqueRecordIds.includes(document.id));
   }
 
-  const [{ data: recordRows, error: recordsError }, { data: tagRows, error: tagsError }] =
-    await Promise.all([
-      supabase.from("records").select("*").in("id", uniqueRecordIds),
-      supabase.from("record_tags").select("record_id, tags(name)").in("record_id", uniqueRecordIds),
-    ]);
+  const { data: recordRows, error: recordsError } = await supabase
+    .from("records")
+    .select("*")
+    .in("id", uniqueRecordIds);
 
-  if (recordsError || tagsError || !recordRows) {
+  if (recordsError || !recordRows) {
     return [];
   }
 
-  const documents = recordRows.map((row) => {
-    const tags = (tagRows ?? [])
-      .filter((tagRow) => tagRow.record_id === row.id)
-      .map((tagRow) => {
-        const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
-
-        return typeof tag?.name === "string" ? tag.name : null;
-      })
-      .filter((tag): tag is string => Boolean(tag));
-
-    return mapRecord(row, tags);
-  });
+  const tagRows = await fetchTagRowsForRecordIds(uniqueRecordIds, Boolean(serverSupabase));
+  const documents = mapRowsToDocuments(recordRows, tagRows);
 
   const orderedDocuments: WikiDocument[] = [];
 
