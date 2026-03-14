@@ -104,6 +104,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   ]);
   const nextDocument = relatedDocuments[0] ?? null;
   const nextSharedTag = nextDocument?.sharedTags[0] ?? null;
+  const sharedTagPreview = nextDocument?.sharedTags.slice(0, 3) ?? [];
 
   return (
     <main className="site-shell pb-20 pt-8">
@@ -162,7 +163,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
             />
           </section>
 
-          <section className="mt-16 border-t border-[rgba(42,36,25,0.1)] pt-12">
+          <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
             <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
               Continue Reading
             </h2>
@@ -174,9 +175,9 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
 
                 <Link
                   href={`/library/${nextDocument.slug}`}
-                  className="mt-8 block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition hover:bg-[rgba(232,227,219,0.12)]"
+                  className="mt-8 block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-5 py-5 transition hover:bg-[rgba(232,227,219,0.12)] md:px-6 md:py-6"
                 >
-                  <div className="flex items-center gap-2 text-[12px] leading-4 text-[#6b6354]">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[12px] leading-4 text-[#6b6354]">
                     <span className="font-medium tracking-[0.3px] uppercase">Read Next</span>
                     <span className="text-[rgba(107,99,84,0.5)]">·</span>
                     {nextSharedTag ? (
@@ -191,12 +192,24 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
                       {nextDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[20px] leading-[25px] font-semibold text-[#2a2419]">
+                      <p className="text-[18px] leading-6 font-semibold text-[#2a2419] md:text-[20px] md:leading-[25px]">
                         {nextDocument.title}
                       </p>
                       <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
                         {nextDocument.writerName} · {formatDisplayDate(nextDocument.publishedAt)}
                       </p>
+                      {sharedTagPreview.length > 1 ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {sharedTagPreview.slice(1).map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-flex h-5 items-center rounded-full bg-[rgba(232,227,219,0.35)] px-2 text-[12px] leading-4 text-[#6b6354]"
+                            >
+                              Related by {tag}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                       <div className="mt-4 flex flex-wrap gap-2">
                         {nextDocument.tags.slice(0, 4).map((tag) => (
                           <TopicPill key={tag} label={tag} />
@@ -209,7 +222,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
                   </div>
                 </Link>
 
-                <div className="mt-8 flex justify-center">
+                <div className="mt-6 flex justify-center md:mt-8">
                   <Link
                     href="/#library"
                     className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#6b6354] transition hover:text-[#2a2419]"
@@ -220,7 +233,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
                 </div>
               </>
             ) : (
-              <div className="mt-6 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-6 py-12 text-center">
+              <div className="mt-6 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-6 py-10 text-center md:py-12">
                 <p className="text-[16px] leading-6 text-[#6b6354]">
                   No related reading found at the moment.
                 </p>
@@ -238,7 +251,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
             )}
           </section>
 
-          <section className="mt-16 border-t border-[rgba(42,36,25,0.1)] pt-12">
+          <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
             <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
               Conversation
               <span className="ml-1 text-[18px] leading-7 font-normal text-[#6b6354]">
