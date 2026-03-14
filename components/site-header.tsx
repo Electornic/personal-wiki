@@ -44,7 +44,7 @@ function WriteIcon() {
 export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(255,255,255,0.5)] backdrop-blur-sm">
-      <div className="mx-auto flex h-16 w-full max-w-[1096px] items-center justify-between px-4 sm:px-4 md:px-4 lg:px-[68px]">
+      <div className="site-shell flex h-16 items-center justify-between">
         <Link
           href="/"
           className="text-[20px] leading-7 font-semibold tracking-[-0.5px] text-[#2a2419] transition-opacity hover:opacity-70"

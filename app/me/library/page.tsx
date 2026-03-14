@@ -45,8 +45,8 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
   const records = await listMyLibraryPreview(activeTab);
 
   return (
-    <main className="mx-auto w-full max-w-[1024px] px-4 pb-20 pt-12 sm:px-4 md:px-8">
-      <section className="mx-auto w-full max-w-[960px]">
+    <main className="site-shell pb-20 pt-12">
+      <section className="w-full">
         <h1 className="text-[36px] leading-10 font-semibold tracking-[-0.72px] text-[#2a2419]">
           My Library
         </h1>
@@ -55,7 +55,7 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
         </p>
       </section>
 
-      <section className="mx-auto mt-10 w-full max-w-[960px]">
+      <section className="mt-10 w-full">
         <div className="w-full max-w-[448px] rounded-[10px] bg-[#e8e3db] p-[3px]">
           <div className="grid grid-cols-2 gap-0.5">
             <Link

@@ -235,8 +235,8 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
       <input type="hidden" name="documentId" defaultValue={document?.id ?? ""} />
       <input type="hidden" name="visibility" value={visibility} />
 
-      <div className="-mt-8 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.95)] px-4 py-3 backdrop-blur-sm sm:px-4 md:px-8">
-        <div className="mx-auto flex w-full max-w-[1032px] items-center justify-between">
+      <div className="-mt-8 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.95)] py-3 backdrop-blur-sm">
+        <div className="mx-auto flex w-full items-center justify-between">
           <Link
             href="/author"
             className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)]"

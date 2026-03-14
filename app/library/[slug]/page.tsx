@@ -103,8 +103,8 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   const reactionState = await getReactionStateForRecord(document.id);
 
   return (
-    <main className="mx-auto w-full max-w-[1096px] px-4 pb-20 pt-8 sm:px-4 md:px-[100px]">
-      <div className="mx-auto max-w-[896px]">
+    <main className="site-shell pb-20 pt-8">
+      <div className="site-shell-content">
         <Link
           href="/"
           className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)]"
