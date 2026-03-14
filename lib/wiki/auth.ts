@@ -5,14 +5,11 @@ import { hasAuthoringEnv } from "@/lib/env";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getProfileForUser } from "@/lib/wiki/profiles";
 
-export const getAuthorAccess = cache(async function getAuthorAccess() {
+const getVerifiedAuthUser = cache(async function getVerifiedAuthUser() {
   if (!hasAuthoringEnv()) {
     return {
       configured: false,
-      isAuthenticated: false,
-      userId: null as string | null,
-      userEmail: null as string | null,
-      userName: null as string | null,
+      user: null,
     };
   }
 
@@ -21,10 +18,7 @@ export const getAuthorAccess = cache(async function getAuthorAccess() {
   if (!supabase) {
     return {
       configured: false,
-      isAuthenticated: false,
-      userId: null as string | null,
-      userEmail: null as string | null,
-      userName: null as string | null,
+      user: null,
     };
   }
 
@@ -32,8 +26,28 @@ export const getAuthorAccess = cache(async function getAuthorAccess() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  return {
+    configured: true,
+    user: user ?? null,
+  };
+});
+
+export const getAuthorAccess = cache(async function getAuthorAccess() {
+  const { configured, user } = await getVerifiedAuthUser();
+
+  if (!configured) {
+    return {
+      configured: false,
+      isAuthenticated: false,
+      userId: null as string | null,
+      userEmail: null as string | null,
+      userName: null as string | null,
+    };
+  }
+
   const email = user?.email?.toLowerCase() ?? null;
-  const profile = user ? await getProfileForUser(supabase, user.id) : null;
+  const supabase = user ? await getServerSupabaseClient() : null;
+  const profile = user && supabase ? await getProfileForUser(supabase, user.id) : null;
 
   return {
     configured: true,
@@ -45,29 +59,18 @@ export const getAuthorAccess = cache(async function getAuthorAccess() {
 });
 
 export const getHeaderAuthState = cache(async function getHeaderAuthState() {
-  if (!hasAuthoringEnv()) {
+  const { configured, user } = await getVerifiedAuthUser();
+
+  if (!configured) {
     return {
       configured: false,
       isAuthenticated: false,
     };
   }
-
-  const supabase = await getServerSupabaseClient();
-
-  if (!supabase) {
-    return {
-      configured: false,
-      isAuthenticated: false,
-    };
-  }
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
 
   return {
     configured: true,
-    isAuthenticated: Boolean(session?.user),
+    isAuthenticated: Boolean(user),
   };
 });
 
