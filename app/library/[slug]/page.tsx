@@ -113,7 +113,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
           Library
         </Link>
 
-        <article className="mx-auto mt-8 max-w-[832px]">
+        <article className="mt-8 w-full">
           <header>
             <div className="flex items-center">
               {document.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
