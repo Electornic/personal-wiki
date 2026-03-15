@@ -121,6 +121,8 @@ v0.2 branch note:
 - 하나의 태스크가 끝나면 PR을 만들고 `main`에 머지한 뒤, 배포는 `dist` 브랜치 기준으로 진행한다.
 - 앞으로 배포용 기준 브랜치는 `dist`다. 릴리스/배포 상태는 `dist`에서 관리한다.
 - 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서로 본다.
+- 배포용 버전 태그는 기본적으로 `vX.Y.Z` 형식을 따른다.
+- `dist` 브랜치 push 시에는 `package.json`의 `version`을 기준으로 GitHub Actions가 tag와 GitHub Release를 자동 생성하는 흐름을 우선한다.
 - GitHub 관련 작업은 가능하면 `gh` CLI를 우선 사용한다.
 - PR 조회, 리뷰 확인, 코멘트 확인, PR 생성 같은 작업은 `gh` 기준으로 수행한다.
 - PR review 사항을 반영한 뒤에는 해당 review thread에 답글을 달고, resolve 처리까지 진행한다.

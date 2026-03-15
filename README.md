@@ -94,6 +94,17 @@ pnpm build
 
 현재 `pnpm test`는 Vitest 유틸 테스트를 실행합니다.
 
+## Release
+
+- 배포 기준 브랜치는 `dist`입니다.
+- 배포용 태그 규칙은 기본적으로 `vX.Y.Z`를 사용합니다.
+- `dist`에 push되면 GitHub Actions가 `package.json`의 `version`을 읽고,
+  같은 태그가 없을 때만 해당 버전의 git tag와 GitHub Release를 자동 생성합니다.
+- 자동 릴리스 전 검증 순서는 아래와 같습니다.
+  - `pnpm lint`
+  - `pnpm test`
+  - `pnpm build`
+
 ## Project Structure
 
 ```text
