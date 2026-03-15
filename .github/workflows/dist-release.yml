@@ -41,15 +41,29 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Resolve release tag
-        id: version
+      - name: Resolve release metadata
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+          version="$(node -p "require('./package.json').version")"
+          pr_ref="$(gh api "repos/${{ github.repository }}/commits/${GITHUB_SHA}/pulls" --jq '.[0].head.ref' 2>/dev/null || true)"
+          if [ -z "$pr_ref" ]; then
+            pr_ref="$(git log -1 --pretty=%s)"
+          fi
+          topic="$(printf '%s' "$pr_ref" | sed -E 's#^refs/heads/##; s#^.*/##; s/^[Vv][0-9]+_[0-9]+_//; s/[^A-Za-z0-9]+/_/g; s/_+/_/g; s/^_+//; s/_+$//')"
+          if [ -z "$topic" ]; then
+            topic="Release"
+          fi
+          tag="V${version}_${topic}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "topic=$topic" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Check existing tag
         id: tag_check
         run: |
-          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+          if git rev-parse "${{ steps.release.outputs.tag }}" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -60,15 +74,37 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.version.outputs.tag }}" "${GITHUB_SHA}" -m "${{ steps.version.outputs.tag }}"
-          git push origin "${{ steps.version.outputs.tag }}"
+          git tag -a "${{ steps.release.outputs.tag }}" "${GITHUB_SHA}" -m "${{ steps.release.outputs.tag }}"
+          git push origin "${{ steps.release.outputs.tag }}"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          previous_tag="$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || true)"
+          notes_file="$(mktemp)"
+          {
+            echo "# ${{ steps.release.outputs.tag }}"
+            echo
+            echo "## Summary"
+            echo "- Version: \`${{ steps.release.outputs.version }}\`"
+            echo "- Topic: \`${{ steps.release.outputs.topic }}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo
+            echo "## Included Changes"
+            if [ -n "$previous_tag" ]; then
+              git log --no-merges --pretty='- %s' "${previous_tag}..${GITHUB_SHA}"
+            else
+              git log --no-merges --pretty='- %s' "${GITHUB_SHA}"
+            fi
+          } > "$notes_file"
+          echo "file=$notes_file" >> "$GITHUB_OUTPUT"
 
       - name: Check existing GitHub release
         id: release_check
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+          if gh release view "${{ steps.release.outputs.tag }}" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -79,6 +115,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --title "${{ steps.version.outputs.tag }}" \
-            --generate-notes
+          gh release create "${{ steps.release.outputs.tag }}" \
+            --title "${{ steps.release.outputs.tag }}" \
+            --notes-file "${{ steps.notes.outputs.file }}"

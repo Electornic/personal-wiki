@@ -97,13 +97,15 @@ pnpm build
 ## Release
 
 - 배포 기준 브랜치는 `dist`입니다.
-- 배포용 태그 규칙은 기본적으로 `vX.Y.Z`를 사용합니다.
-- `dist`에 push되면 GitHub Actions가 `package.json`의 `version`을 읽고,
+- 배포용 태그 규칙은 기본적으로 `VX.Y.Z_MajorTopic`를 사용합니다.
+  예: `V0.4.0_Design_Speed_Reading_Flow`
+- `dist`에 push되면 GitHub Actions가 `package.json`의 `version`과 관련 작업 주제를 읽고,
   같은 태그가 없을 때만 해당 버전의 git tag와 GitHub Release를 자동 생성합니다.
 - 자동 릴리스 전 검증 순서는 아래와 같습니다.
   - `pnpm lint`
   - `pnpm test`
   - `pnpm build`
+- 자동 릴리즈 노트에는 직전 릴리즈 이후 포함된 커밋 제목 목록이 함께 정리됩니다.
 
 ## Project Structure
 
