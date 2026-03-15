@@ -159,7 +159,7 @@ Expected:
 - 해제하면 해당 탭에서 사라진다
 - 카드 클릭 시 public record detail로 이동한다
 
-## 10. Private Visibility Regression
+## 10. Private Visibility
 
 - 하나의 record를 private로 저장
 - 비로그인 상태 또는 다른 계정 기준 접근 확인
@@ -177,7 +177,7 @@ Expected:
 - `/author`는 sign-in required 상태
 - public reading은 계속 가능
 
-## 12. Route Regression
+## Regression Focus
 
 - `/`
 - `/author`
@@ -186,9 +186,9 @@ Expected:
 - `/author/documents/[documentId]`
 - `/library/[slug]`
 - `/me/library`
-
-Expected:
-- 각 route가 정상 렌더링된다
+가 모두 정상 렌더링된다.
+- improved markdown preview, comment/reply interaction, bookmark / like persistence가 함께 깨지지 않는다.
+- private visibility 회귀가 없어야 한다.
 
 ## Pass Criteria
 

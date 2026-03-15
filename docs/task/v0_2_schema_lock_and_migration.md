@@ -1,19 +1,48 @@
 # Personal Wiki v0.2 Schema Lock And Migration
 
+## Branch
+
+- Planning/reference document only
+- No dedicated working branch name was recorded in this document
+
 ## Goal
 
 Lock the v0.2 database shape before implementation so auth, records, comments, and recommendation behavior can be changed without drifting requirements mid-build.
 
-## Locked Inputs
+## Scope
+
+- Lock auth, contents, comments, and recommendation inputs for v0.2
+- Define the v0.2 data model for profiles, records, tags, and comments
+- Define RLS 방향과 public/private visibility boundaries
+- Clarify API/UI implications for signup/login, editor, and public record pages
+- Document migration strategy from v0.1 and verification targets
+
+## Non-Goals
+
+- Final Figma-based UI refinement
+- Recommendation algorithm overhaul beyond explicit tags
+- Rich text or block-editor adoption in v0.2
+- Multi-document-type expansion beyond current record assumptions
+
+## Current Problems
+
+- auth, records, comments, recommendation behavior가 함께 바뀌는 동안 스키마가 흔들릴 위험이 있다.
+- v0.1의 author-only profile과 metadata-heavy document shape가 v0.2 방향과 맞지 않는다.
+- `intro` + note cards를 `markdown contents`로 옮기는 규칙이 없으면 migration이 임의적으로 흘러갈 수 있다.
+- public/private visibility와 comment visibility를 데이터 레이어에서 먼저 잠그지 않으면 누출 위험이 생긴다.
+
+## Proposed Changes
+
+### Locked Inputs
 
 - auth login id: `email`
 - record `contents`: `markdown`
 - comments: replies allowed, max depth `5`
 - recommendations: explicit `tags` retained in v0.2
 
-## v0.2 Data Model
+### v0.2 Data Model
 
-### 1. Profiles
+#### 1. Profiles
 
 Purpose:
 - user-facing identity for all registered members
@@ -35,7 +64,7 @@ Notes:
 - `email` remains the login id
 - `user_name` is the public-facing writer/comment display value
 
-### 2. Records
+#### 2. Records
 
 Purpose:
 - simplified replacement for `documents`
@@ -68,7 +97,7 @@ Notes:
 - `writer_user_id` is the single source of authorship
 - `writer user_name` should be joined from `profiles`, not duplicated into the record row unless denormalization becomes necessary later
 
-### 3. Record Tags
+#### 3. Record Tags
 
 Purpose:
 - preserve recommendation input model in v0.2
@@ -95,7 +124,7 @@ Notes:
 - this is the v0.2 replacement for `topics` / `document_topics`
 - recommendation ranking can keep using overlap count + recency tie-breaker
 
-### 4. Record Comments
+#### 4. Record Comments
 
 Purpose:
 - comments by authenticated users with reply support
@@ -122,40 +151,40 @@ Rules:
 - comments on `public` records are readable without login
 - comment creation still requires authentication
 
-## RLS Direction
+### RLS Direction
 
-### Profiles
+#### Profiles
 
 - authenticated user can read/update self
 - public surfaces should only expose `user_name` through joined record/comment queries, not broad profile listing
 
-### Records
+#### Records
 
 - anyone can read `public` records
 - authenticated owner can read/write own `private` and `public` records
 - non-owners cannot read private records
 
-### Tags / Record Tags
+#### Tags / Record Tags
 
 - public can only read tags linked to visible public records
 - authenticated owners can manage tags on their own records
 
-### Comments
+#### Comments
 
 - public can read comments when parent record is public
 - authenticated users can create comments on public records
 - authenticated users can manage their own comments
 - private record comments must not leak through public queries
 
-## API / UI Implications
+### API / UI Implications
 
-### Signup/Login
+#### Signup/Login
 
 - replace owner magic-link flow with general email + password auth
 - add `profiles` bootstrap on signup
 - derive current `writer` from the session user profile
 
-### Record Editor
+#### Record Editor
 
 - editor fields become:
   - title
@@ -171,16 +200,16 @@ Rules:
   - isbn
   - free-form published-at input
 
-### Public Record Page
+#### Public Record Page
 
 - render markdown safely
 - show writer via joined profile
 - show comments below record content
 - keep related-record recommendation module backed by tags
 
-## Migration Strategy From v0.1
+### Migration Strategy From v0.1
 
-### Existing v0.1 -> v0.2 mapping
+#### Existing v0.1 -> v0.2 mapping
 
 - `author_profiles` -> `profiles`
 - `documents` -> `records`
@@ -188,7 +217,7 @@ Rules:
 - `document_topics` -> `record_tags`
 - `document_note_cards` -> merged into `records.contents`
 
-### Migration assumptions
+#### Migration assumptions
 
 1. `documents.title` -> `records.title`
 2. `documents.source_type` -> `records.source_type`
@@ -198,7 +227,7 @@ Rules:
 6. `documents.published_at` can be retained when present, otherwise backfill with `created_at`
 7. `documents.intro` + ordered `document_note_cards` should be merged into markdown
 
-### Proposed markdown migration shape
+#### Proposed markdown migration shape
 
 If a v0.1 document has:
 - `intro`
@@ -219,7 +248,7 @@ then `records.contents` becomes:
 Fallback:
 - if no heading exists, use a bullet or paragraph block instead of an empty heading
 
-## Implementation Order
+### Implementation Order
 
 1. Add new v0.2 tables in a new migration
 2. Add data migration from v0.1 tables
@@ -228,8 +257,12 @@ Fallback:
 5. Add comments UI
 6. Remove or archive unused v0.1 fields/tables after verification
 
-## Verification Targets
+## Acceptance Criteria
 
+- auth login id, contents format, comment depth, recommendation input model이 v0.2 기준으로 잠겨 있다.
+- profiles, records, tags, record_tags, record_comments의 역할과 필드가 명확하다.
+- RLS 방향이 public/private record와 comments 누출을 막는 수준으로 정의되어 있다.
+- v0.1 -> v0.2 migration mapping과 markdown merge 규칙이 문서화되어 있다.
 - signup creates both `auth.users` and `profiles`
 - login session exposes `user_name`
 - record create/edit/delete works with the new schema
@@ -240,8 +273,21 @@ Fallback:
 - reply depth > 5 is blocked
 - private records and their comments do not leak publicly
 
-## Locked Decisions
+## Risks
+
+- `intro`와 note cards를 markdown으로 합칠 때 구조 손실이 생길 수 있다.
+- comments visibility filtering이 parent record filtering보다 늦으면 private 정보가 누출될 수 있다.
+- signup/profile bootstrap이 어긋나면 writer identity와 record ownership이 불안정해질 수 있다.
+
+## Verification
 
 - public-record comments are readable without login
 - comment creation requires authentication
 - recommendation tags remain explicitly editable in the v0.2 UI
+- verification target bullets are satisfied before implementation is considered locked
+
+## Related Docs
+
+- [v0_2_ui_auth_record_model_comments.md](/Users/leejun/Desktop/Projects/personal-wiki/docs/task/v0_2_ui_auth_record_model_comments.md)
+- [.omx/specs/deep-interview-personal-wiki-foundation.md](/Users/leejun/Desktop/Projects/personal-wiki/.omx/specs/deep-interview-personal-wiki-foundation.md)
+- [.omx/plans/personal-wiki-mvp-ralplan.md](/Users/leejun/Desktop/Projects/personal-wiki/.omx/plans/personal-wiki-mvp-ralplan.md)

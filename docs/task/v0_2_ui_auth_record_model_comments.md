@@ -5,15 +5,19 @@
 - Working branch: `V0_2_UI_Auth_Record_Model_Comments`
 - Detailed schema reference: [v0_2_schema_lock_and_migration.md](/Users/leejun/Desktop/Projects/personal-wiki/docs/task/v0_2_schema_lock_and_migration.md)
 
-## v0.2 Scope
+## Goal
 
-### 1. Figma-based UI refinement
+- `v0.2`에서 UI refinement, user-based auth, record model simplification, comments를 함께 정리해 제품 구조를 다음 단계로 옮긴다.
+
+## Scope
+
+### 1. Figma-Based UI Refinement
 
 - Rebuild the current working UI around a Figma-defined visual system.
 - Refine typography, spacing, hierarchy, and reading layout.
 - Keep the reading-first product shape intact while making the public/library surfaces feel more intentional.
 
-### 2. User-based authentication
+### 2. User-Based Authentication
 
 - Replace the current author-only auth assumption with user-based signup/login.
 - v0.2 auth fields should stay minimal:
@@ -22,7 +26,7 @@
   - user name
 - Keep the current public-reading behavior unless a later product decision changes it.
 
-### 3. Record model simplification
+### 3. Record Model Simplification
 
 - Reduce the current record shape.
 - Target v0.2 record fields:
@@ -40,14 +44,30 @@
   - `isbn`
   - explicit topic-heavy shape if it is no longer core to the UX
 
-### 4. Comments for logged-in users
+### 4. Comments For Logged-In Users
 
 - Logged-in users should be able to leave comments on records.
 - Comment authorship should be tied to the authenticated user account.
 
-## Working Plan
+## Non-Goals
 
-### Phase 1. Product and schema lock
+- rich text editor adoption in v0.2
+- recommendation model overhaul beyond explicit `tags`
+- changing public-reading access rules
+- broad product expansion beyond UI, auth, record model, comments
+
+## Current Problems
+
+- current auth model is still author-only and does not match the user-based v0.2 direction.
+- current record shape is heavier than the desired title/contents/source type/book title/visibility 중심 구조다.
+- comment system이 없어 logged-in user interaction flow가 비어 있다.
+- UI tone과 hierarchy가 아직 Figma-defined visual system으로 정리되지 않았다.
+
+## Proposed Changes
+
+### Working Plan
+
+#### Phase 1. Product And Schema Lock
 
 - Freeze the new `record` shape before UI work starts.
 - Decide whether recommendations still rely on tags, derived metadata, or a lighter relation model.
@@ -57,13 +77,37 @@
   - user name
 - Define the exact comment model and visibility rules.
 
-Acceptance criteria:
-- v0.2 schema is written down before implementation starts.
-- migration strategy from v0.1 to v0.2 is explicit.
+#### Phase 2. Authentication Rewrite
 
-## Proposed v0.2 Decisions
+- Replace author-only flow with user signup/login.
+- Add minimal account creation and session persistence.
+- Keep public reading behavior intact unless explicitly changed.
 
-### 1. Auth model
+#### Phase 3. Record Model Simplification
+
+- Replace the current heavy metadata form with the smaller v0.2 model.
+- Make `writer` derive from the logged-in user.
+- Make `publishedAt` automatic.
+- Keep `bookTitle` only when `sourceType` is `book`.
+
+#### Phase 4. Comment System
+
+- Add authenticated comment creation.
+- Show comments on record detail pages.
+- Tie author display to the logged-in user name.
+
+#### Phase 5. Figma-Based UI Refinement
+
+- Apply the approved Figma direction to:
+  - public home
+  - record detail
+  - auth pages
+  - record editor
+- Preserve the reading-first shape while improving clarity and polish.
+
+### Proposed v0.2 Decisions
+
+#### 1. Auth Model
 
 - v0.2 no longer assumes a single author-only account.
 - Every user should be able to:
@@ -76,7 +120,7 @@ Acceptance criteria:
   - `password`
   - `userName`
 
-### 2. Record model
+#### 2. Record Model
 
 - Primary record fields:
   - `title`
@@ -92,7 +136,7 @@ Acceptance criteria:
 - `contents` replaces the current split between `intro` and card-based connected-thought editing as the main authoring field.
 - `contents` is fixed as `markdown` for v0.2.
 
-### 3. Comments model
+#### 3. Comments Model
 
 - Only authenticated users can create comments.
 - Public readers can read comments on public records.
@@ -108,15 +152,15 @@ Acceptance criteria:
   - `createdAt`
   - `updatedAt`
 
-### 4. Recommendation direction
+#### 4. Recommendation Direction
 
 - v0.2 keeps recommendations.
 - Recommendation input model stays with explicit `tags` in v0.2.
 - Tag-based recommendation remains the primary recommendation source during the v0.2 transition.
 
-## Proposed Schema Draft
+### Proposed Schema Draft
 
-### users / profiles
+#### users / profiles
 
 - `profiles`
   - `id`
@@ -124,7 +168,7 @@ Acceptance criteria:
   - `created_at`
   - `updated_at`
 
-### records
+#### records
 
 - `records`
   - `id`
@@ -139,7 +183,7 @@ Acceptance criteria:
   - `created_at`
   - `updated_at`
 
-### comments
+#### comments
 
 - `record_comments`
   - `id`
@@ -154,7 +198,7 @@ Acceptance criteria:
 Comment rule:
 - reply depth maximum is `5`
 
-## Migration Direction From v0.1
+### Migration Direction From v0.1
 
 - `documents` -> `records`
 - `created_by` -> `writer_user_id`
@@ -163,9 +207,9 @@ Comment rule:
 - `source_title`, `author_name`, `source_url`, `isbn` should be removed from the primary v0.2 record model unless a strong requirement reappears
 - existing `topics` / `document_topics` stay in v0.2 as the recommendation input model
 
-## Contents Editor Options
+### Contents Editor Decision
 
-### Plain textarea
+#### Plain Textarea
 
 Pros:
 - simplest implementation
@@ -178,7 +222,7 @@ Cons:
 - no lightweight formatting beyond raw line breaks
 - comments and records can start to feel visually flat
 
-### Markdown
+#### Markdown
 
 Pros:
 - still stores as plain text
@@ -192,7 +236,7 @@ Cons:
 - toolbar/preview UX still needs design if you want it friendly
 - sanitization/rendering rules need to be defined
 
-### Rich text
+#### Rich Text
 
 Pros:
 - easiest for non-technical users to format visually
@@ -205,81 +249,37 @@ Cons:
 - harder validation, serialization, and long-term editor maintenance
 - easiest way for v0.2 scope to bloat
 
-## Recommendation
-
+Recommendation:
 - `markdown` is selected for v0.2.
-- Reason:
-  - `plain textarea` is probably too bare for a wiki that is meant to be read publicly.
-  - `rich text` is too expensive for this phase because auth, record schema, and comments are already changing together.
-  - `markdown` gives enough structure without pushing v0.2 into editor-heavy work.
+- `plain textarea` is too bare for a wiki that is meant to be read publicly.
+- `rich text` is too expensive for this phase because auth, record schema, and comments are already changing together.
+- `markdown` gives enough structure without pushing v0.2 into editor-heavy work.
 
-## Locked Decisions
+## Acceptance Criteria
 
-- login id: `email`
-- `contents`: `markdown`
-- comments: replies allowed, max depth `5`
-- public-record comments are readable without login
-- recommendation model: explicit `tags` retained in v0.2
-- recommendation tags remain directly editable in the UI
+- v0.2 schema is written down before implementation starts.
+- migration strategy from v0.1 to v0.2 is explicit.
+- signup works.
+- login works.
+- session persists across refresh.
+- writer identity is available in record/comment flows.
+- create/edit/read paths use the new record model.
+- old unnecessary fields are removed from the primary UI.
+- public reading still works after the schema change.
+- logged-in users can create comments.
+- anonymous users cannot create comments.
+- comments render under records correctly.
+- UI is visually aligned with Figma direction.
+- mobile and desktop both remain usable.
+- auth and record flows still pass verification.
 
-### Phase 2. Authentication rewrite
+## Risks
 
-- Replace author-only flow with user signup/login.
-- Add minimal account creation and session persistence.
-- Keep public reading behavior intact unless explicitly changed.
+- auth, record schema, comments, UI refinement이 한 버전에 함께 들어가 scope가 커질 수 있다.
+- `intro`/note cards를 `contents`로 합치는 과정에서 migration ambiguity가 생길 수 있다.
+- recommendation input을 tags에 남겨두는 동안 editor 단순화와 충돌할 가능성이 있다.
 
-Acceptance criteria:
-- signup works
-- login works
-- session persists across refresh
-- writer identity is available in record/comment flows
-
-### Phase 3. Record model simplification
-
-- Replace the current heavy metadata form with the smaller v0.2 model.
-- Make `writer` derive from the logged-in user.
-- Make `publishedAt` automatic.
-- Keep `bookTitle` only when `sourceType` is `book`.
-
-Acceptance criteria:
-- create/edit/read paths use the new record model
-- old unnecessary fields are removed from the primary UI
-- public reading still works after the schema change
-
-### Phase 4. Comment system
-
-- Add authenticated comment creation.
-- Show comments on record detail pages.
-- Tie author display to the logged-in user name.
-
-Acceptance criteria:
-- logged-in users can create comments
-- anonymous users cannot create comments
-- comments render under records correctly
-
-### Phase 5. Figma-based UI refinement
-
-- Apply the approved Figma direction to:
-  - public home
-  - record detail
-  - auth pages
-  - record editor
-- Preserve the reading-first shape while improving clarity and polish.
-
-Acceptance criteria:
-- UI is visually aligned with Figma direction
-- mobile and desktop both remain usable
-- auth and record flows still pass verification
-
-## Follow-up Tasks
-
-### Architecture / Data
-
-- Redesign the database schema for user accounts and the simplified record model.
-- Decide how recommendation logic changes if topics are reduced or removed from the authoring model.
-- Introduce a migration path from v0.1 records to the v0.2 schema.
-
-### Verification
+## Verification
 
 - Add Supabase-backed integration checks for:
   - signup/login
@@ -287,17 +287,11 @@ Acceptance criteria:
   - record creation/edit/delete with the new schema
   - comment creation by authenticated users
   - public/private visibility behavior under the new auth model
-
-### Delivery / Docs
-
 - Add a v0.2 migration note once the schema direction is fixed.
 - Add a short production checklist once deployment target and auth URLs are finalized.
 
-## Suggested Order
+## Related Docs
 
-1. Product and schema lock
-2. User signup/login
-3. Record model simplification
-4. Comments
-5. Figma-based UI refinement
-6. Integration verification and migration notes
+- [v0_2_schema_lock_and_migration.md](/Users/leejun/Desktop/Projects/personal-wiki/docs/task/v0_2_schema_lock_and_migration.md)
+- [.omx/specs/deep-interview-personal-wiki-foundation.md](/Users/leejun/Desktop/Projects/personal-wiki/.omx/specs/deep-interview-personal-wiki-foundation.md)
+- [.omx/plans/personal-wiki-mvp-ralplan.md](/Users/leejun/Desktop/Projects/personal-wiki/.omx/plans/personal-wiki-mvp-ralplan.md)
