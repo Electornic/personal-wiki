@@ -88,7 +88,7 @@ v0.2 branch note:
 - `docs/test_guide` 아래의 테스트 가이드 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
 - `docs/test_guide` 관련 작업을 할 때는 `docs/test_guide/TEMPLATE.md` 템플릿을 기준으로 체크리스트와 expected 결과 형식을 맞춘다.
 - `docs/idea` 아래의 아이디어 파일은 `YYYY_MM_DD_NN_Idea.md` 형식으로 만든다.
-- `docs/idea` 관련 작업을 할 때는 `docs/idea/TEMPLATE.md` 템플릿을 기준으로 문제, 아이디어, 승격 조건을 정리한다.
+- `docs/idea` 관련 작업을 할 때는 `docs/idea/TEMPLATE.md` 템플릿을 기준으로 문제, 아이디어, 상태, 승격 조건을 정리한다.
 - `docs/idea` 문서는 버전 작업 문서와 별개이며, 특정 버전의 확정 범위를 의미하지 않는다.
 - PR을 만들 때는 `.github/pull_request_template.md` 템플릿을 따른다.
 - 새 태스크 문서를 만들거나 이름을 바꿀 때는 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.

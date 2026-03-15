@@ -6,6 +6,7 @@
 - 아이디어 백로그 메모로 유지한다.
 - 아직 확정되지 않은 범위를 적는다.
 - 구현 상세, 긴 acceptance criteria, 테스트 절차는 `task`나 `test_guide`로 넘긴다.
+- 구현 여부는 `Status`와 `Implementation Links`에서 추적한다.
 
 ```md
 # YYYY_MM_DD_NN_Idea
@@ -13,6 +14,11 @@
 ## Note
 
 - 이 문서는 버전 범위 확정 문서가 아니라 아이디어 백로그 메모다.
+
+## Status
+
+- `backlog`, `promoted`, `partially_done`, `done`, `dropped` 중 하나로 적는다.
+- 필요한 경우 현재 판단 근거를 한 줄로 덧붙인다.
 
 ## Problem
 
@@ -33,6 +39,11 @@
 ## Promotion Rule
 
 - 어떤 조건이면 이 아이디어를 `docs/task` 문서로 승격할지 적는다.
+
+## Implementation Links
+
+- 실제로 반영된 task, PR, commit, release가 있으면 연결한다.
+- 부분 반영이면 어떤 부분이 구현됐는지 짧게 적는다.
 
 ## Links
 
