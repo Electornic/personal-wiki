@@ -2,13 +2,26 @@
 
 개인 도서관형 위키를 위한 Next.js + Supabase MVP입니다.
 
+## Key Libraries
+
+- `next` / `react` / `react-dom`
+  App Router 기반 UI와 서버 렌더링
+- `@supabase/ssr` / `@supabase/supabase-js`
+  Supabase session, auth, database access
+- `react-markdown` / `remark-gfm`
+  public record markdown rendering
+- `tailwindcss`
+  styling system
+- `vitest`
+  utility-level test runner
+
 핵심 방향:
 
 - 공개 문서는 로그인 없이 읽습니다.
 - 로그인 사용자가 문서를 작성/수정/삭제합니다.
 - 문서 타입은 v1에서 `책/아티클 기록`만 지원합니다.
 - 추천은 같은 주제/태그를 기준으로 동작합니다.
-- v0.2에서는 문서의 중심을 `markdown contents`로 단순화하는 방향으로 이동 중입니다.
+- record의 중심은 `markdown contents`이며, reactions와 reading-flow 개선이 포함된 상태까지 구현돼 있습니다.
 
 ## Current Shape
 
@@ -19,6 +32,9 @@
 - author sign-in `/author/sign-in`
 - author workspace `/author`
 - author document create/edit `/author/documents/new`, `/author/documents/[documentId]`
+- bookmark / like reactions
+- my library `/me/library`
+- loading states, layout alignment, reading flow 개선
 - Supabase SQL migrations
 - Vitest 기반 유틸 테스트
 
@@ -56,21 +72,19 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 ## Supabase Setup
 
 1. Supabase 프로젝트를 생성합니다.
-2. [supabase/migrations/20260310T140000Z_personal_wiki_mvp.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260310T140000Z_personal_wiki_mvp.sql) 내용을 SQL Editor에서 실행합니다.
-3. 추가로 [supabase/migrations/20260312T130000Z_v0_2_profiles_auth.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260312T130000Z_v0_2_profiles_auth.sql) 도 실행합니다.
-4. 추가로 [supabase/migrations/20260312T150000Z_v0_2_record_model_simplify.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260312T150000Z_v0_2_record_model_simplify.sql) 도 실행합니다.
-5. 추가로 [supabase/migrations/20260312T170000Z_v0_2_record_comments.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260312T170000Z_v0_2_record_comments.sql) 도 실행합니다.
-6. Authentication에서 Email/Password 로그인을 활성화합니다.
-7. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
-8. 위 환경변수를 `.env.local`에 채웁니다.
+2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 7개를 순서대로 실행합니다.
+3. Authentication에서 Email/Password 로그인을 활성화합니다.
+4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
+5. 위 환경변수를 `.env.local`에 채웁니다.
 
 주의:
 
 - public surface에서는 private 문서가 목록/추천/상세 어디에서도 드러나면 안 됩니다.
 - 로그인 사용자는 signup/login 이후 `profiles` row를 가져야 protected write가 정상 동작합니다.
 - callback의 `next` 파라미터는 로컬 상대 경로만 허용합니다.
-- record editor는 v0.2에서 `title / contents / source type / book title / visibility / tags` 중심으로 단순화됩니다.
+- record editor는 `title / contents / source type / book title / visibility / tags` 중심입니다.
 - comments는 public record에서 읽을 수 있고, 작성은 로그인 사용자만 가능합니다.
+- bookmark / like / my library까지 보려면 `SETUP_GUIDE.md`의 Step 7 migration도 필요합니다.
 
 ## Local Development
 
@@ -99,6 +113,7 @@ pnpm build
 - 배포 기준 브랜치는 `dist`입니다.
 - 배포용 태그 규칙은 기본적으로 `VX.Y.Z_MajorTopic`를 사용합니다.
   예: `V0.4.0_Design_Speed_Reading_Flow`
+- 배포 전에 반드시 [package.json](/Users/leejun/Desktop/Projects/personal-wiki/package.json)의 `version`을 원하는 릴리즈 버전으로 올립니다.
 - `dist`에 push되면 GitHub Actions가 `package.json`의 `version`과 관련 작업 주제를 읽고,
   같은 태그가 없을 때만 해당 버전의 git tag와 GitHub Release를 자동 생성합니다.
 - 자동 릴리스 전 검증 순서는 아래와 같습니다.
@@ -119,8 +134,12 @@ app/
   auth/callback/route.ts       Supabase auth callback
 components/
   author-document-form.tsx
+  comment-form.tsx
+  comment-thread.tsx
   document-card.tsx
+  my-library-card.tsx
   note-card-list.tsx
+  record-reactions.tsx
   topic-pill.tsx
 lib/
   env.ts
