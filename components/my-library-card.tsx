@@ -73,7 +73,7 @@ export function MyLibraryCard({ document }: MyLibraryCardProps) {
 
           <div className="mt-4 flex flex-wrap gap-2">
             {document.tags.slice(0, 4).map((tag) => (
-              <TopicPill key={tag} label={tag} />
+              <TopicPill key={tag} label={tag} interactive={false} />
             ))}
           </div>
 

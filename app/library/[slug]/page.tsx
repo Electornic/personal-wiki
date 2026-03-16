@@ -219,7 +219,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
                             </p>
                             <div className="mt-4 flex flex-wrap gap-2">
                               {relatedDocument.tags.slice(0, 5).map((tag) => (
-                                <TopicPill key={tag} label={tag} />
+                                <TopicPill key={tag} label={tag} interactive={false} />
                               ))}
                             </div>
                           </div>
