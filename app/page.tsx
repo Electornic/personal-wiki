@@ -1,9 +1,25 @@
+import { CurationShelf } from "@/components/curation-shelf";
+import { DiscoveryControls } from "@/components/discovery-controls";
 import { DocumentCard } from "@/components/document-card";
+import {
+  applyDiscoveryState,
+  buildHomeCurationShelves,
+  getAvailableTags,
+  parseDiscoveryState,
+} from "@/lib/wiki/discovery";
 import { listPublicDocuments } from "@/lib/wiki/documents";
 
-export default async function Home() {
+type PageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function Home({ searchParams }: PageProps) {
+  const discoveryState = parseDiscoveryState(await searchParams);
   const documents = await listPublicDocuments();
   const publicRecords = documents.filter((record) => record.visibility === "public");
+  const filteredRecords = applyDiscoveryState(publicRecords, discoveryState);
+  const availableTags = getAvailableTags(publicRecords);
+  const shelves = buildHomeCurationShelves(publicRecords);
 
   return (
     <main className="site-shell pb-16 pt-12 md:pb-20 md:pt-16">
@@ -17,25 +33,45 @@ export default async function Home() {
         </p>
       </section>
 
-      <section id="library" className="mt-16 md:mt-[112px]">
+      <section className="mt-16 grid gap-12 md:mt-[112px]">
+        {shelves.map((shelf) => (
+          <CurationShelf
+            key={shelf.title}
+            title={shelf.title}
+            description={shelf.description}
+            documents={shelf.documents}
+          />
+        ))}
+      </section>
+
+      <section id="library" className="mt-16 md:mt-20">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-[30px] leading-9 font-semibold tracking-[-0.3px] text-[#2a2419]">
-            Recent Entries
+            Browse Library
           </h2>
           <span className="text-[14px] leading-5 text-[#6b6354]">
-            {publicRecords.length} {publicRecords.length === 1 ? "entry" : "entries"}
+            {filteredRecords.length} {filteredRecords.length === 1 ? "record" : "records"}
           </span>
         </div>
 
-        <div className="grid gap-6">
-          {publicRecords.map((document) => (
+        <DiscoveryControls
+          availableTags={availableTags}
+          query={discoveryState.query}
+          sort={discoveryState.sort}
+          source={discoveryState.source}
+          tags={discoveryState.tags}
+          filtersOpen={discoveryState.filtersOpen}
+        />
+
+        <div className="mt-8 grid gap-6">
+          {filteredRecords.map((document) => (
             <DocumentCard key={document.id} document={document} />
           ))}
         </div>
 
-        {publicRecords.length === 0 ? (
+        {filteredRecords.length === 0 ? (
           <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-12 text-center text-[18px] leading-8 text-[#6b6354]">
-            No public entries yet.
+            No matching records found.
           </div>
         ) : null}
       </section>
