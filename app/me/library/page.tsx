@@ -10,6 +10,7 @@ import {
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
 import { listMyLibraryPreview, type LibraryTab } from "@/lib/wiki/library";
+import { listReactionTotalsForRecords } from "@/lib/wiki/reactions";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -53,7 +54,8 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
   const activeTab: LibraryTab = tab === "likes" ? "likes" : "bookmarks";
   const discoveryState = parseDiscoveryState(resolvedSearchParams);
   const records = await listMyLibraryPreview(activeTab);
-  const filteredRecords = applyDiscoveryState(records, discoveryState);
+  const reactionTotals = await listReactionTotalsForRecords(records.map((record) => record.id));
+  const filteredRecords = applyDiscoveryState(records, discoveryState, reactionTotals);
   const availableTags = getAvailableTags(records);
 
   return (

@@ -225,6 +225,13 @@ export function DiscoveryControls({
                     navigate(buildParams({ sort: "title-desc", filters: "open" }))
                   }
                 />
+                <FilterChip
+                  active={sort === "most-reacted"}
+                  label="Most reacted"
+                  onClick={() =>
+                    navigate(buildParams({ sort: "most-reacted", filters: "open" }))
+                  }
+                />
               </div>
             </div>
 

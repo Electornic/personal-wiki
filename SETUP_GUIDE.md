@@ -104,11 +104,22 @@ SQL은 아래 순서대로 실행합니다.
 - 로그인 사용자 기준 bookmark / like 저장 정책 추가
 - `My Library` 및 record detail reaction 동작 준비
 
+### Step 8. v0.5 curation shelves
+
+실행 파일:
+- [supabase/migrations/20260316T123000Z_v0_5_curation_shelves.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260316T123000Z_v0_5_curation_shelves.sql)
+
+역할:
+- `curation_shelves` 테이블 추가
+- `curation_shelf_records` 테이블 추가
+- author 기준 선반 authoring 정책 추가
+- public home에서 public record만 포함하는 선반 노출 준비
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 일곱 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 여덟 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

@@ -8,6 +8,8 @@ import {
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
 import { listPublicDocuments } from "@/lib/wiki/documents";
+import { listReactionTotalsForRecords } from "@/lib/wiki/reactions";
+import { listPublicCurationShelves } from "@/lib/wiki/shelves";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -17,9 +19,20 @@ export default async function Home({ searchParams }: PageProps) {
   const discoveryState = parseDiscoveryState(await searchParams);
   const documents = await listPublicDocuments();
   const publicRecords = documents.filter((record) => record.visibility === "public");
-  const filteredRecords = applyDiscoveryState(publicRecords, discoveryState);
+  const [reactionTotals, authoredShelves] = await Promise.all([
+    listReactionTotalsForRecords(publicRecords.map((record) => record.id)),
+    listPublicCurationShelves("home"),
+  ]);
+  const filteredRecords = applyDiscoveryState(
+    publicRecords,
+    discoveryState,
+    reactionTotals,
+  );
   const availableTags = getAvailableTags(publicRecords);
-  const shelves = buildHomeCurationShelves(publicRecords);
+  const shelves =
+    authoredShelves.length > 0
+      ? authoredShelves
+      : buildHomeCurationShelves(publicRecords);
 
   return (
     <main className="site-shell pb-16 pt-12 md:pb-20 md:pt-16">

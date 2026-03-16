@@ -1,4 +1,7 @@
-import { getServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  getAdminSupabaseClient,
+  getServerSupabaseClient,
+} from "@/lib/supabase/server";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import type { LibraryTab } from "@/lib/wiki/library";
 import type { RecordReactionState } from "@/lib/wiki/types";
@@ -201,4 +204,44 @@ export async function listReactionRecordIds(tab: LibraryTab) {
   }
 
   return result.data.map((row) => row.record_id);
+}
+
+export async function listReactionTotalsForRecords(recordIds: string[]) {
+  const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];
+  const totals = new Map<string, number>();
+
+  for (const recordId of uniqueRecordIds) {
+    totals.set(recordId, 0);
+  }
+
+  if (uniqueRecordIds.length === 0) {
+    return totals;
+  }
+
+  const adminSupabase = getAdminSupabaseClient();
+
+  if (!adminSupabase) {
+    return totals;
+  }
+
+  const [{ data: bookmarks }, { data: likes }] = await Promise.all([
+    adminSupabase
+      .from("record_bookmarks")
+      .select("record_id")
+      .in("record_id", uniqueRecordIds),
+    adminSupabase
+      .from("record_likes")
+      .select("record_id")
+      .in("record_id", uniqueRecordIds),
+  ]);
+
+  for (const bookmark of bookmarks ?? []) {
+    totals.set(bookmark.record_id, (totals.get(bookmark.record_id) ?? 0) + 1);
+  }
+
+  for (const like of likes ?? []) {
+    totals.set(like.record_id, (totals.get(like.record_id) ?? 0) + 1);
+  }
+
+  return totals;
 }

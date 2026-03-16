@@ -173,7 +173,14 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
                 <div className="mt-8 grid gap-6">
                   {relatedDocuments.map((relatedDocument, index) => {
                     const reasonLabel = index === 0 ? "Read Next" : "Also Related";
-                    const reasonTag = relatedDocument.sharedTags[0] ?? null;
+                    const reasonText =
+                      relatedDocument.sharedTags.length > 1
+                        ? `Related by ${relatedDocument.sharedTags[0]} + ${
+                            relatedDocument.sharedTags.length - 1
+                          } more`
+                        : relatedDocument.sharedTags[0]
+                          ? `Related by ${relatedDocument.sharedTags[0]}`
+                          : null;
 
                     return (
                       <Link
@@ -185,11 +192,13 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
                           <span className="font-medium tracking-[0.3px] uppercase">
                             {reasonLabel}
                           </span>
-                          <span className="text-[rgba(107,99,84,0.5)]">·</span>
-                          {reasonTag ? (
-                            <span className="inline-flex h-5 items-center rounded-full bg-[rgba(232,227,219,0.5)] px-2 text-[12px] leading-4">
-                              {reasonTag}
-                            </span>
+                          {reasonText ? (
+                            <>
+                              <span className="text-[rgba(107,99,84,0.5)]">·</span>
+                              <span className="text-[12px] leading-4 text-[#6b6354]">
+                                {reasonText}
+                              </span>
+                            </>
                           ) : null}
                         </div>
 

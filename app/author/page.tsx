@@ -1,10 +1,11 @@
 import Link from "next/link";
 
-import { deleteDocument, signOut } from "@/app/author/actions";
+import { createShelf, deleteDocument, deleteShelf, signOut } from "@/app/author/actions";
 import { hasAuthoringEnv } from "@/lib/env";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { formatLongDisplayDate } from "@/lib/wiki/content";
 import { listAuthorDocuments } from "@/lib/wiki/documents";
+import { listAuthorCurationShelves } from "@/lib/wiki/shelves";
 
 function NewRecordIcon() {
   return (
@@ -110,9 +111,19 @@ function PublicIcon() {
   );
 }
 
+function ShelfIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+      <path d="M3.333 4h9.334M3.333 8h9.334M3.333 12h9.334" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
 export default async function AuthorPage() {
   const access = await getAuthorAccess();
-  const documents = access.isAuthenticated ? await listAuthorDocuments() : [];
+  const [documents, shelves] = access.isAuthenticated
+    ? await Promise.all([listAuthorDocuments(), listAuthorCurationShelves()])
+    : [[], []];
 
   if (!hasAuthoringEnv()) {
     return (
@@ -292,6 +303,154 @@ export default async function AuthorPage() {
             </Link>
           </div>
         ) : null}
+      </section>
+
+      <section className="mt-16 space-y-8">
+        <div className="flex items-center gap-2">
+          <ShelfIcon />
+          <h2 className="text-[30px] leading-9 font-semibold tracking-[-0.3px] text-[#2a2419]">
+            Curation Shelves
+          </h2>
+        </div>
+        <p className="text-[16px] leading-6 text-[#6b6354]">
+          Create small reading shelves for the home page. Topic shelves can be prepared now
+          and connected later as that surface evolves.
+        </p>
+
+        {shelves.length ? (
+          <div className="grid gap-6">
+            {shelves.map((shelf) => (
+              <article
+                key={shelf.id}
+                className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6"
+              >
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+                        {shelf.title}
+                      </h3>
+                      <span className="inline-flex rounded-[4px] bg-[#e8e3db] px-[10px] py-1 text-[12px] leading-4 text-[#6b6354]">
+                        {shelf.placement === "home" ? "Home shelf" : `Topic: ${shelf.topicTag}`}
+                      </span>
+                    </div>
+                    {shelf.description ? (
+                      <p className="mt-3 text-[16px] leading-6 text-[#6b6354]">
+                        {shelf.description}
+                      </p>
+                    ) : null}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {shelf.documents.map((document) => (
+                        <span
+                          key={document.id}
+                          className="inline-flex rounded-full bg-[rgba(232,227,219,0.6)] px-[13px] py-1 text-[12px] leading-4 text-[#2a2419]"
+                        >
+                          {document.title}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <form action={deleteShelf}>
+                    <input type="hidden" name="shelfId" value={shelf.id} />
+                    <button
+                      className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#d45c4f]"
+                      type="submit"
+                    >
+                      <DeleteIcon />
+                      Delete shelf
+                    </button>
+                  </form>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-10 text-center">
+            <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
+              No curation shelves yet.
+            </p>
+          </div>
+        )}
+
+        <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6">
+          <h3 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+            Create shelf
+          </h3>
+          <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+            Choose at least one record. Topic shelves require a topic tag.
+          </p>
+
+          <form action={createShelf} className="mt-6 grid gap-5">
+            <label className="field">
+              <span>Title</span>
+              <input name="title" required placeholder="Start Here" />
+            </label>
+
+            <label className="field">
+              <span>Description</span>
+              <textarea
+                name="description"
+                rows={3}
+                placeholder="Essential readings for understanding the core themes of this library"
+              />
+            </label>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              <label className="field">
+                <span>Placement</span>
+                <select name="placement" defaultValue="home">
+                  <option value="home">Home</option>
+                  <option value="topic">Topic</option>
+                </select>
+              </label>
+
+              <label className="field">
+                <span>Topic Tag</span>
+                <input name="topicTag" placeholder="architecture" />
+              </label>
+            </div>
+
+            <fieldset className="field">
+              <span>Records</span>
+              <div className="grid gap-3 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] p-4">
+                {documents.length ? (
+                  documents.map((document) => (
+                    <label
+                      key={document.id}
+                      className="flex items-start gap-3 rounded-[4px] bg-white px-4 py-3 text-[14px] leading-5 text-[#2a2419]"
+                    >
+                      <input
+                        type="checkbox"
+                        name="recordIds"
+                        value={document.id}
+                        className="mt-1 h-4 w-4 rounded border-[rgba(42,36,25,0.2)]"
+                      />
+                      <span className="min-w-0">
+                        <span className="block font-medium">{document.title}</span>
+                        <span className="mt-1 block text-[#6b6354]">
+                          {document.sourceType} · {document.visibility}
+                        </span>
+                      </span>
+                    </label>
+                  ))
+                ) : (
+                  <p className="text-[14px] leading-5 text-[#6b6354]">
+                    Create records first to add them to a shelf.
+                  </p>
+                )}
+              </div>
+            </fieldset>
+
+            <div>
+              <button
+                type="submit"
+                className="inline-flex h-[42px] items-center justify-center rounded-[4px] bg-[#2a2419] px-5 text-[14px] leading-5 font-medium text-[#faf8f5]"
+              >
+                Save shelf
+              </button>
+            </div>
+          </form>
+        </article>
       </section>
     </main>
   );

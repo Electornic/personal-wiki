@@ -1,6 +1,11 @@
 import type { SourceType, WikiDocument } from "@/lib/wiki/types";
 
-export type DiscoverySort = "newest" | "oldest" | "title-asc" | "title-desc";
+export type DiscoverySort =
+  | "newest"
+  | "oldest"
+  | "title-asc"
+  | "title-desc"
+  | "most-reacted";
 export type DiscoverySource = "all" | SourceType;
 
 export type DiscoveryState = {
@@ -58,7 +63,8 @@ export function parseDiscoveryState(searchParams?: SearchParamInput): DiscoveryS
   const sort: DiscoverySort =
     sortParam === "oldest" ||
     sortParam === "title-asc" ||
-    sortParam === "title-desc"
+    sortParam === "title-desc" ||
+    sortParam === "most-reacted"
       ? sortParam
       : "newest";
 
@@ -80,7 +86,11 @@ export function getAvailableTags(documents: WikiDocument[]) {
     .sort((left, right) => left.localeCompare(right));
 }
 
-export function applyDiscoveryState(documents: WikiDocument[], state: DiscoveryState) {
+export function applyDiscoveryState(
+  documents: WikiDocument[],
+  state: DiscoveryState,
+  reactionTotals?: Map<string, number>,
+) {
   const query = state.query.trim().toLowerCase();
   const selectedTags = state.tags.map((tag) => normalizeTag(tag));
 
@@ -126,6 +136,15 @@ export function applyDiscoveryState(documents: WikiDocument[], state: DiscoveryS
 
     if (state.sort === "title-desc") {
       return right.title.localeCompare(left.title);
+    }
+
+    if (state.sort === "most-reacted") {
+      const totalDelta =
+        (reactionTotals?.get(right.id) ?? 0) - (reactionTotals?.get(left.id) ?? 0);
+
+      if (totalDelta !== 0) {
+        return totalDelta;
+      }
     }
 
     return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
