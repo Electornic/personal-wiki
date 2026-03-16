@@ -85,7 +85,7 @@ export default async function TopicHubPage({ params }: PageProps) {
 
   return (
     <main className="site-shell pb-20 pt-12 md:pt-16">
-      <div className="mx-auto w-full max-w-[848px]">
+      <div className="w-full">
         <Link
           href="/#library"
           className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 text-[#6b6354] transition hover:bg-[rgba(232,227,219,0.45)]"
