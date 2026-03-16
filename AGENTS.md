@@ -83,9 +83,12 @@ v0.2 branch note:
   - `.omx/specs/deep-interview-personal-wiki-foundation.md`
   - `.omx/plans/personal-wiki-mvp-ralplan.md`
 - `docs/task` 아래의 태스크 파일은 `v0_1_[major-topic].md` 같은 형식으로 만든다.
+- `docs/task` 관련 작업을 할 때는 `docs/task/TEMPLATE.md` 템플릿을 기준으로 섹션과 서술 수준을 맞춘다.
 - `docs/figma_prompts` 아래의 프롬프트 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
 - `docs/test_guide` 아래의 테스트 가이드 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
+- `docs/test_guide` 관련 작업을 할 때는 `docs/test_guide/TEMPLATE.md` 템플릿을 기준으로 체크리스트와 expected 결과 형식을 맞춘다.
 - `docs/idea` 아래의 아이디어 파일은 `YYYY_MM_DD_NN_Idea.md` 형식으로 만든다.
+- `docs/idea` 관련 작업을 할 때는 `docs/idea/TEMPLATE.md` 템플릿을 기준으로 문제, 아이디어, 상태, 승격 조건을 정리한다.
 - `docs/idea` 문서는 버전 작업 문서와 별개이며, 특정 버전의 확정 범위를 의미하지 않는다.
 - PR을 만들 때는 `.github/pull_request_template.md` 템플릿을 따른다.
 - 새 태스크 문서를 만들거나 이름을 바꿀 때는 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
@@ -114,9 +117,12 @@ v0.2 branch note:
 - 적당한 작업 단위가 끝날 때마다 `git add .` 후 `git commit`까지 진행해 변경을 작은 단위로 남긴다.
 - 하나의 태스크를 시작할 때는 해당 태스크 전용 브랜치를 만든다.
 - 브랜치 이름은 `V0_2_[Major_Topic]` 형식을 따른다.
+- 아이디어 검토/브레인스토밍용 브랜치는 `idea/YYYY_MM_DD` 형식을 따른다.
 - 하나의 태스크가 끝나면 PR을 만들고 `main`에 머지한 뒤, 배포는 `dist` 브랜치 기준으로 진행한다.
 - 앞으로 배포용 기준 브랜치는 `dist`다. 릴리스/배포 상태는 `dist`에서 관리한다.
 - 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서로 본다.
+- 배포용 버전 태그는 기본적으로 `VX.Y.Z_MajorTopic` 형식을 따른다. 예: `V0.4.0_Design_Speed_Reading_Flow`
+- `dist` 브랜치 push 시에는 `package.json`의 `version`과 관련 작업 주제를 기준으로 GitHub Actions가 tag와 GitHub Release를 자동 생성하는 흐름을 우선한다.
 - GitHub 관련 작업은 가능하면 `gh` CLI를 우선 사용한다.
 - PR 조회, 리뷰 확인, 코멘트 확인, PR 생성 같은 작업은 `gh` 기준으로 수행한다.
 - PR review 사항을 반영한 뒤에는 해당 review thread에 답글을 달고, resolve 처리까지 진행한다.

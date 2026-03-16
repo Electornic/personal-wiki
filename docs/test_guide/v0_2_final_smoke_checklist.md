@@ -137,7 +137,7 @@ Expected:
 - `/author` 접근 시 sign-in required 상태
 - public reading은 계속 가능
 
-## 9. Regression Checks
+## Regression Focus
 
 - `/` home 정상 렌더링
 - `/library/[slug]` 정상 렌더링
@@ -145,6 +145,7 @@ Expected:
 - `/author` 정상 렌더링
 - `/author/documents/new` 정상 렌더링
 - `/author/documents/[documentId]` 정상 렌더링
+- signup/login, create/edit/delete, comment/reply, sign out 플로우가 함께 깨지지 않는다
 
 ## Pass Criteria
 

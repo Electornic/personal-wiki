@@ -13,16 +13,12 @@
 - 페이지 전환과 로딩 체감을 더 빠르게 만든다
 - 문서를 읽은 뒤 다음 문서로 이동하는 흐름을 더 분명하게 만든다
 
-## Locked v0.4 Workstreams
+## Scope
 
 ### 1. Design Alignment
 
 목표:
 - header와 주요 body 영역의 width, padding, spacing 규칙을 정리한다.
-
-현재 문제:
-- `library`, `workspace`, `write/edit` 화면의 컨테이너 폭이 제각각이라 제품이 분리되어 보인다.
-- 같은 제품 안에서도 데스크탑 기준 정렬선이 자주 바뀐다.
 
 포함 범위:
 - 공통 page shell 정리
@@ -30,29 +26,15 @@
 - `library`, `workspace`, `write/edit`, reading detail의 주요 wrapper 정리
 - section gap, card spacing의 거친 불일치 정리
 
-acceptance criteria:
-- 데스크탑에서 header와 주요 body content의 정렬선이 일관된다
-- `library`, `workspace`, `write/edit` 페이지 전환 시 폭이 갑자기 바뀌지 않는다
-- 레이아웃 수정이 mobile 기본 동작을 깨지 않는다
-
 ### 2. Speed Improvement
 
 목표:
 - 페이지 이동 시 느리게 느껴지는 지점을 줄이고 체감 속도를 개선한다.
 
-현재 문제:
-- 페이지 전환이 대략 `0.7~0.8s` 정도로 느껴진다.
-- 실제 응답 시간과 별개로 loading feedback이 약해서 더 느리게 느껴질 수 있다.
-
 포함 범위:
 - 느린 route 전환 원인 파악
 - 불필요한 fetch/render 확인
 - prefetch, loading UI, caching strategy 검토
-
-acceptance criteria:
-- 주요 페이지 이동 체감이 지금보다 명확히 빨라진다
-- 느린 구간이 남더라도 loading 상태가 비어 보이지 않는다
-- 성능 개선이 auth/visibility 동작을 깨지 않는다
 
 ### 3. Reading Flow Improvement
 
@@ -64,42 +46,91 @@ acceptance criteria:
 - 추천 이유나 연결 근거 표시 검토
 - empty state와 다음 행동 유도 문구 정리
 
-acceptance criteria:
-- reading detail에서 다음 문서로 이동할 이유가 더 분명해진다
-- related reading empty state가 방치된 느낌을 주지 않는다
-- recommendation은 여전히 private 문서를 노출하지 않는다
-
-## Non-Goals For v0.4
+## Non-Goals
 
 - 추천 알고리즘의 대규모 고도화
 - 새 문서 타입 추가
 - reader용 소셜 기능 확장
 - 대규모 editor 아키텍처 교체
 
-## Suggested Execution Order
+## Current Problems
 
-### Phase 1. Layout Lock
+- `library`, `workspace`, `write/edit` 화면의 컨테이너 폭이 제각각이라 제품이 분리되어 보인다.
+- 같은 제품 안에서도 데스크탑 기준 정렬선이 자주 바뀐다.
+- 페이지 전환이 대략 `0.7~0.8s` 정도로 느껴진다.
+- 실제 응답 시간과 별개로 loading feedback이 약해서 더 느리게 느껴질 수 있다.
+- related reading이 다음 문서로 이동할 이유를 충분히 설명하지 못한다.
+
+## Proposed Changes
+
+### Locked v0.4 Workstreams
+
+#### 1. Design Alignment
 
 - 공통 shell 정의
 - width mismatch 정리
+- layout shell 기준선 통일
 
-### Phase 2. Navigation Speed
+#### 2. Speed Improvement
 
 - 느린 전환 원인 파악
 - loading/prefetch/cache 개선
+- auth/visibility를 깨지 않는 범위에서 fetch/render 비용 정리
 
-### Phase 3. Reading Flow
+#### 3. Reading Flow Improvement
 
 - related reading 정보 구조 개선
+- 추천 이유나 연결 근거 표시
 - empty state와 next action 정리
 
-## Locked Decisions
+### Suggested Execution Order
 
-- `v0.4`의 첫 구현은 새 기능 추가보다 사용감 개선에 집중한다
-- 아이디어 백로그와 실제 `v0.4` 범위는 별도다
+#### Phase 1. Layout Lock
 
-## Recommended Next Step
+- 공통 layout shell 적용
+- width mismatch 정리
 
-1. 공통 layout shell 적용
-2. route transition 병목 확인
-3. reading detail의 related reading 개선안 구체화
+#### Phase 2. Navigation Speed
+
+- route transition 병목 확인
+- loading/prefetch/cache 개선
+
+#### Phase 3. Reading Flow
+
+- reading detail의 related reading 개선안 구체화
+- empty state와 next action 정리
+
+### Locked Decisions
+
+- `v0.4`의 첫 구현은 새 기능 추가보다 사용감 개선에 집중한다.
+- 아이디어 백로그와 실제 `v0.4` 범위는 별도다.
+
+## Acceptance Criteria
+
+- 데스크탑에서 header와 주요 body content의 정렬선이 일관된다.
+- `library`, `workspace`, `write/edit` 페이지 전환 시 폭이 갑자기 바뀌지 않는다.
+- 레이아웃 수정이 mobile 기본 동작을 깨지 않는다.
+- 주요 페이지 이동 체감이 지금보다 명확히 빨라진다.
+- 느린 구간이 남더라도 loading 상태가 비어 보이지 않는다.
+- 성능 개선이 auth/visibility 동작을 깨지 않는다.
+- reading detail에서 다음 문서로 이동할 이유가 더 분명해진다.
+- related reading empty state가 방치된 느낌을 주지 않는다.
+- recommendation은 여전히 private 문서를 노출하지 않는다.
+
+## Risks
+
+- 공통 shell 정리가 넓은 레이아웃 회귀를 일으킬 수 있다.
+- 성능 개선 과정에서 prefetch/cache가 auth나 visibility 경계를 흐릴 수 있다.
+- reading flow 개선이 recommendation 로직 변경 요구로 번질 수 있다.
+
+## Verification
+
+- layout alignment, route transition, related reading 흐름을 함께 확인한다.
+- mobile 기본 동작과 private visibility regression이 없는지 확인한다.
+- 아이디어 백로그와 실제 구현 범위가 섞이지 않는지 문서 기준도 같이 본다.
+
+## Related Docs
+
+- [2026_03_14_02_Idea.md](/Users/leejun/Desktop/Projects/personal-wiki/docs/idea/2026_03_14_02_Idea.md)
+- [.omx/specs/deep-interview-personal-wiki-foundation.md](/Users/leejun/Desktop/Projects/personal-wiki/.omx/specs/deep-interview-personal-wiki-foundation.md)
+- [.omx/plans/personal-wiki-mvp-ralplan.md](/Users/leejun/Desktop/Projects/personal-wiki/.omx/plans/personal-wiki-mvp-ralplan.md)

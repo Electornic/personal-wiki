@@ -1,0 +1,120 @@
+name: Dist Release
+
+on:
+  push:
+    branches:
+      - dist
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Resolve release metadata
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          pr_ref="$(gh api "repos/${{ github.repository }}/commits/${GITHUB_SHA}/pulls" --jq '.[0].head.ref' 2>/dev/null || true)"
+          if [ -z "$pr_ref" ]; then
+            pr_ref="$(git log -1 --pretty=%s)"
+          fi
+          topic="$(printf '%s' "$pr_ref" | sed -E 's#^refs/heads/##; s#^.*/##; s/^[Vv][0-9]+_[0-9]+_//; s/[^A-Za-z0-9]+/_/g; s/_+/_/g; s/^_+//; s/_+$//')"
+          if [ -z "$topic" ]; then
+            topic="Release"
+          fi
+          tag="V${version}_${topic}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "topic=$topic" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check existing tag
+        id: tag_check
+        run: |
+          if git rev-parse "${{ steps.release.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create git tag
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.release.outputs.tag }}" "${GITHUB_SHA}" -m "${{ steps.release.outputs.tag }}"
+          git push origin "${{ steps.release.outputs.tag }}"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          previous_tag="$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || true)"
+          notes_file="$(mktemp)"
+          {
+            echo "# ${{ steps.release.outputs.tag }}"
+            echo
+            echo "## Summary"
+            echo "- Version: \`${{ steps.release.outputs.version }}\`"
+            echo "- Topic: \`${{ steps.release.outputs.topic }}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo
+            echo "## Included Changes"
+            if [ -n "$previous_tag" ]; then
+              git log --no-merges --pretty='- %s' "${previous_tag}..${GITHUB_SHA}"
+            else
+              git log --no-merges --pretty='- %s' "${GITHUB_SHA}"
+            fi
+          } > "$notes_file"
+          echo "file=$notes_file" >> "$GITHUB_OUTPUT"
+
+      - name: Check existing GitHub release
+        id: release_check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.release.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub release
+        if: steps.release_check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.release.outputs.tag }}" \
+            --title "${{ steps.release.outputs.tag }}" \
+            --notes-file "${{ steps.notes.outputs.file }}"
