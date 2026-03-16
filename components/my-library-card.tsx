@@ -49,7 +49,7 @@ function BookIcon() {
 export function MyLibraryCard({ document }: MyLibraryCardProps) {
   return (
     <Link href={`/library/${document.slug}`} className="block group">
-      <article className="min-h-[224px] rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition-shadow duration-150 group-hover:shadow-[0_6px_20px_rgba(42,36,25,0.08)] md:min-h-[224px]">
+      <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition group-hover:bg-[rgba(255,255,255,0.72)]">
         <div className="flex min-h-full flex-col">
           <div className="flex items-start gap-3">
             <div className="mt-1 shrink-0">
@@ -59,6 +59,11 @@ export function MyLibraryCard({ document }: MyLibraryCardProps) {
               <h2 className="max-w-[284px] text-[24px] leading-8 font-semibold tracking-[-0.01em] text-[#2a2419] md:max-w-none">
                 {document.title}
               </h2>
+              {document.sourceType === "book" && document.bookTitle ? (
+                <p className="mt-1 text-[14px] leading-5 italic text-[#6b6354]">
+                  from {document.bookTitle}
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -68,11 +73,11 @@ export function MyLibraryCard({ document }: MyLibraryCardProps) {
 
           <div className="mt-4 flex flex-wrap gap-2">
             {document.tags.slice(0, 4).map((tag) => (
-              <TopicPill key={tag} label={tag} />
+              <TopicPill key={tag} label={tag} interactive={false} />
             ))}
           </div>
 
-          <div className="mt-auto flex items-center justify-between pt-3 text-[14px] leading-5 text-[#6b6354]">
+          <div className="mt-4 flex items-center justify-between text-[14px] leading-5 text-[#6b6354]">
             <span className="font-medium">{document.writerName}</span>
             <span>{formatDisplayDate(document.publishedAt)}</span>
           </div>

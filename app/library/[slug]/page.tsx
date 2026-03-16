@@ -8,7 +8,7 @@ import { RecordReactions } from "@/components/record-reactions";
 import { TopicPill } from "@/components/topic-pill";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { listCommentsForRecord } from "@/lib/wiki/comments";
-import { formatDisplayDate, formatLongDisplayDate } from "@/lib/wiki/content";
+import { formatDisplayDate, formatLongDisplayDate, getExcerpt } from "@/lib/wiki/content";
 import { getPublicDocumentBySlug, listRelatedDocuments } from "@/lib/wiki/documents";
 import { getReactionStateForRecord } from "@/lib/wiki/reactions";
 
@@ -98,13 +98,10 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   }
 
   const [relatedDocuments, comments, reactionState] = await Promise.all([
-    listRelatedDocuments(slug, 1),
+    listRelatedDocuments(slug, 2),
     listCommentsForRecord(document.id),
     getReactionStateForRecord(document.id),
   ]);
-  const nextDocument = relatedDocuments[0] ?? null;
-  const nextSharedTag = nextDocument?.sharedTags[0] ?? null;
-  const sharedTagPreview = nextDocument?.sharedTags.slice(0, 3) ?? [];
 
   return (
     <main className="site-shell pb-20 pt-8">
@@ -167,60 +164,82 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
             <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
               Continue Reading
             </h2>
-            {nextDocument ? (
+            {relatedDocuments.length ? (
               <>
                 <p className="mt-2 text-[16px] leading-6 text-[#6b6354]">
                   Related records from your library
                 </p>
 
-                <Link
-                  href={`/library/${nextDocument.slug}`}
-                  className="mt-8 block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-5 py-5 transition hover:bg-[rgba(232,227,219,0.12)] md:px-6 md:py-6"
-                >
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[12px] leading-4 text-[#6b6354]">
-                    <span className="font-medium tracking-[0.3px] uppercase">Read Next</span>
-                    <span className="text-[rgba(107,99,84,0.5)]">·</span>
-                    {nextSharedTag ? (
-                      <span className="inline-flex h-5 items-center rounded-full bg-[rgba(232,227,219,0.5)] px-2 text-[12px] leading-4">
-                        {nextSharedTag}
-                      </span>
-                    ) : null}
-                  </div>
+                <div className="mt-8 grid gap-6">
+                  {relatedDocuments.map((relatedDocument, index) => {
+                    const reasonLabel = index === 0 ? "Read Next" : "Also Related";
+                    const reasonText =
+                      relatedDocument.sharedTags.length > 1
+                        ? `Related by ${relatedDocument.sharedTags[0]} + ${
+                            relatedDocument.sharedTags.length - 1
+                          } more`
+                        : relatedDocument.sharedTags[0]
+                          ? `Related by ${relatedDocument.sharedTags[0]}`
+                          : null;
 
-                  <div className="mt-4 flex items-start gap-4">
-                    <div className="mt-1 shrink-0">
-                      {nextDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[18px] leading-6 font-semibold text-[#2a2419] md:text-[20px] md:leading-[25px]">
-                        {nextDocument.title}
-                      </p>
-                      <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
-                        {nextDocument.writerName} · {formatDisplayDate(nextDocument.publishedAt)}
-                      </p>
-                      {sharedTagPreview.length > 1 ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {sharedTagPreview.slice(1).map((tag) => (
-                            <span
-                              key={tag}
-                              className="inline-flex h-5 items-center rounded-full bg-[rgba(232,227,219,0.35)] px-2 text-[12px] leading-4 text-[#6b6354]"
-                            >
-                              Related by {tag}
-                            </span>
-                          ))}
+                    return (
+                      <Link
+                        key={relatedDocument.id}
+                        href={`/library/${relatedDocument.slug}`}
+                        className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition hover:bg-[rgba(255,255,255,0.72)]"
+                      >
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[12px] leading-4 text-[#6b6354]">
+                          <span className="font-medium tracking-[0.3px] uppercase">
+                            {reasonLabel}
+                          </span>
+                          {reasonText ? (
+                            <>
+                              <span className="text-[rgba(107,99,84,0.5)]">·</span>
+                              <span className="text-[12px] leading-4 text-[#6b6354]">
+                                {reasonText}
+                              </span>
+                            </>
+                          ) : null}
                         </div>
-                      ) : null}
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {nextDocument.tags.slice(0, 4).map((tag) => (
-                          <TopicPill key={tag} label={tag} />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mt-1 shrink-0 text-[#6b6354]">
-                      <ArrowRightIcon />
-                    </div>
-                  </div>
-                </Link>
+
+                        <div className="mt-4 flex items-start gap-4">
+                          <div className="mt-1 shrink-0">
+                            {relatedDocument.sourceType === "book" ? (
+                              <BookIcon />
+                            ) : (
+                              <ArticleIcon />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[20px] leading-[25px] font-semibold text-[#2a2419]">
+                              {relatedDocument.title}
+                            </p>
+                            {relatedDocument.sourceType === "book" && relatedDocument.bookTitle ? (
+                              <p className="mt-2 text-[14px] leading-5 italic text-[#6b6354]">
+                                from {relatedDocument.bookTitle}
+                              </p>
+                            ) : null}
+                            <p className="mt-3 text-[16px] leading-[26px] text-[rgba(107,99,84,0.9)]">
+                              {getExcerpt(relatedDocument.contents)}
+                            </p>
+                            <p className="mt-4 text-[14px] leading-5 text-[#6b6354]">
+                              {relatedDocument.writerName} ·{" "}
+                              {formatDisplayDate(relatedDocument.publishedAt)}
+                            </p>
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {relatedDocument.tags.slice(0, 5).map((tag) => (
+                                <TopicPill key={tag} label={tag} interactive={false} />
+                              ))}
+                            </div>
+                          </div>
+                          <div className="mt-1 shrink-0 text-[#6b6354]">
+                            <ArrowRightIcon />
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
 
                 <div className="mt-6 flex justify-center md:mt-8">
                   <Link
