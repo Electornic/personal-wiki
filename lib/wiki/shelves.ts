@@ -33,6 +33,7 @@ function mapShelves(
   shelves: ShelfRow[],
   shelfRecords: ShelfRecordRow[],
   documents: WikiDocument[],
+  { includeEmpty = false }: { includeEmpty?: boolean } = {},
 ) {
   const documentMap = new Map(documents.map((document) => [document.id, document]));
 
@@ -54,7 +55,7 @@ function mapShelves(
         documents: records,
       } satisfies CurationShelf;
     })
-    .filter((shelf) => shelf.documents.length > 0)
+    .filter((shelf) => includeEmpty || shelf.documents.length > 0)
     .sort((left, right) => left.position - right.position);
 }
 
@@ -138,7 +139,9 @@ export async function listAuthorCurationShelves() {
   }
 
   const documents = await listAuthorDocuments();
-  return mapShelves(shelves as ShelfRow[], shelfRecords as ShelfRecordRow[], documents);
+  return mapShelves(shelves as ShelfRow[], shelfRecords as ShelfRecordRow[], documents, {
+    includeEmpty: true,
+  });
 }
 
 type CreateShelfInput = {

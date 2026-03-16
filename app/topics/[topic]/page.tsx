@@ -62,7 +62,7 @@ function formatTopicTitle(topic: string) {
 
 export default async function TopicHubPage({ params }: PageProps) {
   const { topic } = await params;
-  const decodedTopic = decodeURIComponent(topic);
+  const decodedTopic = topic;
   const normalizedTopic = normalizeTopic(decodedTopic);
 
   const [publicDocuments, topicShelves] = await Promise.all([
