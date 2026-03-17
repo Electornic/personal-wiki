@@ -277,19 +277,6 @@ export async function listRelatedDocumentsForDocument(
   return getRelatedDocuments(document, candidateDocuments, limit);
 }
 
-export const listRelatedDocuments = cache(async function listRelatedDocuments(
-  slug: string,
-  limit = 3,
-) {
-  const document = await getPublicDocumentBySlug(slug);
-
-  if (!document) {
-    return [];
-  }
-
-  return listRelatedDocumentsForDocument(document, limit);
-});
-
 export async function listDocumentsByIds(recordIds: string[]) {
   const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];
 

@@ -58,22 +58,6 @@ export const getAuthorAccess = cache(async function getAuthorAccess() {
   };
 });
 
-export const getHeaderAuthState = cache(async function getHeaderAuthState() {
-  const { configured, user } = await getVerifiedAuthUser();
-
-  if (!configured) {
-    return {
-      configured: false,
-      isAuthenticated: false,
-    };
-  }
-
-  return {
-    configured: true,
-    isAuthenticated: Boolean(user),
-  };
-});
-
 export async function requireAuthorAccess() {
   const access = await getAuthorAccess();
 
