@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { getHeaderAuthState } from "@/lib/wiki/auth";
 
 export const metadata: Metadata = {
   title: "Personal Wiki",
@@ -15,13 +14,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const access = await getHeaderAuthState();
-
   return (
     <html lang="ko">
       <body className="antialiased">
         <div className="min-h-screen flex flex-col">
-          <SiteHeader isAuthenticated={access.isAuthenticated} />
+          <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter />
         </div>

@@ -223,16 +223,10 @@ export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
   return documents.find((document) => document.id === documentId) ?? null;
 });
 
-export const listRelatedDocuments = cache(async function listRelatedDocuments(
-  slug: string,
+export async function listRelatedDocumentsForDocument(
+  document: WikiDocument,
   limit = 3,
 ) {
-  const document = await getPublicDocumentBySlug(slug);
-
-  if (!document) {
-    return [];
-  }
-
   if (!hasSupabaseEnv()) {
     const documents = await listPublicDocuments();
     return getRelatedDocuments(document, documents, limit);
@@ -281,6 +275,19 @@ export const listRelatedDocuments = cache(async function listRelatedDocuments(
   const candidateDocuments = mapRowsToDocuments(candidateRows, candidateTagDetails);
 
   return getRelatedDocuments(document, candidateDocuments, limit);
+}
+
+export const listRelatedDocuments = cache(async function listRelatedDocuments(
+  slug: string,
+  limit = 3,
+) {
+  const document = await getPublicDocumentBySlug(slug);
+
+  if (!document) {
+    return [];
+  }
+
+  return listRelatedDocumentsForDocument(document, limit);
 });
 
 export async function listDocumentsByIds(recordIds: string[]) {

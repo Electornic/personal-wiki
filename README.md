@@ -65,7 +65,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 설명:
 
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-  public reading + SSR auth 세션에 필요합니다.
+  public reading + browser / SSR auth 세션에 필요합니다.
 - `SUPABASE_SERVICE_ROLE_KEY`
   signup/login 후 profile bootstrap과 protected server actions 보조에 사용됩니다.
 - `SUPABASE_AUTH_REDIRECT_URL`
@@ -78,12 +78,15 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 3. Authentication에서 Email/Password 로그인을 활성화합니다.
 4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
 5. 위 환경변수를 `.env.local`에 채웁니다.
+6. auth refresh를 안정적으로 처리하려면 Next.js `proxy.ts`가 활성화된 상태로 실행합니다.
 
 주의:
 
 - public surface에서는 private 문서가 목록/추천/상세 어디에서도 드러나면 안 됩니다.
 - 로그인 사용자는 signup/login 이후 `profiles` row를 가져야 protected write가 정상 동작합니다.
 - callback의 `next` 파라미터는 로컬 상대 경로만 허용합니다.
+- session refresh는 request 단계 `proxy.ts`에서 수행합니다.
+- header 로그인 상태는 browser client 기준으로 반영됩니다.
 - record editor는 `title / contents / source type / book title / visibility / tags` 중심입니다.
 - comments는 public record에서 읽을 수 있고, 작성은 로그인 사용자만 가능합니다.
 - bookmark / like / my library까지 보려면 `SETUP_GUIDE.md`의 Step 7 migration도 필요합니다.
