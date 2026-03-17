@@ -2,7 +2,6 @@ import {
   getAdminSupabaseClient,
   getServerSupabaseClient,
 } from "@/lib/supabase/server";
-import { getAuthorAccess } from "@/lib/wiki/auth";
 import type { LibraryTab } from "@/lib/wiki/library";
 import type { RecordReactionState } from "@/lib/wiki/types";
 
@@ -43,8 +42,10 @@ export async function listReactionStatesForRecords(recordIds: string[]) {
     return stateMap;
   }
 
-  const access = await getAuthorAccess();
-  const userId = access.userId;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id ?? null;
 
   if (!userId) {
     return stateMap;
@@ -185,8 +186,10 @@ export async function listReactionRecordIds(tab: LibraryTab) {
     return [];
   }
 
-  const access = await getAuthorAccess();
-  const userId = access.userId;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id ?? null;
 
   if (!userId) {
     return [];

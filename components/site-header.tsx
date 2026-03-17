@@ -1,8 +1,12 @@
-import Link from "next/link";
+"use client";
 
-type SiteHeaderProps = {
-  isAuthenticated: boolean;
-};
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { hasSupabaseEnv } from "@/lib/env";
+import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
+
+type AuthStatus = "loading" | "authenticated" | "anonymous";
 
 function WorkspaceIcon() {
   return (
@@ -41,7 +45,52 @@ function WriteIcon() {
   );
 }
 
-export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
+export function SiteHeader() {
+  const [authStatus, setAuthStatus] = useState<AuthStatus>(() =>
+    hasSupabaseEnv() ? "loading" : "anonymous",
+  );
+
+  useEffect(() => {
+    let isActive = true;
+    const supabase = getBrowserSupabaseClient();
+
+    if (!supabase) {
+      return;
+    }
+
+    const syncAuthState = async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (!isActive) {
+        return;
+      }
+
+      if (error) {
+        setAuthStatus("anonymous");
+        return;
+      }
+
+      setAuthStatus(data.session ? "authenticated" : "anonymous");
+    };
+
+    void syncAuthState();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isActive) {
+        return;
+      }
+
+      setAuthStatus(session?.user ? "authenticated" : "anonymous");
+    });
+
+    return () => {
+      isActive = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(255,255,255,0.5)] backdrop-blur-sm">
       <div className="site-shell flex h-16 items-center justify-between">
@@ -53,7 +102,7 @@ export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
         </Link>
 
         <nav className="flex items-center gap-3">
-          {isAuthenticated ? (
+          {authStatus === "authenticated" ? (
             <>
               <Link
                 href="/me/library"
@@ -83,7 +132,7 @@ export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
                 </span>
               </Link>
             </>
-          ) : (
+          ) : authStatus === "anonymous" ? (
             <Link
               href="/author/sign-in"
               className="inline-flex h-8 min-w-[70px] items-center justify-center rounded-[4px] bg-[#2a2419] px-3 text-[14px] leading-5 font-medium text-[#faf8f5] no-underline"
@@ -92,6 +141,8 @@ export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
                 Sign In
               </span>
             </Link>
+          ) : (
+            <div className="h-8 min-w-[70px]" aria-hidden="true" />
           )}
         </nav>
       </div>

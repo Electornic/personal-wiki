@@ -9,7 +9,10 @@ import { TopicPill } from "@/components/topic-pill";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { listCommentsForRecord } from "@/lib/wiki/comments";
 import { formatDisplayDate, formatLongDisplayDate, getExcerpt } from "@/lib/wiki/content";
-import { getPublicDocumentBySlug, listRelatedDocuments } from "@/lib/wiki/documents";
+import {
+  getPublicDocumentBySlug,
+  listRelatedDocumentsForDocument,
+} from "@/lib/wiki/documents";
 import { getReactionStateForRecord } from "@/lib/wiki/reactions";
 
 type PageProps = {
@@ -98,7 +101,7 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   }
 
   const [relatedDocuments, comments, reactionState] = await Promise.all([
-    listRelatedDocuments(slug, 2),
+    listRelatedDocumentsForDocument(document, 2),
     listCommentsForRecord(document.id),
     getReactionStateForRecord(document.id),
   ]);
