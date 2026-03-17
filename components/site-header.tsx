@@ -59,21 +59,18 @@ export function SiteHeader() {
     }
 
     const syncAuthState = async () => {
-      const { data, error } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getSession();
 
       if (!isActive) {
         return;
       }
 
       if (error) {
-        if (error.code === "refresh_token_not_found") {
-          await supabase.auth.signOut();
-        }
         setAuthStatus("anonymous");
         return;
       }
 
-      setAuthStatus(data.user ? "authenticated" : "anonymous");
+      setAuthStatus(data.session ? "authenticated" : "anonymous");
     };
 
     void syncAuthState();
