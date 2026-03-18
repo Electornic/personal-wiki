@@ -172,7 +172,7 @@ export function DiscoveryControls({
             value={queryValue}
             onChange={(event) => setQueryValue(event.currentTarget.value)}
             placeholder="Search records..."
-            className="h-[42px] w-full rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] pl-4 pr-10 text-[14px] leading-5 text-[#2a2419] placeholder:text-[rgba(42,36,25,0.5)]"
+            className="h-[42px] w-full rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] pl-4 pr-[42px] text-[14px] leading-5 text-[#2a2419] placeholder:text-[rgba(42,36,25,0.5)]"
           />
         </form>
 
