@@ -19,12 +19,18 @@ function emptyReactionState(): RecordReactionState {
   };
 }
 
-export async function getReactionStateForRecord(recordId: string) {
-  const states = await listReactionStatesForRecords([recordId]);
+export async function getReactionStateForRecord(
+  recordId: string,
+  userId?: string | null,
+) {
+  const states = await listReactionStatesForRecords([recordId], userId);
   return states.get(recordId) ?? emptyReactionState();
 }
 
-export async function listReactionStatesForRecords(recordIds: string[]) {
+export async function listReactionStatesForRecords(
+  recordIds: string[],
+  userId?: string | null,
+) {
   const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];
   const stateMap = new Map<string, RecordReactionState>();
 
@@ -42,12 +48,14 @@ export async function listReactionStatesForRecords(recordIds: string[]) {
     return stateMap;
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id ?? null;
+  const resolvedUserId =
+    userId !== undefined
+      ? userId
+      : (
+          await supabase.auth.getUser()
+        ).data.user?.id ?? null;
 
-  if (!userId) {
+  if (!resolvedUserId) {
     return stateMap;
   }
 
@@ -55,12 +63,12 @@ export async function listReactionStatesForRecords(recordIds: string[]) {
     supabase
       .from("record_bookmarks")
       .select("record_id")
-      .eq("user_id", userId)
+      .eq("user_id", resolvedUserId)
       .in("record_id", uniqueRecordIds),
     supabase
       .from("record_likes")
       .select("record_id")
-      .eq("user_id", userId)
+      .eq("user_id", resolvedUserId)
       .in("record_id", uniqueRecordIds),
   ]);
 

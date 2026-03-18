@@ -1,7 +1,7 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import type { DiscoverySort, DiscoverySource } from "@/lib/wiki/discovery";
 
@@ -69,7 +69,6 @@ export function DiscoveryControls({
   preserveParams,
   className,
 }: DiscoveryControlsProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [queryValue, setQueryValue] = useState(query);
@@ -140,9 +139,7 @@ export function DiscoveryControls({
   }
 
   function navigate(url: string) {
-    startTransition(() => {
-      router.push(url);
-    });
+    window.history.pushState(null, "", url);
   }
 
   const showPanel =

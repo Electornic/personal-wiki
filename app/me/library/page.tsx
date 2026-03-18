@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { DiscoveryControls } from "@/components/discovery-controls";
-import { MyLibraryCard } from "@/components/my-library-card";
+import { MyLibraryBrowser } from "@/components/my-library-browser";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import {
-  applyDiscoveryState,
   getAvailableTags,
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
@@ -52,10 +50,9 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
     ? resolvedSearchParams.tab[0]
     : resolvedSearchParams.tab;
   const activeTab: LibraryTab = tab === "likes" ? "likes" : "bookmarks";
-  const discoveryState = parseDiscoveryState(resolvedSearchParams);
+  const initialDiscoveryState = parseDiscoveryState(resolvedSearchParams);
   const records = await listMyLibraryPreview(activeTab);
   const reactionTotals = await listReactionTotalsForRecords(records.map((record) => record.id));
-  const filteredRecords = applyDiscoveryState(records, discoveryState, reactionTotals);
   const availableTags = getAvailableTags(records);
 
   return (
@@ -93,49 +90,13 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        <DiscoveryControls
-          className="mt-10"
+        <MyLibraryBrowser
+          activeTab={activeTab}
+          records={records}
           availableTags={availableTags}
-          query={discoveryState.query}
-          sort={discoveryState.sort}
-          source={discoveryState.source}
-          tags={discoveryState.tags}
-          filtersOpen={discoveryState.filtersOpen}
-          preserveParams={{ tab: activeTab }}
+          initialState={initialDiscoveryState}
+          reactionTotals={Object.fromEntries(reactionTotals)}
         />
-
-        {filteredRecords.length ? (
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            {filteredRecords.map((record) => (
-              <MyLibraryCard key={record.id} document={record} />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-10 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-16 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center text-[#b7b0a2]">
-              <MyLibraryIcon className="h-12 w-12" />
-            </div>
-            <h2 className="mt-5 text-[20px] leading-7 font-semibold text-[#2a2419]">
-              {records.length === 0
-                ? activeTab === "bookmarks"
-                  ? "No bookmarks yet"
-                  : "No likes yet"
-                : "No matching records found"}
-            </h2>
-            <p className="mx-auto mt-3 max-w-[360px] text-[18px] leading-[32.4px] text-[#6b6354]">
-              {records.length === 0
-                ? activeTab === "bookmarks"
-                  ? "Bookmark records you want to return to later"
-                  : "Like records that resonate with you"
-                : "Adjust your search or filters to see more records."}
-            </p>
-            {records.length === 0 ? (
-              <Link href="/#library" className="mt-10 inline-flex text-[14px] leading-5 text-[#2a2419]">
-                Browse the library
-              </Link>
-            ) : null}
-          </div>
-        )}
       </section>
     </main>
   );

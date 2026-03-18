@@ -1,8 +1,6 @@
 import { CurationShelf } from "@/components/curation-shelf";
-import { DiscoveryControls } from "@/components/discovery-controls";
-import { DocumentCard } from "@/components/document-card";
+import { PublicLibraryBrowser } from "@/components/public-library-browser";
 import {
-  applyDiscoveryState,
   buildHomeCurationShelves,
   getAvailableTags,
   parseDiscoveryState,
@@ -16,18 +14,13 @@ type PageProps = {
 };
 
 export default async function Home({ searchParams }: PageProps) {
-  const discoveryState = parseDiscoveryState(await searchParams);
+  const initialDiscoveryState = parseDiscoveryState(await searchParams);
   const documents = await listPublicDocuments();
   const publicRecords = documents.filter((record) => record.visibility === "public");
   const [reactionTotals, authoredShelves] = await Promise.all([
     listReactionTotalsForRecords(publicRecords.map((record) => record.id)),
     listPublicCurationShelves("home"),
   ]);
-  const filteredRecords = applyDiscoveryState(
-    publicRecords,
-    discoveryState,
-    reactionTotals,
-  );
   const availableTags = getAvailableTags(publicRecords);
   const shelves =
     authoredShelves.length > 0
@@ -58,35 +51,12 @@ export default async function Home({ searchParams }: PageProps) {
       </section>
 
       <section id="library" className="mt-16 md:mt-20">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-[30px] leading-9 font-semibold tracking-[-0.3px] text-[#2a2419]">
-            Browse Library
-          </h2>
-          <span className="text-[14px] leading-5 text-[#6b6354]">
-            {filteredRecords.length} {filteredRecords.length === 1 ? "record" : "records"}
-          </span>
-        </div>
-
-        <DiscoveryControls
+        <PublicLibraryBrowser
+          records={publicRecords}
           availableTags={availableTags}
-          query={discoveryState.query}
-          sort={discoveryState.sort}
-          source={discoveryState.source}
-          tags={discoveryState.tags}
-          filtersOpen={discoveryState.filtersOpen}
+          initialState={initialDiscoveryState}
+          reactionTotals={Object.fromEntries(reactionTotals)}
         />
-
-        <div className="mt-8 grid gap-6">
-          {filteredRecords.map((document) => (
-            <DocumentCard key={document.id} document={document} />
-          ))}
-        </div>
-
-        {filteredRecords.length === 0 ? (
-          <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-12 text-center text-[18px] leading-8 text-[#6b6354]">
-            No matching records found.
-          </div>
-        ) : null}
       </section>
     </main>
   );
