@@ -8,16 +8,14 @@ import { MyLibraryCard } from "@/components/my-library-card";
 import {
   applyDiscoveryState,
   parseDiscoveryState,
-  type DiscoveryState,
 } from "@/lib/wiki/discovery";
 import type { LibraryTab } from "@/lib/wiki/library";
-import type { WikiDocument } from "@/lib/wiki/types";
+import type { WikiDocumentPreview } from "@/lib/wiki/types";
 
 type MyLibraryBrowserProps = {
   activeTab: LibraryTab;
-  records: WikiDocument[];
+  records: WikiDocumentPreview[];
   availableTags: string[];
-  initialState: DiscoveryState;
   reactionTotals: Record<string, number>;
 };
 
@@ -43,13 +41,10 @@ export function MyLibraryBrowser({
   activeTab,
   records,
   availableTags,
-  initialState,
   reactionTotals,
 }: MyLibraryBrowserProps) {
   const searchParams = useSearchParams();
-  const discoveryState = searchParams.toString()
-    ? parseDiscoveryState(searchParams)
-    : initialState;
+  const discoveryState = parseDiscoveryState(searchParams);
   const filteredRecords = applyDiscoveryState(
     records,
     discoveryState,

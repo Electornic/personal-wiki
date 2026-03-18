@@ -2,10 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { MyLibraryBrowser } from "@/components/my-library-browser";
+import { toDocumentPreview } from "@/lib/wiki/content";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import {
-  getAvailableTags,
-  parseDiscoveryState,
+  getAvailableTagsFromPreviews,
 } from "@/lib/wiki/discovery";
 import { listMyLibraryPreview, type LibraryTab } from "@/lib/wiki/library";
 import { listReactionTotalsForRecords } from "@/lib/wiki/reactions";
@@ -50,10 +50,10 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
     ? resolvedSearchParams.tab[0]
     : resolvedSearchParams.tab;
   const activeTab: LibraryTab = tab === "likes" ? "likes" : "bookmarks";
-  const initialDiscoveryState = parseDiscoveryState(resolvedSearchParams);
   const records = await listMyLibraryPreview(activeTab);
+  const previews = records.map((record) => toDocumentPreview(record));
   const reactionTotals = await listReactionTotalsForRecords(records.map((record) => record.id));
-  const availableTags = getAvailableTags(records);
+  const availableTags = getAvailableTagsFromPreviews(previews);
 
   return (
     <main className="site-shell pb-20 pt-12">
@@ -92,9 +92,8 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
 
         <MyLibraryBrowser
           activeTab={activeTab}
-          records={records}
+          records={previews}
           availableTags={availableTags}
-          initialState={initialDiscoveryState}
           reactionTotals={Object.fromEntries(reactionTotals)}
         />
       </section>

@@ -2,10 +2,10 @@ import { Suspense } from "react";
 
 import { CurationShelf } from "@/components/curation-shelf";
 import { PublicLibraryBrowser } from "@/components/public-library-browser";
+import { toDocumentPreview } from "@/lib/wiki/content";
 import {
   buildHomeCurationShelves,
-  getAvailableTags,
-  parseDiscoveryState,
+  getAvailableTagsFromPreviews,
 } from "@/lib/wiki/discovery";
 import { listPublicDocuments } from "@/lib/wiki/documents";
 import { listReactionTotalsForRecords } from "@/lib/wiki/reactions";
@@ -16,7 +16,7 @@ type PageProps = {
 };
 
 export default async function Home({ searchParams }: PageProps) {
-  const initialDiscoveryState = parseDiscoveryState(await searchParams);
+  await searchParams;
 
   return (
     <main className="site-shell pb-16 pt-12 md:pb-20 md:pt-16">
@@ -36,7 +36,7 @@ export default async function Home({ searchParams }: PageProps) {
 
       <section id="library" className="mt-16 md:mt-20">
         <Suspense fallback={<HomeLibraryFallback />}>
-          <HomeLibrarySection initialDiscoveryState={initialDiscoveryState} />
+          <HomeLibrarySection />
         </Suspense>
       </section>
     </main>
@@ -66,23 +66,19 @@ async function HomeShelvesSection() {
   );
 }
 
-async function HomeLibrarySection({
-  initialDiscoveryState,
-}: {
-  initialDiscoveryState: ReturnType<typeof parseDiscoveryState>;
-}) {
+async function HomeLibrarySection() {
   const documents = await listPublicDocuments();
   const publicRecords = documents.filter((record) => record.visibility === "public");
+  const previews = publicRecords.map((record) => toDocumentPreview(record));
   const reactionTotals = await listReactionTotalsForRecords(
     publicRecords.map((record) => record.id),
   );
-  const availableTags = getAvailableTags(publicRecords);
+  const availableTags = getAvailableTagsFromPreviews(previews);
 
   return (
     <PublicLibraryBrowser
-      records={publicRecords}
+      records={previews}
       availableTags={availableTags}
-      initialState={initialDiscoveryState}
       reactionTotals={Object.fromEntries(reactionTotals)}
     />
   );

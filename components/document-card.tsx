@@ -1,11 +1,11 @@
 import Link from "next/link";
 
 import { TopicPill } from "@/components/topic-pill";
-import { formatDisplayDate, getExcerpt } from "@/lib/wiki/content";
-import type { WikiDocument } from "@/lib/wiki/types";
+import { formatDisplayDate } from "@/lib/wiki/content";
+import type { WikiDocumentPreview } from "@/lib/wiki/types";
 
 type DocumentCardProps = {
-  document: WikiDocument;
+  document: WikiDocumentPreview;
 };
 
 function ArticleIcon() {
@@ -47,8 +47,6 @@ function BookIcon() {
 }
 
 export function DocumentCard({ document }: DocumentCardProps) {
-  const excerpt = getExcerpt(document.contents);
-
   return (
     <Link href={`/library/${document.slug}`} className="block group">
       <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition group-hover:bg-[rgba(255,255,255,0.72)]">
@@ -70,7 +68,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
           </div>
 
           <p className="mt-4 text-[16px] leading-[26px] text-[rgba(42,36,25,0.8)]">
-            {excerpt}
+            {document.excerpt}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">

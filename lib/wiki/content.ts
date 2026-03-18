@@ -12,6 +12,17 @@ export function getExcerpt(contents: string) {
   return plain.length > 140 ? `${plain.slice(0, 137)}...` : plain;
 }
 
+export function toDocumentPreview<T extends { contents: string }>(
+  document: T,
+): Omit<T, "contents"> & { excerpt: string } {
+  const { contents, ...rest } = document;
+
+  return {
+    ...rest,
+    excerpt: getExcerpt(contents),
+  };
+}
+
 export function formatDisplayDate(value?: string | null) {
   if (!value) {
     return "";
