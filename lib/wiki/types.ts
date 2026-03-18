@@ -23,6 +23,10 @@ export type WikiDocument = {
   updatedAt: string;
 };
 
+export type WikiDocumentPreview = Omit<WikiDocument, "contents"> & {
+  excerpt: string;
+};
+
 export type RelatedDocument = WikiDocument & {
   sharedTagCount: number;
   sharedTags: string[];

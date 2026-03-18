@@ -1,11 +1,11 @@
 import Link from "next/link";
 
 import { TopicPill } from "@/components/topic-pill";
-import { formatDisplayDate, getExcerpt } from "@/lib/wiki/content";
-import type { WikiDocument } from "@/lib/wiki/types";
+import { formatDisplayDate } from "@/lib/wiki/content";
+import type { WikiDocumentPreview } from "@/lib/wiki/types";
 
 type MyLibraryCardProps = {
-  document: WikiDocument;
+  document: WikiDocumentPreview;
 };
 
 function ArticleIcon() {
@@ -68,7 +68,7 @@ export function MyLibraryCard({ document }: MyLibraryCardProps) {
           </div>
 
           <p className="mt-4 text-[16px] leading-[26px] text-[rgba(42,36,25,0.8)]">
-            {getExcerpt(document.contents)}
+            {document.excerpt}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">

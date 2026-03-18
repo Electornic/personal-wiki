@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { CommentForm } from "@/components/comment-form";
 import { CommentThread } from "@/components/comment-thread";
@@ -91,20 +92,11 @@ function ArrowRightIcon() {
 
 export default async function LibraryDocumentPage({ params }: PageProps) {
   const { slug } = await params;
-  const [document, access] = await Promise.all([
-    getPublicDocumentBySlug(slug),
-    getAuthorAccess(),
-  ]);
+  const document = await getPublicDocumentBySlug(slug);
 
   if (!document) {
     notFound();
   }
-
-  const [relatedDocuments, comments, reactionState] = await Promise.all([
-    listRelatedDocumentsForDocument(document, 2),
-    listCommentsForRecord(document.id),
-    getReactionStateForRecord(document.id),
-  ]);
 
   return (
     <main className="site-shell pb-20 pt-8">
@@ -154,169 +146,252 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
             />
           </section>
 
-          <section className="mt-12 border-b border-t border-[rgba(42,36,25,0.1)] py-6">
-            <RecordReactions
-              recordId={document.id}
-              recordSlug={document.slug}
-              state={reactionState}
-              canReact={access.isAuthenticated}
-            />
-          </section>
+          <Suspense fallback={<RecordReactionsFallback />}>
+            <RecordReactionsSection documentId={document.id} recordSlug={document.slug} />
+          </Suspense>
 
-          <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
-            <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
-              Continue Reading
-            </h2>
-            {relatedDocuments.length ? (
-              <>
-                <p className="mt-2 text-[16px] leading-6 text-[#6b6354]">
-                  Related records from your library
-                </p>
+          <Suspense fallback={<RelatedDocumentsFallback />}>
+            <RelatedDocumentsSection document={document} />
+          </Suspense>
 
-                <div className="mt-8 grid gap-6">
-                  {relatedDocuments.map((relatedDocument, index) => {
-                    const reasonLabel = index === 0 ? "Read Next" : "Also Related";
-                    const reasonText =
-                      relatedDocument.sharedTags.length > 1
-                        ? `Related by ${relatedDocument.sharedTags[0]} + ${
-                            relatedDocument.sharedTags.length - 1
-                          } more`
-                        : relatedDocument.sharedTags[0]
-                          ? `Related by ${relatedDocument.sharedTags[0]}`
-                          : null;
-
-                    return (
-                      <Link
-                        key={relatedDocument.id}
-                        href={`/library/${relatedDocument.slug}`}
-                        className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition hover:bg-[rgba(255,255,255,0.72)]"
-                      >
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[12px] leading-4 text-[#6b6354]">
-                          <span className="font-medium tracking-[0.3px] uppercase">
-                            {reasonLabel}
-                          </span>
-                          {reasonText ? (
-                            <>
-                              <span className="text-[rgba(107,99,84,0.5)]">·</span>
-                              <span className="text-[12px] leading-4 text-[#6b6354]">
-                                {reasonText}
-                              </span>
-                            </>
-                          ) : null}
-                        </div>
-
-                        <div className="mt-4 flex items-start gap-4">
-                          <div className="mt-1 shrink-0">
-                            {relatedDocument.sourceType === "book" ? (
-                              <BookIcon />
-                            ) : (
-                              <ArticleIcon />
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[20px] leading-[25px] font-semibold text-[#2a2419]">
-                              {relatedDocument.title}
-                            </p>
-                            {relatedDocument.sourceType === "book" && relatedDocument.bookTitle ? (
-                              <p className="mt-2 text-[14px] leading-5 italic text-[#6b6354]">
-                                from {relatedDocument.bookTitle}
-                              </p>
-                            ) : null}
-                            <p className="mt-3 text-[16px] leading-[26px] text-[rgba(107,99,84,0.9)]">
-                              {getExcerpt(relatedDocument.contents)}
-                            </p>
-                            <p className="mt-4 text-[14px] leading-5 text-[#6b6354]">
-                              {relatedDocument.writerName} ·{" "}
-                              {formatDisplayDate(relatedDocument.publishedAt)}
-                            </p>
-                            <div className="mt-4 flex flex-wrap gap-2">
-                              {relatedDocument.tags.slice(0, 5).map((tag) => (
-                                <TopicPill key={tag} label={tag} interactive={false} />
-                              ))}
-                            </div>
-                          </div>
-                          <div className="mt-1 shrink-0 text-[#6b6354]">
-                            <ArrowRightIcon />
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-6 flex justify-center md:mt-8">
-                  <Link
-                    href="/#library"
-                    className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#6b6354] transition hover:text-[#2a2419]"
-                  >
-                    Browse all records
-                    <ArrowRightIcon />
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <div className="mt-6 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-6 py-10 text-center md:py-12">
-                <p className="text-[16px] leading-6 text-[#6b6354]">
-                  No related reading found at the moment.
-                </p>
-                <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
-                  Check back later for more connections.
-                </p>
-                <Link
-                  href="/#library"
-                  className="mt-10 inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
-                >
-                  Browse all records
-                  <ArrowRightIcon />
-                </Link>
-              </div>
-            )}
-          </section>
-
-          <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
-            <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
-              Conversation
-              <span className="ml-1 text-[18px] leading-7 font-normal text-[#6b6354]">
-                {comments.length}
-              </span>
-            </h2>
-            <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
-              Share your reflections on this piece
-            </p>
-
-            {access.isAuthenticated ? (
-              <div className="mt-8">
-                <CommentForm recordId={document.id} recordSlug={document.slug} />
-              </div>
-            ) : (
-              <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
-                <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
-                  Sign in to join the conversation
-                </p>
-                <Link
-                  href="/author/sign-in"
-                  className="mt-4 inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[#2a2419]"
-                >
-                  Sign In
-                </Link>
-              </div>
-            )}
-
-            <div className="mt-10">
-              {comments.length ? (
-                <CommentThread
-                  comments={comments}
-                  recordId={document.id}
-                  recordSlug={document.slug}
-                  canComment={access.isAuthenticated}
-                />
-              ) : (
-                <div className="text-[14px] leading-6 text-[#6b6354]">No comments yet.</div>
-              )}
-            </div>
-          </section>
+          <Suspense fallback={<ConversationSectionFallback />}>
+            <ConversationSection documentId={document.id} recordSlug={document.slug} />
+          </Suspense>
         </article>
       </div>
     </main>
+  );
+}
+
+async function RecordReactionsSection({
+  documentId,
+  recordSlug,
+}: {
+  documentId: string;
+  recordSlug: string;
+}) {
+  const access = await getAuthorAccess();
+  const reactionState = await getReactionStateForRecord(documentId, access.userId);
+
+  return (
+    <section className="mt-12 border-b border-t border-[rgba(42,36,25,0.1)] py-6">
+      <RecordReactions
+        recordId={documentId}
+        recordSlug={recordSlug}
+        state={reactionState}
+        canReact={access.isAuthenticated}
+      />
+    </section>
+  );
+}
+
+async function RelatedDocumentsSection({
+  document,
+}: {
+  document: NonNullable<Awaited<ReturnType<typeof getPublicDocumentBySlug>>>;
+}) {
+  const relatedDocuments = await listRelatedDocumentsForDocument(document, 2);
+
+  return (
+    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
+      <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+        Continue Reading
+      </h2>
+      {relatedDocuments.length ? (
+        <>
+          <p className="mt-2 text-[16px] leading-6 text-[#6b6354]">
+            Related records from your library
+          </p>
+
+          <div className="mt-8 grid gap-6">
+            {relatedDocuments.map((relatedDocument, index) => {
+              const reasonLabel = index === 0 ? "Read Next" : "Also Related";
+              const reasonText =
+                relatedDocument.sharedTags.length > 1
+                  ? `Related by ${relatedDocument.sharedTags[0]} + ${
+                      relatedDocument.sharedTags.length - 1
+                    } more`
+                  : relatedDocument.sharedTags[0]
+                    ? `Related by ${relatedDocument.sharedTags[0]}`
+                    : null;
+
+              return (
+                <Link
+                  key={relatedDocument.id}
+                  href={`/library/${relatedDocument.slug}`}
+                  className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition hover:bg-[rgba(255,255,255,0.72)]"
+                >
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[12px] leading-4 text-[#6b6354]">
+                    <span className="font-medium tracking-[0.3px] uppercase">
+                      {reasonLabel}
+                    </span>
+                    {reasonText ? (
+                      <>
+                        <span className="text-[rgba(107,99,84,0.5)]">·</span>
+                        <span className="text-[12px] leading-4 text-[#6b6354]">
+                          {reasonText}
+                        </span>
+                      </>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 flex items-start gap-4">
+                    <div className="mt-1 shrink-0">
+                      {relatedDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[20px] leading-[25px] font-semibold text-[#2a2419]">
+                        {relatedDocument.title}
+                      </p>
+                      {relatedDocument.sourceType === "book" && relatedDocument.bookTitle ? (
+                        <p className="mt-2 text-[14px] leading-5 italic text-[#6b6354]">
+                          from {relatedDocument.bookTitle}
+                        </p>
+                      ) : null}
+                      <p className="mt-3 text-[16px] leading-[26px] text-[rgba(107,99,84,0.9)]">
+                        {getExcerpt(relatedDocument.contents)}
+                      </p>
+                      <p className="mt-4 text-[14px] leading-5 text-[#6b6354]">
+                        {relatedDocument.writerName} ·{" "}
+                        {formatDisplayDate(relatedDocument.publishedAt)}
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {relatedDocument.tags.slice(0, 5).map((tag) => (
+                          <TopicPill key={tag} label={tag} interactive={false} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-1 shrink-0 text-[#6b6354]">
+                      <ArrowRightIcon />
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mt-6 flex justify-center md:mt-8">
+            <Link
+              href="/#library"
+              className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#6b6354] transition hover:text-[#2a2419]"
+            >
+              Browse all records
+              <ArrowRightIcon />
+            </Link>
+          </div>
+        </>
+      ) : (
+        <div className="mt-6 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-6 py-10 text-center md:py-12">
+          <p className="text-[16px] leading-6 text-[#6b6354]">
+            No related reading found at the moment.
+          </p>
+          <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+            Check back later for more connections.
+          </p>
+          <Link
+            href="/#library"
+            className="mt-10 inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
+          >
+            Browse all records
+            <ArrowRightIcon />
+          </Link>
+        </div>
+      )}
+    </section>
+  );
+}
+
+async function ConversationSection({
+  documentId,
+  recordSlug,
+}: {
+  documentId: string;
+  recordSlug: string;
+}) {
+  const [access, comments] = await Promise.all([
+    getAuthorAccess(),
+    listCommentsForRecord(documentId),
+  ]);
+
+  return (
+    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
+      <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+        Conversation
+        <span className="ml-1 text-[18px] leading-7 font-normal text-[#6b6354]">
+          {comments.length}
+        </span>
+      </h2>
+      <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+        Share your reflections on this piece
+      </p>
+
+      {access.isAuthenticated ? (
+        <div className="mt-8">
+          <CommentForm recordId={documentId} recordSlug={recordSlug} />
+        </div>
+      ) : (
+        <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
+          <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
+            Sign in to join the conversation
+          </p>
+          <Link
+            href="/author/sign-in"
+            className="mt-4 inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[#2a2419]"
+          >
+            Sign In
+          </Link>
+        </div>
+      )}
+
+      <div className="mt-10">
+        {comments.length ? (
+          <CommentThread
+            comments={comments}
+            recordId={documentId}
+            recordSlug={recordSlug}
+            canComment={access.isAuthenticated}
+          />
+        ) : (
+          <div className="text-[14px] leading-6 text-[#6b6354]">No comments yet.</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function RecordReactionsFallback() {
+  return (
+    <section className="mt-12 border-b border-t border-[rgba(42,36,25,0.1)] py-6">
+      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+    </section>
+  );
+}
+
+function RelatedDocumentsFallback() {
+  return (
+    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
+      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+      <div className="mt-8 grid gap-6">
+        {Array.from({ length: 2 }).map((_, index) => (
+          <div
+            key={index}
+            className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-6 py-6"
+          >
+            <div className="h-5 w-20 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="mt-4 h-6 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="mt-3 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ConversationSectionFallback() {
+  return (
+    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
+      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+      <div className="mt-8 h-24 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+    </section>
   );
 }

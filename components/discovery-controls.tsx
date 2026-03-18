@@ -1,7 +1,7 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import type { DiscoverySort, DiscoverySource } from "@/lib/wiki/discovery";
 
@@ -69,7 +69,6 @@ export function DiscoveryControls({
   preserveParams,
   className,
 }: DiscoveryControlsProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [queryValue, setQueryValue] = useState(query);
@@ -140,9 +139,7 @@ export function DiscoveryControls({
   }
 
   function navigate(url: string) {
-    startTransition(() => {
-      router.push(url);
-    });
+    window.history.pushState(null, "", url);
   }
 
   const showPanel =
@@ -159,7 +156,7 @@ export function DiscoveryControls({
 
   return (
     <section className={className}>
-      <div className="flex items-start gap-3">
+      <div className="flex items-stretch gap-3">
         <form
           className="relative flex-1"
           onSubmit={(event) => {
@@ -167,7 +164,7 @@ export function DiscoveryControls({
             navigate(buildParams({ q: queryValue }));
           }}
         >
-          <div className="pointer-events-none absolute left-3 top-[13px] text-[#8f8778]">
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-center text-[#8f8778]">
             <SearchIcon />
           </div>
           <input
@@ -175,7 +172,7 @@ export function DiscoveryControls({
             value={queryValue}
             onChange={(event) => setQueryValue(event.currentTarget.value)}
             placeholder="Search records..."
-            className="h-[42px] rounded-[6px] border-[rgba(42,36,25,0.1)] bg-[#faf8f5] pl-10 pr-4 text-[14px] leading-5 text-[#2a2419] placeholder:text-[rgba(42,36,25,0.5)]"
+            className="h-[42px] w-full rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] pl-4 pr-[42px] text-[14px] leading-5 text-[#2a2419] placeholder:text-[rgba(42,36,25,0.5)]"
           />
         </form>
 
@@ -184,8 +181,10 @@ export function DiscoveryControls({
           onClick={() =>
             navigate(buildParams({ filters: showPanel ? null : "open" }))
           }
-          className={`inline-flex h-8 shrink-0 items-center justify-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium ${
-            showPanel ? "bg-[#2a2419] text-[#faf8f5]" : "border border-[rgba(42,36,25,0.1)] text-[#2a2419]"
+          className={`inline-flex h-[42px] shrink-0 items-center justify-center gap-2 rounded-[6px] px-3 text-[14px] leading-5 font-medium ${
+            showPanel
+              ? "border border-[#2a2419] bg-[#2a2419] text-[#faf8f5]"
+              : "border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] text-[#2a2419]"
           }`}
         >
           <FilterIcon />

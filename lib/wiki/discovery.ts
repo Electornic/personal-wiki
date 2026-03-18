@@ -1,4 +1,8 @@
-import type { SourceType, WikiDocument } from "@/lib/wiki/types";
+import type {
+  SourceType,
+  WikiDocument,
+  WikiDocumentPreview,
+} from "@/lib/wiki/types";
 
 export type DiscoverySort =
   | "newest"
@@ -14,6 +18,14 @@ export type DiscoveryState = {
   source: DiscoverySource;
   tags: string[];
   filtersOpen: boolean;
+};
+
+type DiscoveryDocument = Pick<
+  WikiDocument,
+  "id" | "title" | "writerName" | "bookTitle" | "sourceType" | "tags" | "updatedAt"
+> & {
+  contents?: string;
+  excerpt?: string;
 };
 
 type SearchParamInput =
@@ -86,8 +98,14 @@ export function getAvailableTags(documents: WikiDocument[]) {
     .sort((left, right) => left.localeCompare(right));
 }
 
-export function applyDiscoveryState(
-  documents: WikiDocument[],
+export function getAvailableTagsFromPreviews(documents: WikiDocumentPreview[]) {
+  return [...new Set(documents.flatMap((document) => document.tags))]
+    .filter(Boolean)
+    .sort((left, right) => left.localeCompare(right));
+}
+
+export function applyDiscoveryState<T extends DiscoveryDocument>(
+  documents: T[],
   state: DiscoveryState,
   reactionTotals?: Map<string, number>,
 ) {
@@ -116,7 +134,7 @@ export function applyDiscoveryState(
       document.title,
       document.writerName,
       document.bookTitle ?? "",
-      document.contents,
+      document.excerpt ?? document.contents ?? "",
       ...document.tags,
     ]
       .join(" ")

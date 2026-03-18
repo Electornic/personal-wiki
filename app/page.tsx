@@ -1,11 +1,11 @@
+import { Suspense } from "react";
+
 import { CurationShelf } from "@/components/curation-shelf";
-import { DiscoveryControls } from "@/components/discovery-controls";
-import { DocumentCard } from "@/components/document-card";
+import { PublicLibraryBrowser } from "@/components/public-library-browser";
+import { toDocumentPreview } from "@/lib/wiki/content";
 import {
-  applyDiscoveryState,
   buildHomeCurationShelves,
-  getAvailableTags,
-  parseDiscoveryState,
+  getAvailableTagsFromPreviews,
 } from "@/lib/wiki/discovery";
 import { listPublicDocuments } from "@/lib/wiki/documents";
 import { listReactionTotalsForRecords } from "@/lib/wiki/reactions";
@@ -16,23 +16,7 @@ type PageProps = {
 };
 
 export default async function Home({ searchParams }: PageProps) {
-  const discoveryState = parseDiscoveryState(await searchParams);
-  const documents = await listPublicDocuments();
-  const publicRecords = documents.filter((record) => record.visibility === "public");
-  const [reactionTotals, authoredShelves] = await Promise.all([
-    listReactionTotalsForRecords(publicRecords.map((record) => record.id)),
-    listPublicCurationShelves("home"),
-  ]);
-  const filteredRecords = applyDiscoveryState(
-    publicRecords,
-    discoveryState,
-    reactionTotals,
-  );
-  const availableTags = getAvailableTags(publicRecords);
-  const shelves =
-    authoredShelves.length > 0
-      ? authoredShelves
-      : buildHomeCurationShelves(publicRecords);
+  await searchParams;
 
   return (
     <main className="site-shell pb-16 pt-12 md:pb-20 md:pt-16">
@@ -46,48 +30,106 @@ export default async function Home({ searchParams }: PageProps) {
         </p>
       </section>
 
-      <section className="mt-16 grid gap-12 md:mt-[112px]">
-        {shelves.map((shelf) => (
-          <CurationShelf
-            key={shelf.title}
-            title={shelf.title}
-            description={shelf.description}
-            documents={shelf.documents}
-          />
-        ))}
-      </section>
+      <Suspense fallback={<HomeShelvesFallback />}>
+        <HomeShelvesSection />
+      </Suspense>
 
       <section id="library" className="mt-16 md:mt-20">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-[30px] leading-9 font-semibold tracking-[-0.3px] text-[#2a2419]">
-            Browse Library
-          </h2>
-          <span className="text-[14px] leading-5 text-[#6b6354]">
-            {filteredRecords.length} {filteredRecords.length === 1 ? "record" : "records"}
-          </span>
-        </div>
-
-        <DiscoveryControls
-          availableTags={availableTags}
-          query={discoveryState.query}
-          sort={discoveryState.sort}
-          source={discoveryState.source}
-          tags={discoveryState.tags}
-          filtersOpen={discoveryState.filtersOpen}
-        />
-
-        <div className="mt-8 grid gap-6">
-          {filteredRecords.map((document) => (
-            <DocumentCard key={document.id} document={document} />
-          ))}
-        </div>
-
-        {filteredRecords.length === 0 ? (
-          <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-12 text-center text-[18px] leading-8 text-[#6b6354]">
-            No matching records found.
-          </div>
-        ) : null}
+        <Suspense fallback={<HomeLibraryFallback />}>
+          <HomeLibrarySection />
+        </Suspense>
       </section>
     </main>
+  );
+}
+
+async function HomeShelvesSection() {
+  const documents = await listPublicDocuments();
+  const publicRecords = documents.filter((record) => record.visibility === "public");
+  const authoredShelves = await listPublicCurationShelves("home");
+  const shelves =
+    authoredShelves.length > 0
+      ? authoredShelves
+      : buildHomeCurationShelves(publicRecords);
+
+  return (
+    <section className="mt-16 grid gap-12 md:mt-[112px]">
+      {shelves.map((shelf) => (
+        <CurationShelf
+          key={shelf.title}
+          title={shelf.title}
+          description={shelf.description}
+          documents={shelf.documents}
+        />
+      ))}
+    </section>
+  );
+}
+
+async function HomeLibrarySection() {
+  const documents = await listPublicDocuments();
+  const publicRecords = documents.filter((record) => record.visibility === "public");
+  const previews = publicRecords.map((record) => toDocumentPreview(record));
+  const reactionTotals = await listReactionTotalsForRecords(
+    publicRecords.map((record) => record.id),
+  );
+  const availableTags = getAvailableTagsFromPreviews(previews);
+
+  return (
+    <PublicLibraryBrowser
+      records={previews}
+      availableTags={availableTags}
+      reactionTotals={Object.fromEntries(reactionTotals)}
+    />
+  );
+}
+
+function HomeShelvesFallback() {
+  return (
+    <section className="mt-16 grid gap-12 md:mt-[112px]">
+      {Array.from({ length: 2 }).map((_, sectionIndex) => (
+        <div key={sectionIndex}>
+          <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+          <div className="mt-2 h-6 w-80 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+          <div className="mt-6 grid gap-4">
+            {Array.from({ length: 2 }).map((__, cardIndex) => (
+              <div
+                key={cardIndex}
+                className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-5 py-5"
+              >
+                <div className="h-6 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+                <div className="mt-3 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function HomeLibraryFallback() {
+  return (
+    <>
+      <div className="mb-6 flex items-center justify-between">
+        <div className="h-9 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+        <div className="h-5 w-20 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+      </div>
+
+      <div className="h-[42px] w-full animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+
+      <div className="mt-8 grid gap-6">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={index}
+            className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-6 py-6"
+          >
+            <div className="h-8 w-2/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="mt-4 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="mt-3 h-5 w-4/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

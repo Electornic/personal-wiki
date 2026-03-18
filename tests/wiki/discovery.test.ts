@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { applyDiscoveryState } from "@/lib/wiki/discovery";
+import { toDocumentPreview } from "@/lib/wiki/content";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 
 describe("applyDiscoveryState", () => {
@@ -38,6 +39,23 @@ describe("applyDiscoveryState", () => {
         filtersOpen: true,
       },
     );
+
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]?.slug).toBe("seeing-like-a-designer");
+  });
+
+  it("supports preview records without full contents", () => {
+    const previews = demoDocuments
+      .filter((document) => document.visibility === "public")
+      .map((document) => toDocumentPreview(document));
+
+    const filtered = applyDiscoveryState(previews, {
+      query: "추천 모듈",
+      sort: "newest",
+      source: "all",
+      tags: [],
+      filtersOpen: false,
+    });
 
     expect(filtered).toHaveLength(1);
     expect(filtered[0]?.slug).toBe("seeing-like-a-designer");
