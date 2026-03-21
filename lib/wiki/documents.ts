@@ -218,9 +218,34 @@ export const getPublicDocumentBySlug = cache(async function getPublicDocumentByS
 export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
   documentId: string,
 ) {
-  const documents = await listAuthorDocuments();
+  const supabase = await getServerSupabaseClient();
 
-  return documents.find((document) => document.id === documentId) ?? null;
+  if (!supabase) {
+    const documents = await listAuthorDocuments();
+    return documents.find((document) => document.id === documentId) ?? null;
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data: row, error } = await supabase
+    .from("records")
+    .select("*")
+    .eq("id", documentId)
+    .eq("writer_user_id", user.id)
+    .maybeSingle();
+
+  if (error || !row) {
+    return null;
+  }
+
+  const tagRows = await fetchTagRowsForRecordIds([String(row.id)], true);
+  return mapRowsToDocuments([row], tagRows)[0] ?? null;
 });
 
 export async function listRelatedDocumentsForDocument(

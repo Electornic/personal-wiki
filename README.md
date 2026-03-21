@@ -74,7 +74,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 ## Supabase Setup
 
 1. Supabase 프로젝트를 생성합니다.
-2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 8개를 순서대로 실행합니다.
+2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 9개를 순서대로 실행합니다.
 3. Authentication에서 Email/Password 로그인을 활성화합니다.
 4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
 5. 위 환경변수를 `.env.local`에 채웁니다.
@@ -91,6 +91,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 - comments는 public record에서 읽을 수 있고, 작성은 로그인 사용자만 가능합니다.
 - bookmark / like / my library까지 보려면 `SETUP_GUIDE.md`의 Step 7 migration도 필요합니다.
 - curation shelf authoring과 home shelf 노출까지 보려면 `SETUP_GUIDE.md`의 Step 8 migration도 필요합니다.
+- author workspace 목록과 edit 진입 속도 개선까지 반영하려면 `SETUP_GUIDE.md`의 Step 9 migration도 실행합니다.
 
 ## Local Development
 

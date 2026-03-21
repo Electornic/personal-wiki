@@ -1,5 +1,5 @@
 import { getAdminSupabaseClient, getServerSupabaseClient } from "@/lib/supabase/server";
-import { listAuthorDocuments, listPublicDocuments } from "@/lib/wiki/documents";
+import { listAuthorDocuments, listDocumentsByIds } from "@/lib/wiki/documents";
 import type { WikiDocument } from "@/lib/wiki/types";
 
 export type ShelfPlacement = "home" | "topic";
@@ -97,7 +97,9 @@ export async function listPublicCurationShelves(
     return [];
   }
 
-  const documents = await listPublicDocuments();
+  const documents = await listDocumentsByIds(
+    (shelfRecords as ShelfRecordRow[]).map((record) => record.record_id),
+  );
   return mapShelves(shelves as ShelfRow[], shelfRecords as ShelfRecordRow[], documents);
 }
 
