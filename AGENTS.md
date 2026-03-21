@@ -121,6 +121,7 @@ v0.2 branch note:
 - 하나의 태스크가 끝나면 PR을 만들고 `main`에 머지한 뒤, 배포는 `dist` 브랜치 기준으로 진행한다.
 - 앞으로 배포용 기준 브랜치는 `dist`다. 릴리스/배포 상태는 `dist`에서 관리한다.
 - 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서로 본다.
+- 기본 배포 절차는 `PR merge -> local main sync -> task branch delete (remote/local) -> dist를 main commit으로 맞춤 -> dist push` 순서로 진행한다.
 - 배포용 버전 태그는 기본적으로 `VX.Y.Z_MajorTopic` 형식을 따른다. 예: `V0.4.0_Design_Speed_Reading_Flow`
 - `dist` 브랜치 push 시에는 `package.json`의 `version`과 관련 작업 주제를 기준으로 GitHub Actions가 tag와 GitHub Release를 자동 생성하는 흐름을 우선한다.
 - 새 릴리즈 버전 작업을 시작하거나, 최소한 `dist` 브랜치에 올리기 전에는 `package.json.version`을 해당 릴리즈 버전으로 올린다.
