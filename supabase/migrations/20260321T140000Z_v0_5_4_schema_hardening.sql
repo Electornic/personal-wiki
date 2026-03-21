@@ -11,6 +11,13 @@ update public.records
 set published_at = coalesce(published_at, created_at::date)
 where published_at is null;
 
+update public.records
+set author_name = public.profiles.user_name
+from public.profiles
+where public.profiles.id = public.records.writer_user_id
+  and nullif(btrim(public.profiles.user_name), '') is not null
+  and public.records.author_name is distinct from public.profiles.user_name;
+
 alter table if exists public.records
   alter column published_at set default (timezone('utc', now())::date);
 

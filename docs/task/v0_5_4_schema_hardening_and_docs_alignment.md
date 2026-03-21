@@ -39,6 +39,16 @@
 - 문서에서 제거된 기능 설명과 현재 verification 기준을 최신 상태로 맞춘다.
 - 후속 migration에서 제거할 legacy field 목록과 조건을 task 문서에 명확히 남긴다.
 
+## Legacy Removal Gate
+
+- `author_name`:
+  - 공개/작성자 읽기 경로가 모두 `profiles.user_name` 기준으로 동작해야 한다.
+  - fallback용 기존 row 값은 migration으로 한 번 동기화한 뒤 제거 여부를 판단한다.
+- `source_title`:
+  - `book_title` backfill이 완료되고 app read fallback이 제거된 뒤에만 제거 후보로 본다.
+- `source_url`, `isbn`, `intro`:
+  - write path에서 더 이상 값을 갱신하지 않는 상태를 먼저 유지하고, 실제 DB row에서 별도 사용처가 없는지 확인한 뒤 제거한다.
+
 ## Acceptance Criteria
 
 - v0.5.4 작업 문서에 schema hardening 범위와 non-goal이 고정돼 있다.
