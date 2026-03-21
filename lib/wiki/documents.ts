@@ -6,6 +6,7 @@ import {
 import { cache } from "react";
 import { hasSupabaseEnv } from "@/lib/env";
 import { demoDocuments } from "@/lib/wiki/demo-data";
+import { getProfilesForUsers } from "@/lib/wiki/profiles";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 import { createSlug } from "@/lib/wiki/slugs";
 import type {
@@ -29,7 +30,11 @@ function normalizeRouteSlug(slug: string) {
   }
 }
 
-function mapRecord(row: Record<string, unknown>, tags: string[]): WikiDocument {
+function mapRecord(
+  row: Record<string, unknown>,
+  tags: string[],
+  writerName?: string | null,
+): WikiDocument {
   return {
     id: String(row.id),
     slug: String(row.slug),
@@ -38,7 +43,7 @@ function mapRecord(row: Record<string, unknown>, tags: string[]): WikiDocument {
     sourceType: row.source_type as SourceType,
     bookTitle: (row.book_title as string | null) ?? (row.source_type === "book" ? String(row.title) : null),
     visibility: row.visibility as DocumentVisibility,
-    writerName: String(row.author_name ?? "unknown"),
+    writerName: writerName ?? String(row.author_name ?? "unknown"),
     publishedAt: (row.published_at as string | null) ?? null,
     tags,
     createdAt: String(row.created_at),
@@ -75,13 +80,48 @@ function buildTagMap(tagRows: RecordTagRow[]) {
   return tagMap;
 }
 
-function mapRowsToDocuments(
+async function buildWriterNameMap(recordRows: Array<Record<string, unknown>>) {
+  const adminSupabase = getAdminSupabaseClient();
+
+  if (!adminSupabase) {
+    return new Map<string, string>();
+  }
+
+  const writerIds = [
+    ...new Set(
+      recordRows
+        .map((row) => String(row.writer_user_id ?? ""))
+        .filter(Boolean),
+    ),
+  ];
+
+  if (writerIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const profiles = await getProfilesForUsers(adminSupabase, writerIds);
+
+  return new Map(
+    writerIds
+      .map((writerId) => [writerId, profiles.get(writerId)?.user_name])
+      .filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1].length > 0),
+  );
+}
+
+async function mapRowsToDocuments(
   recordRows: Array<Record<string, unknown>>,
   tagRows: RecordTagRow[],
 ) {
   const tagMap = buildTagMap(tagRows);
+  const writerNameMap = await buildWriterNameMap(recordRows);
 
-  return recordRows.map((row) => mapRecord(row, tagMap.get(String(row.id)) ?? []));
+  return recordRows.map((row) =>
+    mapRecord(
+      row,
+      tagMap.get(String(row.id)) ?? [],
+      writerNameMap.get(String(row.writer_user_id ?? "")),
+    ),
+  );
 }
 
 async function fetchTagRowsForRecordIds(
@@ -133,7 +173,7 @@ const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase()
 
   const tagRows = await fetchTagRowsForRecordIds(recordRows.map((row) => String(row.id)));
 
-  return mapRowsToDocuments(recordRows, tagRows);
+  return await mapRowsToDocuments(recordRows, tagRows);
 });
 
 export const listPublicDocuments = cache(async function listPublicDocuments() {
@@ -180,7 +220,7 @@ export const listAuthorDocuments = cache(async function listAuthorDocuments() {
     true,
   );
 
-  return sortByUpdatedAt(mapRowsToDocuments(recordRows, tagRows));
+  return sortByUpdatedAt(await mapRowsToDocuments(recordRows, tagRows));
 });
 
 export const getPublicDocumentBySlug = cache(async function getPublicDocumentBySlug(
@@ -211,7 +251,7 @@ export const getPublicDocumentBySlug = cache(async function getPublicDocumentByS
   }
 
   const tagRows = await fetchTagRowsForRecordIds([String(row.id)]);
-  return mapRowsToDocuments([row], tagRows)[0] ?? null;
+  return (await mapRowsToDocuments([row], tagRows))[0] ?? null;
 });
 
 export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
@@ -244,7 +284,7 @@ export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
   }
 
   const tagRows = await fetchTagRowsForRecordIds([String(row.id)], true);
-  return mapRowsToDocuments([row], tagRows)[0] ?? null;
+  return (await mapRowsToDocuments([row], tagRows))[0] ?? null;
 });
 
 export async function listRelatedDocumentsForDocument(
@@ -296,7 +336,7 @@ export async function listRelatedDocumentsForDocument(
   }
 
   const candidateTagDetails = await fetchTagRowsForRecordIds(candidateIds);
-  const candidateDocuments = mapRowsToDocuments(candidateRows, candidateTagDetails);
+  const candidateDocuments = await mapRowsToDocuments(candidateRows, candidateTagDetails);
 
   return getRelatedDocuments(document, candidateDocuments, limit);
 }
@@ -326,7 +366,7 @@ export async function listDocumentsByIds(recordIds: string[]) {
   }
 
   const tagRows = await fetchTagRowsForRecordIds(uniqueRecordIds, Boolean(serverSupabase));
-  const documents = mapRowsToDocuments(recordRows, tagRows);
+  const documents = await mapRowsToDocuments(recordRows, tagRows);
 
   const orderedDocuments: WikiDocument[] = [];
 
