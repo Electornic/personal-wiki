@@ -46,6 +46,7 @@
   - fallback용 기존 row 값은 migration으로 한 번 동기화한 뒤 제거 여부를 판단한다.
 - `source_title`:
   - `book_title` backfill이 완료되고 app read fallback이 제거된 뒤에만 제거 후보로 본다.
+  - 이번 단계에서는 write path 의존을 끊기 위해 nullable 완화까지만 진행한다.
 - `source_url`, `isbn`, `intro`:
   - write path에서 더 이상 값을 갱신하지 않는 상태를 먼저 유지하고, 실제 DB row에서 별도 사용처가 없는지 확인한 뒤 제거한다.
 
@@ -55,6 +56,7 @@
 - 현재 브랜치 버전이 `0.5.4`로 올라가 있다.
 - README에서 현재 범위와 맞지 않는 curation shelf 설명이 제거되거나 수정된다.
 - schema 정리 과정에서 손대야 할 legacy field와 코드 진입점이 문서에 명시돼 있다.
+- `source_title` 없이도 새 record write path가 동작할 수 있다.
 - 이후 migration을 추가할 경우 `SETUP_GUIDE.md` 반영 지점이 명확하다.
 
 ## Risks

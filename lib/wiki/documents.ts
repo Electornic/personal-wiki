@@ -412,7 +412,6 @@ function buildLegacyRecordCompatibilityPayload(
 ) {
   return {
     author_name: user.user_metadata?.user_name || user.email || "unknown",
-    source_title: input.sourceType === "book" ? input.bookTitle || input.title : input.title,
   };
 }
 

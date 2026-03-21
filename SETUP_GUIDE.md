@@ -144,11 +144,20 @@ SQL은 아래 순서대로 실행합니다.
 - `book` / `article` 기준 `book_title` 일관성 check 추가
 - public library listing 패턴에 맞는 `records` public index 추가
 
+### Step 12. v0.5.4 source title compatibility cleanup
+
+실행 파일:
+- [supabase/migrations/20260321T150000Z_v0_5_4_source_title_nullable.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T150000Z_v0_5_4_source_title_nullable.sql)
+
+역할:
+- 기존 row의 빈 `source_title`을 `book_title/title` 기준으로 보정
+- 새 record write path가 `source_title` 없이도 동작할 수 있게 nullable 완화
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열한 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열두 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash
