@@ -254,6 +254,36 @@ export const getPublicDocumentBySlug = cache(async function getPublicDocumentByS
   return (await mapRowsToDocuments([row], tagRows))[0] ?? null;
 });
 
+export const getReadableDocumentBySlug = cache(async function getReadableDocumentBySlug(
+  slug: string,
+) {
+  const normalizedSlug = normalizeRouteSlug(slug);
+
+  if (!hasSupabaseEnv()) {
+    const documents = await listPublicDocuments();
+    return documents.find((document) => document.slug === normalizedSlug) ?? null;
+  }
+
+  const supabase = await getServerSupabaseClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const { data: row, error } = await supabase
+    .from("records")
+    .select("*")
+    .eq("slug", normalizedSlug)
+    .maybeSingle();
+
+  if (error || !row) {
+    return null;
+  }
+
+  const tagRows = await fetchTagRowsForRecordIds([String(row.id)], true);
+  return (await mapRowsToDocuments([row], tagRows))[0] ?? null;
+});
+
 export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
   documentId: string,
 ) {
@@ -296,13 +326,15 @@ export async function listRelatedDocumentsForDocument(
     return getRelatedDocuments(document, documents, limit);
   }
 
-  const supabase = getPublicSupabaseClient();
+  const serverSupabase = await getServerSupabaseClient();
+  const publicSupabase = getPublicSupabaseClient();
+  const supabase = serverSupabase ?? publicSupabase;
 
   if (!supabase || document.tags.length === 0) {
     return [];
   }
 
-  const sourceTagRows = await fetchTagRowsForRecordIds([document.id]);
+  const sourceTagRows = await fetchTagRowsForRecordIds([document.id], Boolean(serverSupabase));
   const sourceTagIds = [...new Set(sourceTagRows.map((row) => row.tag_id).filter(Boolean))];
 
   if (sourceTagIds.length === 0) {
@@ -328,14 +360,16 @@ export async function listRelatedDocumentsForDocument(
   const { data: candidateRows, error: candidatesError } = await supabase
     .from("records")
     .select("*")
-    .in("id", candidateIds)
-    .eq("visibility", "public");
+    .in("id", candidateIds);
 
   if (candidatesError || !candidateRows) {
     return [];
   }
 
-  const candidateTagDetails = await fetchTagRowsForRecordIds(candidateIds);
+  const candidateTagDetails = await fetchTagRowsForRecordIds(
+    candidateIds,
+    Boolean(serverSupabase),
+  );
   const candidateDocuments = await mapRowsToDocuments(candidateRows, candidateTagDetails);
 
   return getRelatedDocuments(document, candidateDocuments, limit);

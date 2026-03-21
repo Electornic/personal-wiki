@@ -83,6 +83,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 주의:
 
 - public surface에서는 private 문서가 목록/추천/상세 어디에서도 드러나면 안 됩니다.
+- 로그인한 owner는 직접 URL로 접근한 자신의 private record를 `/library/[slug]`에서 preview할 수 있지만, 다른 사용자와 비로그인 사용자에게는 계속 숨겨집니다.
 - 로그인 사용자는 signup/login 이후 `profiles` row를 가져야 protected write가 정상 동작합니다.
 - callback의 `next` 파라미터는 로컬 상대 경로만 허용합니다.
 - session refresh는 request 단계 `proxy.ts`에서 수행합니다.
