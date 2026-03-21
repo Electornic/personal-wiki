@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { CurationShelf } from "@/components/curation-shelf";
 import { TopicPill } from "@/components/topic-pill";
 import { formatDisplayDate, getExcerpt } from "@/lib/wiki/content";
 import { listPublicDocuments } from "@/lib/wiki/documents";
-import { listPublicCurationShelves } from "@/lib/wiki/shelves";
 
 type PageProps = {
   params: Promise<{ topic: string }>;
@@ -65,10 +63,7 @@ export default async function TopicHubPage({ params }: PageProps) {
   const decodedTopic = topic;
   const normalizedTopic = normalizeTopic(decodedTopic);
 
-  const [publicDocuments, topicShelves] = await Promise.all([
-    listPublicDocuments(),
-    listPublicCurationShelves("topic", normalizedTopic),
-  ]);
+  const publicDocuments = await listPublicDocuments();
   const records = publicDocuments.filter((document) =>
     document.tags.some((tag) => normalizeTopic(tag) === normalizedTopic),
   );
@@ -149,21 +144,6 @@ export default async function TopicHubPage({ params }: PageProps) {
             ))}
           </div>
         </section>
-
-        {topicShelves.length ? (
-          <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:pt-[33px]">
-            <div className="grid gap-10">
-              {topicShelves.map((shelf) => (
-                <CurationShelf
-                  key={shelf.id}
-                  title={shelf.title}
-                  description={shelf.description}
-                  documents={shelf.documents}
-                />
-              ))}
-            </div>
-          </section>
-        ) : null}
 
         {relatedTopics.length ? (
           <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:pt-[33px]">
