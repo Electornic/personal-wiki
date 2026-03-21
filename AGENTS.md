@@ -36,6 +36,10 @@ v0.2 branch note:
 - 인증은 Supabase Auth를 기준으로 설계한다.
 - 권한 제어는 UI에서만 숨기지 말고 데이터 레이어에서도 강제한다.
 - 라우트는 public reading 흐름과 authoring 흐름을 분리하는 방향을 우선한다.
+- 프로젝트 구조는 `colocation + minimal FSD` 방향을 기본값으로 본다.
+- route 전용 코드는 `app/**/_components`, `app/**/_lib`에 colocate한다.
+- 여러 곳에서 재사용되는 도메인 로직과 UI만 `entities`로 올리고, 공용 인프라는 `shared`에 둔다.
+- 아직 필요하지 않은 `widgets`, `features` 같은 레이어는 미리 만들지 않는다.
 
 ## Scope Guardrails
 
