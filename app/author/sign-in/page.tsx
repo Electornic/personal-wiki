@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { signInWithPassword, signUpWithPassword } from "@/app/author/actions";
-import { hasAuthoringEnv } from "@/lib/env";
+import { hasAuthoringEnv } from "@/shared/config/env";
 
 type PageProps = {
   searchParams: Promise<{

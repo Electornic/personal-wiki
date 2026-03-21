@@ -5,8 +5,8 @@ import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { saveDocument } from "@/app/author/actions";
-import { MarkdownContent } from "@/components/markdown-content";
-import type { DocumentFormState, WikiDocument } from "@/lib/wiki/types";
+import type { DocumentFormState, WikiDocument } from "@/entities/record/model/types";
+import { MarkdownContent } from "@/entities/record/ui/markdown-content";
 
 type AuthorDocumentFormProps = {
   document?: WikiDocument;

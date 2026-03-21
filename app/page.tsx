@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 
 import { PublicLibraryBrowser } from "@/components/public-library-browser";
-import { toDocumentPreview } from "@/lib/wiki/content";
+import { toDocumentPreview } from "@/entities/record/model/content";
 import { getAvailableTagsFromPreviews } from "@/lib/wiki/discovery";
-import { listPublicDocuments } from "@/lib/wiki/documents";
-import { listReactionTotalsForRecords } from "@/lib/wiki/reactions";
+import { listPublicDocuments } from "@/entities/record/api/documents";
+import { listReactionTotalsForRecords } from "@/entities/reaction/api/reactions";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

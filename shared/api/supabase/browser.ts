@@ -3,7 +3,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { getSupabasePublicEnv, hasSupabaseEnv } from "@/lib/env";
+import { getSupabasePublicEnv, hasSupabaseEnv } from "@/shared/config/env";
 
 let browserClient: SupabaseClient | null = null;
 

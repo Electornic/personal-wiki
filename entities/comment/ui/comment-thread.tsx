@@ -1,6 +1,6 @@
 import { CommentReplyToggle } from "@/components/comment-reply-toggle";
-import { formatDisplayDate } from "@/lib/wiki/content";
-import type { RecordComment } from "@/lib/wiki/comments";
+import { formatDisplayDate } from "@/entities/record/model/content";
+import type { RecordComment } from "@/entities/comment/api/comments";
 
 type CommentThreadProps = {
   comments: RecordComment[];

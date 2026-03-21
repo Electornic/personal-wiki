@@ -11,7 +11,7 @@ describe("hasAuthoringEnv", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
 
-    const { hasAuthoringEnv } = await import("@/lib/env");
+    const { hasAuthoringEnv } = await import("@/shared/config/env");
 
     expect(hasAuthoringEnv()).toBe(false);
   });
@@ -21,7 +21,7 @@ describe("hasAuthoringEnv", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role");
 
-    const { hasAuthoringEnv } = await import("@/lib/env");
+    const { hasAuthoringEnv } = await import("@/shared/config/env");
 
     expect(hasAuthoringEnv()).toBe(true);
   });

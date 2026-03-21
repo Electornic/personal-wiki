@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-import { hasAuthoringEnv } from "@/lib/env";
-import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getServerSupabaseClient } from "@/shared/api/supabase/server";
+import { hasAuthoringEnv } from "@/shared/config/env";
 import { getProfileForUser } from "@/lib/wiki/profiles";
 
 const getVerifiedAuthUser = cache(async function getVerifiedAuthUser() {

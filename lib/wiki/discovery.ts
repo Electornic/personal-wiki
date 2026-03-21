@@ -2,7 +2,7 @@ import type {
   SourceType,
   WikiDocument,
   WikiDocumentPreview,
-} from "@/lib/wiki/types";
+} from "@/entities/record/model/types";
 
 export type DiscoverySort =
   | "newest"

@@ -1,9 +1,9 @@
 import {
   getAdminSupabaseClient,
   getServerSupabaseClient,
-} from "@/lib/supabase/server";
+} from "@/shared/api/supabase/server";
 import type { LibraryTab } from "@/lib/wiki/library";
-import type { RecordReactionState } from "@/lib/wiki/types";
+import type { RecordReactionState } from "@/entities/record/model/types";
 
 export class ReactionAuthError extends Error {
   constructor(message = "You must be signed in to react.") {

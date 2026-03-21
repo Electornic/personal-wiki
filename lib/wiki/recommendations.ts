@@ -1,4 +1,4 @@
-import type { RelatedDocument, WikiDocument } from "@/lib/wiki/types";
+import type { RelatedDocument, WikiDocument } from "@/entities/record/model/types";
 import { filterReadableDocuments } from "@/lib/wiki/visibility";
 
 function normalizeTags(tags: string[]) {

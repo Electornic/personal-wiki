@@ -142,26 +142,34 @@ pnpm build
 app/
   page.tsx                     public library home
   library/[slug]/page.tsx      public reading page
+  library/[slug]/_components/  record detail route-only sections
   author/page.tsx              authenticated workspace
   author/sign-in/page.tsx      signup / login
   author/actions.ts            signup/login/save/delete/sign-out actions
   auth/callback/route.ts       Supabase auth callback
+  topics/[topic]/_lib/         topic route-only helpers
 components/
   author-document-form.tsx
   comment-form.tsx
-  comment-thread.tsx
-  document-card.tsx
   my-library-card.tsx
   note-card-list.tsx
   record-reactions.tsx
-  topic-pill.tsx
+entities/
+  comment/
+  record/
+  reaction/
+  tag/
 lib/
-  env.ts
-  supabase/
   wiki/
+shared/
+  api/supabase/
+  config/env.ts
 supabase/migrations/
 tests/
 ```
+
+- route 전용 조립 코드는 `app/**/_components`, `app/**/_lib`에 colocate합니다.
+- 공용 도메인 로직과 UI는 `entities`, 인프라 설정은 `shared`로 둡니다.
 
 ## Notes
 

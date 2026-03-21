@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getAdminSupabaseClient,
   getRouteHandlerSupabaseClient,
-} from "@/lib/supabase/server";
+} from "@/shared/api/supabase/server";
 import { sanitizeNextPath } from "@/lib/wiki/navigation";
 import { upsertProfileRow } from "@/lib/wiki/profiles";
 
