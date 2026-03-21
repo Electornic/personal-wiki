@@ -162,11 +162,20 @@ SQL은 아래 순서대로 실행합니다.
 - 기존 row의 빈 `author_name`을 `profiles.user_name` 기준으로 보정
 - 새 record write path가 `author_name` 없이도 동작할 수 있게 nullable 완화
 
+### Step 14. v0.5.4 drop unused legacy record columns
+
+실행 파일:
+- [supabase/migrations/20260321T170000Z_v0_5_4_drop_unused_legacy_record_columns.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T170000Z_v0_5_4_drop_unused_legacy_record_columns.sql)
+
+역할:
+- 현재 app read/write에서 더 이상 쓰지 않는 `source_title`, `source_url`, `isbn`, `intro` 제거
+- `records` schema를 v0.2 이후 실제 제품 계약에 더 가깝게 정리
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열세 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열네 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

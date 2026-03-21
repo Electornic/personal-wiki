@@ -47,9 +47,10 @@
   - 이번 단계에서는 write path 의존을 끊기 위해 nullable 완화까지만 진행한다.
 - `source_title`:
   - `book_title` backfill이 완료되고 app read fallback이 제거된 뒤에만 제거 후보로 본다.
-  - 이번 단계에서는 write path 의존을 끊기 위해 nullable 완화까지만 진행한다.
+  - 이번 단계에서는 write path 의존 제거와 cleanup migration 이후 실제 schema에서 제거한다.
 - `source_url`, `isbn`, `intro`:
   - write path에서 더 이상 값을 갱신하지 않는 상태를 먼저 유지하고, 실제 DB row에서 별도 사용처가 없는지 확인한 뒤 제거한다.
+  - 이번 단계에서는 실제 app 사용처가 없는 것을 확인하고 제거한다.
 
 ## Acceptance Criteria
 
@@ -59,6 +60,7 @@
 - schema 정리 과정에서 손대야 할 legacy field와 코드 진입점이 문서에 명시돼 있다.
 - `source_title` 없이도 새 record write path가 동작할 수 있다.
 - `author_name` 없이도 새 record write path가 동작할 수 있다.
+- `source_title`, `source_url`, `isbn`, `intro`가 현재 runtime schema에서 제거돼도 app이 동작할 수 있다.
 - 이후 migration을 추가할 경우 `SETUP_GUIDE.md` 반영 지점이 명확하다.
 
 ## Risks
