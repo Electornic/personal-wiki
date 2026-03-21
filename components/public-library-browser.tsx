@@ -3,12 +3,12 @@
 import { useSearchParams } from "next/navigation";
 
 import { DiscoveryControls } from "@/components/discovery-controls";
-import { DocumentCard } from "@/components/document-card";
+import { DocumentCard } from "@/entities/record/ui/document-card";
 import {
   applyDiscoveryState,
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
-import type { WikiDocumentPreview } from "@/lib/wiki/types";
+import type { WikiDocumentPreview } from "@/entities/record/model/types";
 
 type PublicLibraryBrowserProps = {
   records: WikiDocumentPreview[];

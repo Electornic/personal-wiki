@@ -1,4 +1,4 @@
-import type { WikiDocument } from "@/lib/wiki/types";
+import type { WikiDocument } from "@/entities/record/model/types";
 
 export const demoDocuments: WikiDocument[] = [
   {

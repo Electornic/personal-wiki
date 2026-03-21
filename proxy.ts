@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { createServerClient } from "@supabase/ssr";
 
-import { getSupabasePublicEnv, hasSupabaseEnv } from "@/lib/env";
+import { getSupabasePublicEnv, hasSupabaseEnv } from "@/shared/config/env";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({

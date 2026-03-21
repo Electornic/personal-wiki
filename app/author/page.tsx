@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
-import { hasAuthoringEnv } from "@/lib/env";
+import { listAuthorDocuments } from "@/entities/record/api/documents";
+import { formatLongDisplayDate } from "@/entities/record/model/content";
 import { getAuthorAccess } from "@/lib/wiki/auth";
-import { formatLongDisplayDate } from "@/lib/wiki/content";
-import { listAuthorDocuments } from "@/lib/wiki/documents";
+import { hasAuthoringEnv } from "@/shared/config/env";
 
 function NewRecordIcon() {
   return (

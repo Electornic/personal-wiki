@@ -10,7 +10,7 @@ import {
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
 import type { LibraryTab } from "@/lib/wiki/library";
-import type { WikiDocumentPreview } from "@/lib/wiki/types";
+import type { WikiDocumentPreview } from "@/entities/record/model/types";
 
 type MyLibraryBrowserProps = {
   activeTab: LibraryTab;

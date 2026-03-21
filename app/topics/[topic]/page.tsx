@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { TopicPill } from "@/components/topic-pill";
-import { formatDisplayDate, getExcerpt } from "@/lib/wiki/content";
-import { listPublicDocuments } from "@/lib/wiki/documents";
+import { formatTopicTitle, normalizeTopic } from "@/app/topics/[topic]/_lib/topic";
+import { listPublicDocuments } from "@/entities/record/api/documents";
+import { formatDisplayDate, getExcerpt } from "@/entities/record/model/content";
+import { TopicPill } from "@/entities/tag/ui/topic-pill";
 
 type PageProps = {
   params: Promise<{ topic: string }>;
@@ -44,18 +45,6 @@ function BookIcon() {
       <path d="M14.167 5v10.833" stroke="currentColor" strokeWidth="1.25" />
     </svg>
   );
-}
-
-function normalizeTopic(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function formatTopicTitle(topic: string) {
-  return topic
-    .split(/[\s_-]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
 }
 
 export default async function TopicHubPage({ params }: PageProps) {

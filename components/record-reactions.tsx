@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { toggleBookmarkAction, toggleLikeAction } from "@/app/library/actions";
-import type { RecordReactionState } from "@/lib/wiki/types";
+import type { RecordReactionState } from "@/entities/record/model/types";
 
 type RecordReactionsProps = {
   recordId: string;

@@ -9,7 +9,7 @@ import {
   getSupabasePublicEnv,
   hasSupabaseAdminEnv,
   hasSupabaseEnv,
-} from "@/lib/env";
+} from "@/shared/config/env";
 
 export async function getServerSupabaseClient() {
   if (!hasSupabaseEnv()) {

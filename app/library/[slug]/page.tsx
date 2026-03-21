@@ -2,20 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { CommentForm } from "@/components/comment-form";
-import { CommentThread } from "@/components/comment-thread";
-import { MarkdownContent } from "@/components/markdown-content";
-import { RecordReactions } from "@/components/record-reactions";
-import { TopicPill } from "@/components/topic-pill";
-import { getAuthorAccess } from "@/lib/wiki/auth";
-import { listCommentsForRecord } from "@/lib/wiki/comments";
-import { formatDisplayDate, formatLongDisplayDate, getExcerpt } from "@/lib/wiki/content";
+import { ConversationSection } from "@/app/library/[slug]/_components/conversation-section";
+import { RecordReactionsSection } from "@/app/library/[slug]/_components/record-reactions-section";
 import {
   getReadableDocumentBySlug,
   listRelatedDocumentsForDocument,
-} from "@/lib/wiki/documents";
-import type { DocumentVisibility } from "@/lib/wiki/types";
-import { getReactionStateForRecord } from "@/lib/wiki/reactions";
+} from "@/entities/record/api/documents";
+import { formatDisplayDate, formatLongDisplayDate, getExcerpt } from "@/entities/record/model/content";
+import { MarkdownContent } from "@/entities/record/ui/markdown-content";
+import { TopicPill } from "@/entities/tag/ui/topic-pill";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -168,28 +163,6 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
   );
 }
 
-async function RecordReactionsSection({
-  documentId,
-  recordSlug,
-}: {
-  documentId: string;
-  recordSlug: string;
-}) {
-  const access = await getAuthorAccess();
-  const reactionState = await getReactionStateForRecord(documentId, access.userId);
-
-  return (
-    <section className="mt-12 border-b border-t border-[rgba(42,36,25,0.1)] py-6">
-      <RecordReactions
-        recordId={documentId}
-        recordSlug={recordSlug}
-        state={reactionState}
-        canReact={access.isAuthenticated}
-      />
-    </section>
-  );
-}
-
 async function RelatedDocumentsSection({
   document,
 }: {
@@ -302,74 +275,6 @@ async function RelatedDocumentsSection({
           </Link>
         </div>
       )}
-    </section>
-  );
-}
-
-async function ConversationSection({
-  documentId,
-  recordSlug,
-  visibility,
-}: {
-  documentId: string;
-  recordSlug: string;
-  visibility: DocumentVisibility;
-}) {
-  const [access, comments] = await Promise.all([
-    getAuthorAccess(),
-    listCommentsForRecord(documentId),
-  ]);
-  const canComment = access.isAuthenticated && visibility === "public";
-  const showPrivateCommentNotice = visibility === "private";
-
-  return (
-    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
-      <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
-        Conversation
-        <span className="ml-1 text-[18px] leading-7 font-normal text-[#6b6354]">
-          {comments.length}
-        </span>
-      </h2>
-      <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
-        Share your reflections on this piece
-      </p>
-
-      {canComment ? (
-        <div className="mt-8">
-          <CommentForm recordId={documentId} recordSlug={recordSlug} />
-        </div>
-      ) : showPrivateCommentNotice ? (
-        <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
-          <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
-            Comments are available on public records only.
-          </p>
-        </div>
-      ) : (
-        <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
-          <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
-            Sign in to join the conversation
-          </p>
-          <Link
-            href="/author/sign-in"
-            className="mt-4 inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[#2a2419]"
-          >
-            Sign In
-          </Link>
-        </div>
-      )}
-
-      <div className="mt-10">
-        {comments.length ? (
-          <CommentThread
-            comments={comments}
-            recordId={documentId}
-            recordSlug={recordSlug}
-            canComment={canComment}
-          />
-        ) : (
-          <div className="text-[14px] leading-6 text-[#6b6354]">No comments yet.</div>
-        )}
-      </div>
     </section>
   );
 }

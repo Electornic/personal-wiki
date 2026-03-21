@@ -2,9 +2,9 @@ import {
   getAdminSupabaseClient,
   getPublicSupabaseClient,
   getServerSupabaseClient,
-} from "@/lib/supabase/server";
+} from "@/shared/api/supabase/server";
 import { cache } from "react";
-import { hasSupabaseEnv } from "@/lib/env";
+import { hasSupabaseEnv } from "@/shared/config/env";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 import { getProfilesForUsers } from "@/lib/wiki/profiles";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
@@ -13,7 +13,7 @@ import type {
   DocumentVisibility,
   SourceType,
   WikiDocument,
-} from "@/lib/wiki/types";
+} from "@/entities/record/model/types";
 import { filterReadableDocuments } from "@/lib/wiki/visibility";
 
 function sortByUpdatedAt(documents: WikiDocument[]) {

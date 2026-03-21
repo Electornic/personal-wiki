@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { hasSupabaseEnv } from "@/lib/env";
-import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { getBrowserSupabaseClient } from "@/shared/api/supabase/browser";
+import { hasSupabaseEnv } from "@/shared/config/env";
 
 type AuthStatus = "loading" | "authenticated" | "anonymous";
 

@@ -2,13 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { MyLibraryBrowser } from "@/components/my-library-browser";
-import { toDocumentPreview } from "@/lib/wiki/content";
+import { toDocumentPreview } from "@/entities/record/model/content";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import {
   getAvailableTagsFromPreviews,
 } from "@/lib/wiki/discovery";
 import { listMyLibraryPreview, type LibraryTab } from "@/lib/wiki/library";
-import { listReactionTotalsForRecords } from "@/lib/wiki/reactions";
+import { listReactionTotalsForRecords } from "@/entities/reaction/api/reactions";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

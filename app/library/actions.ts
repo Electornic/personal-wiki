@@ -3,12 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { createCommentForRecord } from "@/lib/wiki/comments";
+import { createCommentForRecord } from "@/entities/comment/api/comments";
 import {
   ReactionAuthError,
   toggleBookmarkForRecord,
   toggleLikeForRecord,
-} from "@/lib/wiki/reactions";
+} from "@/entities/reaction/api/reactions";
 
 export async function createCommentAction(
   _previousState: { error?: string },

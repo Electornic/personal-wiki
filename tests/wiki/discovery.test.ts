@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { toDocumentPreview } from "@/entities/record/model/content";
 import { applyDiscoveryState } from "@/lib/wiki/discovery";
-import { toDocumentPreview } from "@/lib/wiki/content";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 
 describe("applyDiscoveryState", () => {

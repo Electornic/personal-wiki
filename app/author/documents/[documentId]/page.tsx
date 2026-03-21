@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { AuthorDocumentForm } from "@/components/author-document-form";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
-import { getAuthorDocumentById } from "@/lib/wiki/documents";
+import { getAuthorDocumentById } from "@/entities/record/api/documents";
 
 type PageProps = {
   params: Promise<{ documentId: string }>;

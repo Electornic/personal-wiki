@@ -1,7 +1,7 @@
 import {
   getAdminSupabaseClient,
   getServerSupabaseClient,
-} from "@/lib/supabase/server";
+} from "@/shared/api/supabase/server";
 import { getProfilesForUsers } from "@/lib/wiki/profiles";
 
 export type RecordComment = {

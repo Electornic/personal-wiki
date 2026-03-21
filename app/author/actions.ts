@@ -3,16 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getAuthRedirectUrl, hasAuthoringEnv } from "@/lib/env";
-import { getAdminSupabaseClient, getServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  deleteDocumentById,
+  upsertDocument,
+} from "@/entities/record/api/documents";
+import type { DocumentFormState, SourceType } from "@/entities/record/model/types";
+import { getAdminSupabaseClient, getServerSupabaseClient } from "@/shared/api/supabase/server";
+import { getAuthRedirectUrl, hasAuthoringEnv } from "@/shared/config/env";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
-import { deleteDocumentById, upsertDocument } from "@/lib/wiki/documents";
 import {
   normalizeUserName,
   profileUserNameTaken,
   upsertProfileRow,
 } from "@/lib/wiki/profiles";
-import type { DocumentFormState, SourceType } from "@/lib/wiki/types";
 
 function getAuthTab(formData: FormData, fallback: "signin" | "signup") {
   const tab = String(formData.get("tab") ?? "").trim().toLowerCase();

@@ -1,4 +1,4 @@
-import type { DocumentVisibility, WikiDocument } from "@/lib/wiki/types";
+import type { DocumentVisibility, WikiDocument } from "@/entities/record/model/types";
 
 export function isPublicVisibility(visibility: DocumentVisibility) {
   return visibility === "public";

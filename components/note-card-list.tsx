@@ -1,4 +1,4 @@
-import type { DocumentNoteCard } from "@/lib/wiki/types";
+import type { DocumentNoteCard } from "@/entities/record/model/types";
 
 type NoteCardListProps = {
   noteCards: DocumentNoteCard[];

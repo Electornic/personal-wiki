@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { TopicPill } from "@/components/topic-pill";
-import { formatDisplayDate } from "@/lib/wiki/content";
-import type { WikiDocumentPreview } from "@/lib/wiki/types";
+import { formatDisplayDate } from "@/entities/record/model/content";
+import type { WikiDocumentPreview } from "@/entities/record/model/types";
+import { TopicPill } from "@/entities/tag/ui/topic-pill";
 
 type DocumentCardProps = {
   document: WikiDocumentPreview;

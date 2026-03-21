@@ -1,6 +1,6 @@
-import { listDocumentsByIds } from "@/lib/wiki/documents";
-import { listReactionRecordIds } from "@/lib/wiki/reactions";
-import type { WikiDocument } from "@/lib/wiki/types";
+import { listDocumentsByIds } from "@/entities/record/api/documents";
+import type { WikiDocument } from "@/entities/record/model/types";
+import { listReactionRecordIds } from "@/entities/reaction/api/reactions";
 
 export type LibraryTab = "bookmarks" | "likes";
 
