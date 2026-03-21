@@ -36,9 +36,7 @@ function mapRecord(row: Record<string, unknown>, tags: string[]): WikiDocument {
     title: String(row.title),
     contents: String(row.contents ?? "").trim() || String(row.title),
     sourceType: row.source_type as SourceType,
-    bookTitle:
-      (row.book_title as string | null) ??
-      (row.source_type === "book" ? ((row.source_title as string | null) ?? null) : null),
+    bookTitle: (row.book_title as string | null) ?? (row.source_type === "book" ? String(row.title) : null),
     visibility: row.visibility as DocumentVisibility,
     writerName: String(row.author_name ?? "unknown"),
     publishedAt: (row.published_at as string | null) ?? null,
@@ -380,9 +378,6 @@ export async function upsertDocument(input: UpsertDocumentInput) {
     visibility: input.visibility,
     author_name: user.user_metadata?.user_name || user.email || "unknown",
     source_title: input.sourceType === "book" ? input.bookTitle || input.title : input.title,
-    source_url: null,
-    isbn: null,
-    intro: null,
   };
 
   const { data: savedDocument, error: saveDocumentError } = input.documentId
