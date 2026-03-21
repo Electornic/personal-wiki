@@ -74,7 +74,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 ## Supabase Setup
 
 1. Supabase 프로젝트를 생성합니다.
-2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 12개를 순서대로 실행합니다.
+2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 13개를 순서대로 실행합니다.
 3. Authentication에서 Email/Password 로그인을 활성화합니다.
 4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
 5. 위 환경변수를 `.env.local`에 채웁니다.
@@ -94,6 +94,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 - 이전 v0.5에서 추가했던 curation shelf 스키마는 `SETUP_GUIDE.md`의 Step 10 migration에서 제거됩니다.
 - public record listing/query hardening과 `published_at` 기본값 정리까지 반영하려면 `SETUP_GUIDE.md`의 Step 11 migration도 실행합니다.
 - `source_title` write dependency 제거까지 반영하려면 `SETUP_GUIDE.md`의 Step 12 migration도 실행합니다.
+- `author_name` write dependency 제거까지 반영하려면 `SETUP_GUIDE.md`의 Step 13 migration도 실행합니다.
 
 ## Local Development
 

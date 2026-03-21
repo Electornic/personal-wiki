@@ -406,15 +406,6 @@ function buildRecordPayload(
   };
 }
 
-function buildLegacyRecordCompatibilityPayload(
-  input: UpsertDocumentInput,
-  user: { email?: string | null; user_metadata?: { user_name?: unknown } },
-) {
-  return {
-    author_name: user.user_metadata?.user_name || user.email || "unknown",
-  };
-}
-
 export async function upsertDocument(input: UpsertDocumentInput) {
   const supabase = await getServerSupabaseClient();
   const adminSupabase = getAdminSupabaseClient();
@@ -433,7 +424,6 @@ export async function upsertDocument(input: UpsertDocumentInput) {
 
   const payload = {
     ...buildRecordPayload(input, user),
-    ...buildLegacyRecordCompatibilityPayload(input, user),
   };
 
   const { data: savedDocument, error: saveDocumentError } = input.documentId
