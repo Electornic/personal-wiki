@@ -123,6 +123,8 @@ v0.2 branch note:
 - 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서로 본다.
 - 배포용 버전 태그는 기본적으로 `VX.Y.Z_MajorTopic` 형식을 따른다. 예: `V0.4.0_Design_Speed_Reading_Flow`
 - `dist` 브랜치 push 시에는 `package.json`의 `version`과 관련 작업 주제를 기준으로 GitHub Actions가 tag와 GitHub Release를 자동 생성하는 흐름을 우선한다.
+- 새 릴리즈 버전 작업을 시작하거나, 최소한 `dist` 브랜치에 올리기 전에는 `package.json.version`을 해당 릴리즈 버전으로 올린다.
+- 브랜치 이름이 `V0_5_3_Major_Topic`처럼 세 자리 버전을 포함해도 release topic에는 버전 숫자가 다시 남지 않도록 정규화된 이름을 사용한다.
 - GitHub 관련 작업은 가능하면 `gh` CLI를 우선 사용한다.
 - PR 조회, 리뷰 확인, 코멘트 확인, PR 생성 같은 작업은 `gh` 기준으로 수행한다.
 - PR review 사항을 반영한 뒤에는 해당 review thread에 답글을 달고, resolve 처리까지 진행한다.
