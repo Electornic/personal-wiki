@@ -74,7 +74,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 ## Supabase Setup
 
 1. Supabase 프로젝트를 생성합니다.
-2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 8개를 순서대로 실행합니다.
+2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 10개를 순서대로 실행합니다.
 3. Authentication에서 Email/Password 로그인을 활성화합니다.
 4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
 5. 위 환경변수를 `.env.local`에 채웁니다.
@@ -90,7 +90,8 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 - record editor는 `title / contents / source type / book title / visibility / tags` 중심입니다.
 - comments는 public record에서 읽을 수 있고, 작성은 로그인 사용자만 가능합니다.
 - bookmark / like / my library까지 보려면 `SETUP_GUIDE.md`의 Step 7 migration도 필요합니다.
-- curation shelf authoring과 home shelf 노출까지 보려면 `SETUP_GUIDE.md`의 Step 8 migration도 필요합니다.
+- author workspace 목록과 edit 진입 속도 개선까지 반영하려면 `SETUP_GUIDE.md`의 Step 9 migration도 실행합니다.
+- 이전 v0.5에서 추가했던 curation shelf 스키마는 `SETUP_GUIDE.md`의 Step 10 migration에서 제거됩니다.
 
 ## Local Development
 
@@ -119,9 +120,10 @@ pnpm build
 - 배포 기준 브랜치는 `dist`입니다.
 - 배포용 태그 규칙은 기본적으로 `VX.Y.Z_MajorTopic`를 사용합니다.
   예: `V0.4.0_Design_Speed_Reading_Flow`
-- 배포 전에 반드시 [package.json](/Users/leejun/Desktop/Projects/personal-wiki/package.json)의 `version`을 원하는 릴리즈 버전으로 올립니다.
+- 새 릴리즈 버전 작업을 시작하거나, 최소한 `dist`에 올리기 전에는 [package.json](/Users/leejun/Desktop/Projects/personal-wiki/package.json)의 `version`을 원하는 릴리즈 버전으로 올립니다.
 - `dist`에 push되면 GitHub Actions가 `package.json`의 `version`과 관련 작업 주제를 읽고,
   같은 태그가 없을 때만 해당 버전의 git tag와 GitHub Release를 자동 생성합니다.
+- 브랜치 이름이 `V0_5_3_Major_Topic`처럼 세 자리 버전을 포함해도 release topic에서 버전 숫자가 다시 남지 않도록 workflow가 정규화합니다.
 - 자동 릴리스 전 검증 순서는 아래와 같습니다.
   - `pnpm lint`
   - `pnpm test`

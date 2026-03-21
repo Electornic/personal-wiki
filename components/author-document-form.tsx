@@ -12,7 +12,7 @@ type AuthorDocumentFormProps = {
   document?: WikiDocument;
 };
 
-function SubmitButton() {
+function SubmitButton({ visibility }: { visibility: "public" | "private" }) {
   const { pending } = useFormStatus();
 
   return (
@@ -21,7 +21,7 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
     >
-      {pending ? "Saving..." : "Publish"}
+      {pending ? "Saving..." : visibility === "public" ? "Publish Record" : "Save Draft"}
     </button>
   );
 }
@@ -102,6 +102,39 @@ function ChevronDownIcon() {
   );
 }
 
+const starterTemplates = {
+  article: `## What it argues
+
+## Points worth keeping
+
+## Connected thoughts
+
+- `,
+  book: `## Why this book matters
+
+## Ideas to keep
+
+## Memorable passages
+
+> Quote
+
+## Connected thoughts
+
+- `,
+} as const;
+
+const reflectionTemplate = `## Questions to push further
+
+- What stayed with me?
+- What do I want to revisit?
+- What would I connect this to next?`;
+
+const markdownTips = [
+  "Headings shape the reading flow.",
+  "Preview uses the same markdown renderer as the public page.",
+  "Short, explicit tags keep recommendation quality stable.",
+];
+
 export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   const [state, formAction] = useActionState<DocumentFormState, FormData>(saveDocument, {});
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
@@ -116,6 +149,8 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   const [bookTitle, setBookTitle] = useState(document?.bookTitle ?? "");
   const [tags, setTags] = useState(document?.tags.join(", ") ?? "");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const wordCount = contents.trim() ? contents.trim().split(/\s+/).length : 0;
+  const lineCount = contents ? contents.split(/\r?\n/).length : 0;
 
   function updateContentsFromTextarea(
     updater: (currentValue: string, selectionStart: number, selectionEnd: number) => {
@@ -230,6 +265,20 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     });
   }
 
+  function insertTemplate(template: string) {
+    updateContentsFromTextarea((currentValue) => {
+      const trimmedValue = currentValue.trimEnd();
+      const nextValue = trimmedValue ? `${trimmedValue}\n\n${template}` : template;
+      const caret = nextValue.length;
+
+      return {
+        nextValue,
+        nextSelectionStart: caret,
+        nextSelectionEnd: caret,
+      };
+    });
+  }
+
   return (
     <form action={formAction} className="grid gap-8">
       <input type="hidden" name="documentId" defaultValue={document?.id ?? ""} />
@@ -269,7 +318,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
             </label>
             <div className="inline-flex items-center gap-2 rounded-[4px] bg-[#2a2419] px-3 text-[#faf8f5]">
               <PublishIcon />
-              <SubmitButton />
+              <SubmitButton visibility={visibility} />
             </div>
           </div>
         </div>
@@ -387,6 +436,39 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
 
         {activeTab === "write" ? (
           <div className="space-y-3">
+            <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.96)] px-4 py-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <p className="text-[14px] leading-5 font-medium text-[#2a2419]">
+                    Writing support
+                  </p>
+                  <p className="mt-1 text-[13px] leading-5 text-[#6b6354]">
+                    Use a starter when you want structure without leaving the writing flow.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => insertTemplate(starterTemplates[sourceType])}
+                    className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-[rgba(232,227,219,0.35)]"
+                  >
+                    Insert starter outline
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTemplate(reflectionTemplate)}
+                    className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-[rgba(232,227,219,0.35)]"
+                  >
+                    Insert reflection prompts
+                  </button>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[12px] leading-4 text-[#6b6354]">
+                {markdownTips.map((tip) => (
+                  <span key={tip}>{tip}</span>
+                ))}
+              </div>
+            </div>
             <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-2 py-2">
               <div className="flex flex-wrap items-center gap-1">
                 <button
@@ -456,6 +538,11 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   Link
                 </button>
               </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] leading-4 text-[#6b6354]">
+              <span>{wordCount} words</span>
+              <span>{lineCount} lines</span>
+              <span>Markdown shortcuts stay in plain text until preview or publish.</span>
             </div>
             <textarea
               ref={textareaRef}

@@ -7,7 +7,6 @@ import { getAuthRedirectUrl, hasAuthoringEnv } from "@/lib/env";
 import { getAdminSupabaseClient, getServerSupabaseClient } from "@/lib/supabase/server";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import { deleteDocumentById, upsertDocument } from "@/lib/wiki/documents";
-import { createCurationShelf, deleteCurationShelfById } from "@/lib/wiki/shelves";
 import {
   normalizeUserName,
   profileUserNameTaken,
@@ -256,63 +255,4 @@ export async function deleteDocument(formData: FormData) {
   revalidatePath("/author");
 
   redirect("/author?deleted=1");
-}
-
-export async function createShelf(formData: FormData) {
-  const access = await requireAuthorAccess();
-
-  if (!access.configured) {
-    redirect("/author?error=config");
-  }
-
-  const title = String(formData.get("title") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const placement = String(formData.get("placement") ?? "home").trim();
-  const topicTag = String(formData.get("topicTag") ?? "").trim();
-  const recordIds = formData
-    .getAll("recordIds")
-    .map((value) => String(value).trim())
-    .filter(Boolean);
-
-  try {
-    await createCurationShelf({
-      title,
-      description,
-      placement: placement === "topic" ? "topic" : "home",
-      topicTag: topicTag || null,
-      recordIds,
-    });
-  } catch {
-    redirect("/author?error=shelf");
-  }
-
-  revalidatePath("/");
-  revalidatePath("/author");
-
-  redirect("/author?shelf=1");
-}
-
-export async function deleteShelf(formData: FormData) {
-  const access = await requireAuthorAccess();
-
-  if (!access.configured) {
-    redirect("/author?error=config");
-  }
-
-  const shelfId = String(formData.get("shelfId") ?? "").trim();
-
-  if (!shelfId) {
-    redirect("/author?error=missing-shelf");
-  }
-
-  try {
-    await deleteCurationShelfById(shelfId);
-  } catch {
-    redirect("/author?error=delete-shelf");
-  }
-
-  revalidatePath("/");
-  revalidatePath("/author");
-
-  redirect("/author?shelfDeleted=1");
 }

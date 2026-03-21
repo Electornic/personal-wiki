@@ -115,11 +115,30 @@ SQL은 아래 순서대로 실행합니다.
 - author 기준 선반 authoring 정책 추가
 - public home에서 public record만 포함하는 선반 노출 준비
 
+### Step 9. v0.5.3 author record query index
+
+실행 파일:
+- [supabase/migrations/20260321T120000Z_v0_5_3_author_records_index.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T120000Z_v0_5_3_author_records_index.sql)
+
+역할:
+- `records (writer_user_id, updated_at desc)` 복합 인덱스 추가
+- author workspace 목록과 edit 진입 전후의 record 조회 비용 완화
+
+### Step 10. v0.5.3 remove curation shelves
+
+실행 파일:
+- [supabase/migrations/20260321T123000Z_v0_5_3_remove_curation_shelves.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T123000Z_v0_5_3_remove_curation_shelves.sql)
+
+역할:
+- `curation_shelves`, `curation_shelf_records` 테이블 제거
+- curation shelf trigger/function 정리
+- 현재 제품 범위에서 제외된 수동 shelf 기능 제거 반영
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 여덟 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

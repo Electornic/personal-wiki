@@ -1,15 +1,10 @@
 import { Suspense } from "react";
 
-import { CurationShelf } from "@/components/curation-shelf";
 import { PublicLibraryBrowser } from "@/components/public-library-browser";
 import { toDocumentPreview } from "@/lib/wiki/content";
-import {
-  buildHomeCurationShelves,
-  getAvailableTagsFromPreviews,
-} from "@/lib/wiki/discovery";
+import { getAvailableTagsFromPreviews } from "@/lib/wiki/discovery";
 import { listPublicDocuments } from "@/lib/wiki/documents";
 import { listReactionTotalsForRecords } from "@/lib/wiki/reactions";
-import { listPublicCurationShelves } from "@/lib/wiki/shelves";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -30,39 +25,12 @@ export default async function Home({ searchParams }: PageProps) {
         </p>
       </section>
 
-      <Suspense fallback={<HomeShelvesFallback />}>
-        <HomeShelvesSection />
-      </Suspense>
-
       <section id="library" className="mt-16 md:mt-20">
         <Suspense fallback={<HomeLibraryFallback />}>
           <HomeLibrarySection />
         </Suspense>
       </section>
     </main>
-  );
-}
-
-async function HomeShelvesSection() {
-  const documents = await listPublicDocuments();
-  const publicRecords = documents.filter((record) => record.visibility === "public");
-  const authoredShelves = await listPublicCurationShelves("home");
-  const shelves =
-    authoredShelves.length > 0
-      ? authoredShelves
-      : buildHomeCurationShelves(publicRecords);
-
-  return (
-    <section className="mt-16 grid gap-12 md:mt-[112px]">
-      {shelves.map((shelf) => (
-        <CurationShelf
-          key={shelf.title}
-          title={shelf.title}
-          description={shelf.description}
-          documents={shelf.documents}
-        />
-      ))}
-    </section>
   );
 }
 
@@ -81,30 +49,6 @@ async function HomeLibrarySection() {
       availableTags={availableTags}
       reactionTotals={Object.fromEntries(reactionTotals)}
     />
-  );
-}
-
-function HomeShelvesFallback() {
-  return (
-    <section className="mt-16 grid gap-12 md:mt-[112px]">
-      {Array.from({ length: 2 }).map((_, sectionIndex) => (
-        <div key={sectionIndex}>
-          <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-          <div className="mt-2 h-6 w-80 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-          <div className="mt-6 grid gap-4">
-            {Array.from({ length: 2 }).map((__, cardIndex) => (
-              <div
-                key={cardIndex}
-                className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-5 py-5"
-              >
-                <div className="h-6 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-                <div className="mt-3 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </section>
   );
 }
 
