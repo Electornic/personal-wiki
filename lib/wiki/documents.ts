@@ -391,6 +391,31 @@ type UpsertDocumentInput = {
   tags: string[];
 };
 
+function buildRecordPayload(
+  input: UpsertDocumentInput,
+  user: { id: string; email?: string | null; user_metadata?: { user_name?: unknown } },
+) {
+  return {
+    writer_user_id: user.id,
+    slug: createSlug(input.title),
+    title: input.title,
+    contents: input.contents,
+    source_type: input.sourceType,
+    book_title: input.sourceType === "book" ? input.bookTitle || null : null,
+    visibility: input.visibility,
+  };
+}
+
+function buildLegacyRecordCompatibilityPayload(
+  input: UpsertDocumentInput,
+  user: { email?: string | null; user_metadata?: { user_name?: unknown } },
+) {
+  return {
+    author_name: user.user_metadata?.user_name || user.email || "unknown",
+    source_title: input.sourceType === "book" ? input.bookTitle || input.title : input.title,
+  };
+}
+
 export async function upsertDocument(input: UpsertDocumentInput) {
   const supabase = await getServerSupabaseClient();
   const adminSupabase = getAdminSupabaseClient();
@@ -407,17 +432,9 @@ export async function upsertDocument(input: UpsertDocumentInput) {
     throw new Error("You must be signed in to save a document.");
   }
 
-  const slug = createSlug(input.title);
   const payload = {
-    writer_user_id: user.id,
-    slug,
-    title: input.title,
-    contents: input.contents,
-    source_type: input.sourceType,
-    book_title: input.sourceType === "book" ? input.bookTitle || null : null,
-    visibility: input.visibility,
-    author_name: user.user_metadata?.user_name || user.email || "unknown",
-    source_title: input.sourceType === "book" ? input.bookTitle || input.title : input.title,
+    ...buildRecordPayload(input, user),
+    ...buildLegacyRecordCompatibilityPayload(input, user),
   };
 
   const { data: savedDocument, error: saveDocumentError } = input.documentId
