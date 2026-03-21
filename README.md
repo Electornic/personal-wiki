@@ -120,9 +120,10 @@ pnpm build
 - 배포 기준 브랜치는 `dist`입니다.
 - 배포용 태그 규칙은 기본적으로 `VX.Y.Z_MajorTopic`를 사용합니다.
   예: `V0.4.0_Design_Speed_Reading_Flow`
-- 배포 전에 반드시 [package.json](/Users/leejun/Desktop/Projects/personal-wiki/package.json)의 `version`을 원하는 릴리즈 버전으로 올립니다.
+- 새 릴리즈 버전 작업을 시작하거나, 최소한 `dist`에 올리기 전에는 [package.json](/Users/leejun/Desktop/Projects/personal-wiki/package.json)의 `version`을 원하는 릴리즈 버전으로 올립니다.
 - `dist`에 push되면 GitHub Actions가 `package.json`의 `version`과 관련 작업 주제를 읽고,
   같은 태그가 없을 때만 해당 버전의 git tag와 GitHub Release를 자동 생성합니다.
+- 브랜치 이름이 `V0_5_3_Major_Topic`처럼 세 자리 버전을 포함해도 release topic에서 버전 숫자가 다시 남지 않도록 workflow가 정규화합니다.
 - 자동 릴리스 전 검증 순서는 아래와 같습니다.
   - `pnpm lint`
   - `pnpm test`
