@@ -109,6 +109,20 @@ export async function createCommentForRecord(input: {
     throw new Error("Comment contents are required.");
   }
 
+  const recordResult = await supabase
+    .from("records")
+    .select("id, visibility")
+    .eq("id", input.recordId)
+    .maybeSingle();
+
+  if (recordResult.error || !recordResult.data) {
+    throw new Error("Record does not exist.");
+  }
+
+  if (recordResult.data.visibility !== "public") {
+    throw new Error("Comments are available on public records only.");
+  }
+
   let depth = 0;
 
   if (input.parentCommentId) {
