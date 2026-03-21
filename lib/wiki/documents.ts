@@ -6,6 +6,7 @@ import {
 import { cache } from "react";
 import { hasSupabaseEnv } from "@/lib/env";
 import { demoDocuments } from "@/lib/wiki/demo-data";
+import { getProfilesForUsers } from "@/lib/wiki/profiles";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 import { createSlug } from "@/lib/wiki/slugs";
 import type {
@@ -29,18 +30,20 @@ function normalizeRouteSlug(slug: string) {
   }
 }
 
-function mapRecord(row: Record<string, unknown>, tags: string[]): WikiDocument {
+function mapRecord(
+  row: Record<string, unknown>,
+  tags: string[],
+  writerName?: string | null,
+): WikiDocument {
   return {
     id: String(row.id),
     slug: String(row.slug),
     title: String(row.title),
     contents: String(row.contents ?? "").trim() || String(row.title),
     sourceType: row.source_type as SourceType,
-    bookTitle:
-      (row.book_title as string | null) ??
-      (row.source_type === "book" ? ((row.source_title as string | null) ?? null) : null),
+    bookTitle: (row.book_title as string | null) ?? (row.source_type === "book" ? String(row.title) : null),
     visibility: row.visibility as DocumentVisibility,
-    writerName: String(row.author_name ?? "unknown"),
+    writerName: writerName ?? String(row.author_name ?? "unknown"),
     publishedAt: (row.published_at as string | null) ?? null,
     tags,
     createdAt: String(row.created_at),
@@ -77,13 +80,48 @@ function buildTagMap(tagRows: RecordTagRow[]) {
   return tagMap;
 }
 
-function mapRowsToDocuments(
+async function buildWriterNameMap(recordRows: Array<Record<string, unknown>>) {
+  const adminSupabase = getAdminSupabaseClient();
+
+  if (!adminSupabase) {
+    return new Map<string, string>();
+  }
+
+  const writerIds = [
+    ...new Set(
+      recordRows
+        .map((row) => String(row.writer_user_id ?? ""))
+        .filter(Boolean),
+    ),
+  ];
+
+  if (writerIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const profiles = await getProfilesForUsers(adminSupabase, writerIds);
+
+  return new Map(
+    writerIds
+      .map((writerId) => [writerId, profiles.get(writerId)?.user_name])
+      .filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1].length > 0),
+  );
+}
+
+async function mapRowsToDocuments(
   recordRows: Array<Record<string, unknown>>,
   tagRows: RecordTagRow[],
 ) {
   const tagMap = buildTagMap(tagRows);
+  const writerNameMap = await buildWriterNameMap(recordRows);
 
-  return recordRows.map((row) => mapRecord(row, tagMap.get(String(row.id)) ?? []));
+  return recordRows.map((row) =>
+    mapRecord(
+      row,
+      tagMap.get(String(row.id)) ?? [],
+      writerNameMap.get(String(row.writer_user_id ?? "")),
+    ),
+  );
 }
 
 async function fetchTagRowsForRecordIds(
@@ -126,6 +164,7 @@ const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase()
   const { data: recordRows, error: recordsError } = await supabase
     .from("records")
     .select("*")
+    .eq("visibility", "public")
     .order("updated_at", { ascending: false });
 
   if (recordsError || !recordRows) {
@@ -134,7 +173,7 @@ const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase()
 
   const tagRows = await fetchTagRowsForRecordIds(recordRows.map((row) => String(row.id)));
 
-  return mapRowsToDocuments(recordRows, tagRows);
+  return await mapRowsToDocuments(recordRows, tagRows);
 });
 
 export const listPublicDocuments = cache(async function listPublicDocuments() {
@@ -181,7 +220,7 @@ export const listAuthorDocuments = cache(async function listAuthorDocuments() {
     true,
   );
 
-  return sortByUpdatedAt(mapRowsToDocuments(recordRows, tagRows));
+  return sortByUpdatedAt(await mapRowsToDocuments(recordRows, tagRows));
 });
 
 export const getPublicDocumentBySlug = cache(async function getPublicDocumentBySlug(
@@ -212,7 +251,37 @@ export const getPublicDocumentBySlug = cache(async function getPublicDocumentByS
   }
 
   const tagRows = await fetchTagRowsForRecordIds([String(row.id)]);
-  return mapRowsToDocuments([row], tagRows)[0] ?? null;
+  return (await mapRowsToDocuments([row], tagRows))[0] ?? null;
+});
+
+export const getReadableDocumentBySlug = cache(async function getReadableDocumentBySlug(
+  slug: string,
+) {
+  const normalizedSlug = normalizeRouteSlug(slug);
+
+  if (!hasSupabaseEnv()) {
+    const documents = await listPublicDocuments();
+    return documents.find((document) => document.slug === normalizedSlug) ?? null;
+  }
+
+  const supabase = await getServerSupabaseClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const { data: row, error } = await supabase
+    .from("records")
+    .select("*")
+    .eq("slug", normalizedSlug)
+    .maybeSingle();
+
+  if (error || !row) {
+    return null;
+  }
+
+  const tagRows = await fetchTagRowsForRecordIds([String(row.id)], true);
+  return (await mapRowsToDocuments([row], tagRows))[0] ?? null;
 });
 
 export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
@@ -245,7 +314,7 @@ export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
   }
 
   const tagRows = await fetchTagRowsForRecordIds([String(row.id)], true);
-  return mapRowsToDocuments([row], tagRows)[0] ?? null;
+  return (await mapRowsToDocuments([row], tagRows))[0] ?? null;
 });
 
 export async function listRelatedDocumentsForDocument(
@@ -257,13 +326,15 @@ export async function listRelatedDocumentsForDocument(
     return getRelatedDocuments(document, documents, limit);
   }
 
-  const supabase = getPublicSupabaseClient();
+  const serverSupabase = await getServerSupabaseClient();
+  const publicSupabase = getPublicSupabaseClient();
+  const supabase = serverSupabase ?? publicSupabase;
 
   if (!supabase || document.tags.length === 0) {
     return [];
   }
 
-  const sourceTagRows = await fetchTagRowsForRecordIds([document.id]);
+  const sourceTagRows = await fetchTagRowsForRecordIds([document.id], Boolean(serverSupabase));
   const sourceTagIds = [...new Set(sourceTagRows.map((row) => row.tag_id).filter(Boolean))];
 
   if (sourceTagIds.length === 0) {
@@ -289,15 +360,17 @@ export async function listRelatedDocumentsForDocument(
   const { data: candidateRows, error: candidatesError } = await supabase
     .from("records")
     .select("*")
-    .in("id", candidateIds)
-    .eq("visibility", "public");
+    .in("id", candidateIds);
 
   if (candidatesError || !candidateRows) {
     return [];
   }
 
-  const candidateTagDetails = await fetchTagRowsForRecordIds(candidateIds);
-  const candidateDocuments = mapRowsToDocuments(candidateRows, candidateTagDetails);
+  const candidateTagDetails = await fetchTagRowsForRecordIds(
+    candidateIds,
+    Boolean(serverSupabase),
+  );
+  const candidateDocuments = await mapRowsToDocuments(candidateRows, candidateTagDetails);
 
   return getRelatedDocuments(document, candidateDocuments, limit);
 }
@@ -327,7 +400,7 @@ export async function listDocumentsByIds(recordIds: string[]) {
   }
 
   const tagRows = await fetchTagRowsForRecordIds(uniqueRecordIds, Boolean(serverSupabase));
-  const documents = mapRowsToDocuments(recordRows, tagRows);
+  const documents = await mapRowsToDocuments(recordRows, tagRows);
 
   const orderedDocuments: WikiDocument[] = [];
 
@@ -352,6 +425,21 @@ type UpsertDocumentInput = {
   tags: string[];
 };
 
+function buildRecordPayload(
+  input: UpsertDocumentInput,
+  user: { id: string; email?: string | null; user_metadata?: { user_name?: unknown } },
+) {
+  return {
+    writer_user_id: user.id,
+    slug: createSlug(input.title),
+    title: input.title,
+    contents: input.contents,
+    source_type: input.sourceType,
+    book_title: input.sourceType === "book" ? input.bookTitle || null : null,
+    visibility: input.visibility,
+  };
+}
+
 export async function upsertDocument(input: UpsertDocumentInput) {
   const supabase = await getServerSupabaseClient();
   const adminSupabase = getAdminSupabaseClient();
@@ -368,21 +456,8 @@ export async function upsertDocument(input: UpsertDocumentInput) {
     throw new Error("You must be signed in to save a document.");
   }
 
-  const slug = createSlug(input.title);
   const payload = {
-    writer_user_id: user.id,
-    slug,
-    title: input.title,
-    contents: input.contents,
-    source_type: input.sourceType,
-    book_title: input.sourceType === "book" ? input.bookTitle || null : null,
-    visibility: input.visibility,
-    author_name: user.user_metadata?.user_name || user.email || "unknown",
-    source_title: input.sourceType === "book" ? input.bookTitle || input.title : input.title,
-    source_url: null,
-    isbn: null,
-    published_at: new Date().toISOString().slice(0, 10),
-    intro: null,
+    ...buildRecordPayload(input, user),
   };
 
   const { data: savedDocument, error: saveDocumentError } = input.documentId
@@ -395,7 +470,10 @@ export async function upsertDocument(input: UpsertDocumentInput) {
         .single()
     : await supabase
         .from("records")
-        .insert(payload)
+        .insert({
+          ...payload,
+          published_at: new Date().toISOString().slice(0, 10),
+        })
         .select("id, slug")
         .single();
 

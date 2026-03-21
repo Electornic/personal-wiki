@@ -35,7 +35,7 @@
 - bookmark / like reactions
 - my library `/me/library`
 - topic hub `/topics/[topic]`
-- authored curation shelves for discovery surfaces
+- author workspace cleanup and writing support improvements
 - loading states, layout alignment, reading flow 개선
 - Supabase SQL migrations
 - Vitest 기반 유틸 테스트
@@ -74,7 +74,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 ## Supabase Setup
 
 1. Supabase 프로젝트를 생성합니다.
-2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 10개를 순서대로 실행합니다.
+2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 15개를 순서대로 실행합니다.
 3. Authentication에서 Email/Password 로그인을 활성화합니다.
 4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
 5. 위 환경변수를 `.env.local`에 채웁니다.
@@ -83,6 +83,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 주의:
 
 - public surface에서는 private 문서가 목록/추천/상세 어디에서도 드러나면 안 됩니다.
+- 로그인한 owner는 직접 URL로 접근한 자신의 private record를 `/library/[slug]`에서 preview할 수 있지만, 다른 사용자와 비로그인 사용자에게는 계속 숨겨집니다.
 - 로그인 사용자는 signup/login 이후 `profiles` row를 가져야 protected write가 정상 동작합니다.
 - callback의 `next` 파라미터는 로컬 상대 경로만 허용합니다.
 - session refresh는 request 단계 `proxy.ts`에서 수행합니다.
@@ -92,6 +93,11 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 - bookmark / like / my library까지 보려면 `SETUP_GUIDE.md`의 Step 7 migration도 필요합니다.
 - author workspace 목록과 edit 진입 속도 개선까지 반영하려면 `SETUP_GUIDE.md`의 Step 9 migration도 실행합니다.
 - 이전 v0.5에서 추가했던 curation shelf 스키마는 `SETUP_GUIDE.md`의 Step 10 migration에서 제거됩니다.
+- public record listing/query hardening과 `published_at` 기본값 정리까지 반영하려면 `SETUP_GUIDE.md`의 Step 11 migration도 실행합니다.
+- `source_title` write dependency 제거까지 반영하려면 `SETUP_GUIDE.md`의 Step 12 migration도 실행합니다.
+- `author_name` write dependency 제거까지 반영하려면 `SETUP_GUIDE.md`의 Step 13 migration도 실행합니다.
+- 실제 미사용 legacy record column 정리까지 반영하려면 `SETUP_GUIDE.md`의 Step 14 migration도 실행합니다.
+- private owner preview까지 포함한 comment policy 정리까지 반영하려면 `SETUP_GUIDE.md`의 Step 15 migration도 실행합니다.
 
 ## Local Development
 

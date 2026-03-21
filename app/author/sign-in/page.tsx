@@ -12,25 +12,33 @@ type PageProps = {
   }>;
 };
 
+function getAuthErrorMessage(error?: string, message?: string) {
+  switch (error) {
+    case "user-name-taken":
+      return "That user name is already taken.";
+    case "weak-password":
+      return "Password must be at least 8 characters.";
+    case "missing-signup-fields":
+    case "missing-login-fields":
+      return "Fill in all required fields.";
+    case "config":
+      return "Authentication is not configured yet.";
+    default:
+      if (message) {
+        return message;
+      }
+
+      return error
+        ? "Authentication failed. Check the form values and Supabase settings."
+        : null;
+  }
+}
+
 export default async function AuthorSignInPage({ searchParams }: PageProps) {
   const { error, success, tab, message } = await searchParams;
   const activeTab = tab === "signup" ? "signup" : "signin";
   const isSignUp = activeTab === "signup";
-
-  const errorMessage =
-    error === "user-name-taken"
-      ? "That user name is already taken."
-      : error === "weak-password"
-        ? "Password must be at least 8 characters."
-        : error === "missing-signup-fields" || error === "missing-login-fields"
-          ? "Fill in all required fields."
-          : error === "config"
-            ? "Authentication is not configured yet."
-            : message
-              ? message
-            : error
-              ? "Authentication failed. Check the form values and Supabase settings."
-              : null;
+  const errorMessage = getAuthErrorMessage(error, message);
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[#faf8f5] px-4 py-8 md:px-0 md:py-16">

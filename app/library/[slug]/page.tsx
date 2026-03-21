@@ -11,9 +11,10 @@ import { getAuthorAccess } from "@/lib/wiki/auth";
 import { listCommentsForRecord } from "@/lib/wiki/comments";
 import { formatDisplayDate, formatLongDisplayDate, getExcerpt } from "@/lib/wiki/content";
 import {
-  getPublicDocumentBySlug,
+  getReadableDocumentBySlug,
   listRelatedDocumentsForDocument,
 } from "@/lib/wiki/documents";
+import type { DocumentVisibility } from "@/lib/wiki/types";
 import { getReactionStateForRecord } from "@/lib/wiki/reactions";
 
 type PageProps = {
@@ -92,7 +93,7 @@ function ArrowRightIcon() {
 
 export default async function LibraryDocumentPage({ params }: PageProps) {
   const { slug } = await params;
-  const document = await getPublicDocumentBySlug(slug);
+  const document = await getReadableDocumentBySlug(slug);
 
   if (!document) {
     notFound();
@@ -155,7 +156,11 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
           </Suspense>
 
           <Suspense fallback={<ConversationSectionFallback />}>
-            <ConversationSection documentId={document.id} recordSlug={document.slug} />
+            <ConversationSection
+              documentId={document.id}
+              recordSlug={document.slug}
+              visibility={document.visibility}
+            />
           </Suspense>
         </article>
       </div>
@@ -188,7 +193,7 @@ async function RecordReactionsSection({
 async function RelatedDocumentsSection({
   document,
 }: {
-  document: NonNullable<Awaited<ReturnType<typeof getPublicDocumentBySlug>>>;
+  document: NonNullable<Awaited<ReturnType<typeof getReadableDocumentBySlug>>>;
 }) {
   const relatedDocuments = await listRelatedDocumentsForDocument(document, 2);
 
@@ -304,14 +309,18 @@ async function RelatedDocumentsSection({
 async function ConversationSection({
   documentId,
   recordSlug,
+  visibility,
 }: {
   documentId: string;
   recordSlug: string;
+  visibility: DocumentVisibility;
 }) {
   const [access, comments] = await Promise.all([
     getAuthorAccess(),
     listCommentsForRecord(documentId),
   ]);
+  const canComment = access.isAuthenticated && visibility === "public";
+  const showPrivateCommentNotice = visibility === "private";
 
   return (
     <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
@@ -325,9 +334,15 @@ async function ConversationSection({
         Share your reflections on this piece
       </p>
 
-      {access.isAuthenticated ? (
+      {canComment ? (
         <div className="mt-8">
           <CommentForm recordId={documentId} recordSlug={recordSlug} />
+        </div>
+      ) : showPrivateCommentNotice ? (
+        <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
+          <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
+            Comments are available on public records only.
+          </p>
         </div>
       ) : (
         <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
@@ -349,7 +364,7 @@ async function ConversationSection({
             comments={comments}
             recordId={documentId}
             recordSlug={recordSlug}
-            canComment={access.isAuthenticated}
+            canComment={canComment}
           />
         ) : (
           <div className="text-[14px] leading-6 text-[#6b6354]">No comments yet.</div>

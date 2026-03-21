@@ -134,11 +134,57 @@ SQL은 아래 순서대로 실행합니다.
 - curation shelf trigger/function 정리
 - 현재 제품 범위에서 제외된 수동 shelf 기능 제거 반영
 
+### Step 11. v0.5.4 schema hardening
+
+실행 파일:
+- [supabase/migrations/20260321T140000Z_v0_5_4_schema_hardening.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T140000Z_v0_5_4_schema_hardening.sql)
+
+역할:
+- `records.published_at` null row backfill 및 default/not null 정리
+- `book` / `article` 기준 `book_title` 일관성 check 추가
+- public library listing 패턴에 맞는 `records` public index 추가
+
+### Step 12. v0.5.4 source title compatibility cleanup
+
+실행 파일:
+- [supabase/migrations/20260321T150000Z_v0_5_4_source_title_nullable.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T150000Z_v0_5_4_source_title_nullable.sql)
+
+역할:
+- 기존 row의 빈 `source_title`을 `book_title/title` 기준으로 보정
+- 새 record write path가 `source_title` 없이도 동작할 수 있게 nullable 완화
+
+### Step 13. v0.5.4 author name compatibility cleanup
+
+실행 파일:
+- [supabase/migrations/20260321T160000Z_v0_5_4_author_name_nullable.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T160000Z_v0_5_4_author_name_nullable.sql)
+
+역할:
+- 기존 row의 빈 `author_name`을 `profiles.user_name` 기준으로 보정
+- 새 record write path가 `author_name` 없이도 동작할 수 있게 nullable 완화
+
+### Step 14. v0.5.4 drop unused legacy record columns
+
+실행 파일:
+- [supabase/migrations/20260321T170000Z_v0_5_4_drop_unused_legacy_record_columns.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T170000Z_v0_5_4_drop_unused_legacy_record_columns.sql)
+
+역할:
+- 현재 app read/write에서 더 이상 쓰지 않는 `source_title`, `source_url`, `isbn`, `intro` 제거
+- `records` schema를 v0.2 이후 실제 제품 계약에 더 가깝게 정리
+
+### Step 15. v0.5.4 public record comments only
+
+실행 파일:
+- [supabase/migrations/20260321T180000Z_v0_5_4_public_record_comments_only.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T180000Z_v0_5_4_public_record_comments_only.sql)
+
+역할:
+- `record_comments` insert 정책을 public record 전용으로 tighten
+- owner private preview에서 comment write가 우회되지 않도록 정책 정리
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열다섯 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash
