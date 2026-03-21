@@ -134,11 +134,21 @@ SQL은 아래 순서대로 실행합니다.
 - curation shelf trigger/function 정리
 - 현재 제품 범위에서 제외된 수동 shelf 기능 제거 반영
 
+### Step 11. v0.5.4 schema hardening
+
+실행 파일:
+- [supabase/migrations/20260321T140000Z_v0_5_4_schema_hardening.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260321T140000Z_v0_5_4_schema_hardening.sql)
+
+역할:
+- `records.published_at` null row backfill 및 default/not null 정리
+- `book` / `article` 기준 `book_title` 일관성 check 추가
+- public library listing 패턴에 맞는 `records` public index 추가
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열한 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

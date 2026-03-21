@@ -126,6 +126,7 @@ const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase()
   const { data: recordRows, error: recordsError } = await supabase
     .from("records")
     .select("*")
+    .eq("visibility", "public")
     .order("updated_at", { ascending: false });
 
   if (recordsError || !recordRows) {
@@ -381,7 +382,6 @@ export async function upsertDocument(input: UpsertDocumentInput) {
     source_title: input.sourceType === "book" ? input.bookTitle || input.title : input.title,
     source_url: null,
     isbn: null,
-    published_at: new Date().toISOString().slice(0, 10),
     intro: null,
   };
 
@@ -395,7 +395,10 @@ export async function upsertDocument(input: UpsertDocumentInput) {
         .single()
     : await supabase
         .from("records")
-        .insert(payload)
+        .insert({
+          ...payload,
+          published_at: new Date().toISOString().slice(0, 10),
+        })
         .select("id, slug")
         .single();
 
