@@ -35,7 +35,7 @@
 - bookmark / like reactions
 - my library `/me/library`
 - topic hub `/topics/[topic]`
-- authored curation shelves for discovery surfaces
+- author workspace cleanup and writing support improvements
 - loading states, layout alignment, reading flow 개선
 - Supabase SQL migrations
 - Vitest 기반 유틸 테스트
