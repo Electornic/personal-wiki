@@ -1,5 +1,12 @@
 # Personal Wiki
 
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black.svg)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.3-149eca.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178c6.svg)](https://www.typescriptlang.org/)
+[![Supabase JS](https://img.shields.io/badge/Supabase_JS-2.99.0-3ecf8e.svg)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.2.1-38bdf8.svg)](https://tailwindcss.com/)
+[![Vitest](https://img.shields.io/badge/Vitest-4.0.18-729b1b.svg)](https://vitest.dev/)
+
 개인 도서관형 personal wiki를 위한 Next.js + Supabase 프로젝트입니다.
 
 핵심 목표는 `문서 하나를 읽다가 연관된 다음 문서로 자연스럽게 이동하는 경험`을 만드는 것입니다.

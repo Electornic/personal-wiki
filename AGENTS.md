@@ -82,6 +82,7 @@ v0.2 branch note:
 ## Docs
 
 - 아키텍처, 환경변수, 인증 흐름, 데이터 모델, 주요 사용자 플로우가 바뀌면 문서를 함께 갱신한다.
+- 새 버전 작업을 시작하거나 마무리할 때마다 `README.md` 업데이트가 필요한지 반드시 먼저 검토한다.
 - 새 SQL migration을 만들거나 순서를 바꾸면 `SETUP_GUIDE.md`도 함께 갱신한다.
 - 현재 제품 정의의 기준 문서는 아래 두 파일이다.
   - `.omx/specs/deep-interview-personal-wiki-foundation.md`
