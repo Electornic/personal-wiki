@@ -20,6 +20,12 @@ function getDocumentSortTime(document: Pick<WikiDocument, "publishedAt" | "updat
   return new Date(document.publishedAt ?? document.updatedAt).getTime();
 }
 
+function sortByUpdatedAt(documents: WikiDocument[]) {
+  return [...documents].sort((left, right) => {
+    return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+  });
+}
+
 function sortByRecentDocumentDate(documents: WikiDocument[]) {
   return [...documents].sort((left, right) => {
     return getDocumentSortTime(right) - getDocumentSortTime(left);
@@ -198,7 +204,7 @@ export const listAuthorDocuments = cache(async function listAuthorDocuments() {
   const supabase = await getServerSupabaseClient();
 
   if (!supabase) {
-    return sortByRecentDocumentDate(demoDocuments);
+    return sortByUpdatedAt(demoDocuments);
   }
 
   const {
@@ -224,7 +230,7 @@ export const listAuthorDocuments = cache(async function listAuthorDocuments() {
     true,
   );
 
-  return sortByRecentDocumentDate(await mapRowsToDocuments(recordRows, tagRows));
+  return sortByUpdatedAt(await mapRowsToDocuments(recordRows, tagRows));
 });
 
 export const getPublicDocumentBySlug = cache(async function getPublicDocumentBySlug(

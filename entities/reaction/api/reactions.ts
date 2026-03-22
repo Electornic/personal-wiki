@@ -117,8 +117,6 @@ export async function toggleBookmarkForRecord(recordId: string) {
     throw new ReactionAuthError("You must be signed in to bookmark.");
   }
 
-  await assertPublicRecordForReaction(recordId);
-
   const existing = await supabase
     .from("record_bookmarks")
     .select("record_id")
@@ -139,6 +137,8 @@ export async function toggleBookmarkForRecord(recordId: string) {
 
     return { active: false };
   }
+
+  await assertPublicRecordForReaction(recordId);
 
   const { error } = await supabase.from("record_bookmarks").insert({
     record_id: recordId,
@@ -167,8 +167,6 @@ export async function toggleLikeForRecord(recordId: string) {
     throw new ReactionAuthError("You must be signed in to like.");
   }
 
-  await assertPublicRecordForReaction(recordId);
-
   const existing = await supabase
     .from("record_likes")
     .select("record_id")
@@ -189,6 +187,8 @@ export async function toggleLikeForRecord(recordId: string) {
 
     return { active: false };
   }
+
+  await assertPublicRecordForReaction(recordId);
 
   const { error } = await supabase.from("record_likes").insert({
     record_id: recordId,
