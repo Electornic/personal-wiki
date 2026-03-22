@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { MyLibraryBrowser } from "@/components/my-library-browser";
@@ -7,8 +6,8 @@ import { requireAuthorAccess } from "@/lib/wiki/auth";
 import {
   getAvailableTagsFromPreviews,
 } from "@/lib/wiki/discovery";
-import { listMyLibraryPreview, type LibraryTab } from "@/lib/wiki/library";
-import { listReactionTotalsForRecords } from "@/entities/reaction/api/reactions";
+import { listMyLibraryPreview } from "@/lib/wiki/library";
+import { listLikeTotalsForRecords } from "@/entities/reaction/api/reactions";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -26,18 +25,6 @@ function MyLibraryIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function LikeIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 16 16">
-      <path
-        d="M8 13.333 2.667 8.667a3.052 3.052 0 0 1 0-4.334A2.92 2.92 0 0 1 6.8 4.32L8 5.5l1.2-1.18a2.92 2.92 0 0 1 4.133.013 3.052 3.052 0 0 1 0 4.334L8 13.333Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-    </svg>
-  );
-}
-
 export default async function MyLibraryPage({ searchParams }: PageProps) {
   const access = await requireAuthorAccess();
 
@@ -45,14 +32,10 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
     redirect("/author");
   }
 
-  const resolvedSearchParams = await searchParams;
-  const tab = Array.isArray(resolvedSearchParams.tab)
-    ? resolvedSearchParams.tab[0]
-    : resolvedSearchParams.tab;
-  const activeTab: LibraryTab = tab === "likes" ? "likes" : "bookmarks";
-  const records = await listMyLibraryPreview(activeTab);
+  await searchParams;
+  const records = await listMyLibraryPreview();
   const previews = records.map((record) => toDocumentPreview(record));
-  const reactionTotals = await listReactionTotalsForRecords(records.map((record) => record.id));
+  const reactionTotals = await listLikeTotalsForRecords(records.map((record) => record.id));
   const availableTags = getAvailableTagsFromPreviews(previews);
 
   return (
@@ -62,36 +45,17 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
           My Library
         </h1>
         <p className="mt-3 text-[18px] leading-7 text-[#6b6354]">
-          Your personal collection of saved reading
+          Your personal collection of bookmarked reading
         </p>
       </section>
 
       <section className="mt-10 w-full">
-        <div className="w-full max-w-[448px] rounded-[10px] bg-[#e8e3db] p-[3px]">
-          <div className="grid grid-cols-2 gap-0.5">
-            <Link
-              href="/me/library?tab=bookmarks"
-              className={`inline-flex h-[29px] items-center justify-center gap-2 rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
-                activeTab === "bookmarks" ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
-              }`}
-            >
-              <MyLibraryIcon />
-              Bookmarks
-            </Link>
-            <Link
-              href="/me/library?tab=likes"
-              className={`inline-flex h-[29px] items-center justify-center gap-2 rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
-                activeTab === "likes" ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
-              }`}
-            >
-              <LikeIcon />
-              Likes
-            </Link>
-          </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 py-2 text-[14px] leading-5 font-medium text-[#2a2419]">
+          <MyLibraryIcon />
+          Bookmarks
         </div>
 
         <MyLibraryBrowser
-          activeTab={activeTab}
           records={previews}
           availableTags={availableTags}
           reactionTotals={Object.fromEntries(reactionTotals)}

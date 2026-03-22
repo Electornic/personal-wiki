@@ -5,6 +5,32 @@ import { applyDiscoveryState } from "@/lib/wiki/discovery";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 
 describe("applyDiscoveryState", () => {
+  it("prefers published dates for newest sorting when available", () => {
+    const sorted = applyDiscoveryState(
+      [
+        {
+          ...demoDocuments[0],
+          publishedAt: "2026-01-01",
+          updatedAt: "2026-03-01T00:00:00.000Z",
+        },
+        {
+          ...demoDocuments[1],
+          publishedAt: "2026-02-01",
+          updatedAt: "2026-02-15T00:00:00.000Z",
+        },
+      ],
+      {
+        query: "",
+        sort: "newest",
+        source: "all",
+        tags: [],
+        filtersOpen: false,
+      },
+    );
+
+    expect(sorted[0]?.publishedAt).toBe("2026-02-01");
+  });
+
   it("sorts by reaction totals when requested", () => {
     const totals = new Map<string, number>([
       [demoDocuments[0].id, 1],

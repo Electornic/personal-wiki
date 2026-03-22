@@ -32,7 +32,7 @@
 - author sign-in `/author/sign-in`
 - author workspace `/author`
 - author document create/edit `/author/documents/new`, `/author/documents/[documentId]`
-- bookmark / like reactions
+- public record bookmark / like reactions
 - my library `/me/library`
 - topic hub `/topics/[topic]`
 - author workspace cleanup and writing support improvements
@@ -90,7 +90,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 - header 로그인 상태는 browser client 기준으로 반영됩니다.
 - record editor는 `title / contents / source type / book title / visibility / tags` 중심입니다.
 - comments는 public record에서 읽을 수 있고, 작성은 로그인 사용자만 가능합니다.
-- bookmark / like / my library까지 보려면 `SETUP_GUIDE.md`의 Step 7 migration도 필요합니다.
+- public record bookmark / like / my library까지 보려면 `SETUP_GUIDE.md`의 Step 7 migration도 필요합니다.
 - author workspace 목록과 edit 진입 속도 개선까지 반영하려면 `SETUP_GUIDE.md`의 Step 9 migration도 실행합니다.
 - 이전 v0.5에서 추가했던 curation shelf 스키마는 `SETUP_GUIDE.md`의 Step 10 migration에서 제거됩니다.
 - public record listing/query hardening과 `published_at` 기본값 정리까지 반영하려면 `SETUP_GUIDE.md`의 Step 11 migration도 실행합니다.
@@ -98,6 +98,7 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 - `author_name` write dependency 제거까지 반영하려면 `SETUP_GUIDE.md`의 Step 13 migration도 실행합니다.
 - 실제 미사용 legacy record column 정리까지 반영하려면 `SETUP_GUIDE.md`의 Step 14 migration도 실행합니다.
 - private owner preview까지 포함한 comment policy 정리까지 반영하려면 `SETUP_GUIDE.md`의 Step 15 migration도 실행합니다.
+- private record reaction 제거와 public like count 정책까지 반영하려면 `SETUP_GUIDE.md`의 Step 16 migration도 실행합니다.
 
 ## Local Development
 
@@ -173,7 +174,9 @@ tests/
 
 ## Notes
 
-- 현재 추천은 태그 겹침 수 + 최신 수정 시점으로 정렬합니다.
+- 현재 추천은 shared topic 수를 우선하고, 같은 점수에서는 더 최근 문서를 먼저 보여줍니다.
+- `My Library`는 bookmark 전용 저장 목록입니다.
+- like는 public record 전용 반응이며, private record에서는 bookmark / like를 제공하지 않습니다.
 - 임베딩 기반 추천, 다중 문서 타입은 현재 범위 밖입니다.
 - markdown rendering은 `react-markdown` + `remark-gfm` 기준입니다.
 - v0.2 comments foundation은 `record_comments` 테이블 기준입니다.

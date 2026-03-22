@@ -4,7 +4,7 @@ import { demoDocuments } from "@/lib/wiki/demo-data";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 
 describe("getRelatedDocuments", () => {
-  it("ranks by shared tag count and excludes the source document", () => {
+  it("ranks by shared tag count, then more recent document date, and excludes the source document", () => {
     const [source, ...candidates] = demoDocuments;
 
     const related = getRelatedDocuments(source, candidates, 3);

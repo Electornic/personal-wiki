@@ -86,6 +86,23 @@ function ArrowRightIcon() {
   );
 }
 
+function buildRelatedReasonText(
+  sharedTags: string[],
+  sourceType: "book" | "article",
+) {
+  if (sharedTags.length >= 2) {
+    return `Shared topics: ${sharedTags.slice(0, 2).join(", ")}`;
+  }
+
+  if (sharedTags[0]) {
+    return `Shared topic: ${sharedTags[0]}`;
+  }
+
+  return sourceType === "book"
+    ? "A nearby book from the same reading shelf"
+    : "A nearby article from the same reading shelf";
+}
+
 export default async function LibraryDocumentPage({ params }: PageProps) {
   const { slug } = await params;
   const document = await getReadableDocumentBySlug(slug);
@@ -142,9 +159,15 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
             />
           </section>
 
-          <Suspense fallback={<RecordReactionsFallback />}>
-            <RecordReactionsSection documentId={document.id} recordSlug={document.slug} />
-          </Suspense>
+          {document.visibility === "public" ? (
+            <Suspense fallback={<RecordReactionsFallback />}>
+              <RecordReactionsSection
+                documentId={document.id}
+                recordSlug={document.slug}
+                visibility={document.visibility}
+              />
+            </Suspense>
+          ) : null}
 
           <Suspense fallback={<RelatedDocumentsFallback />}>
             <RelatedDocumentsSection document={document} />
@@ -178,20 +201,16 @@ async function RelatedDocumentsSection({
       {relatedDocuments.length ? (
         <>
           <p className="mt-2 text-[16px] leading-6 text-[#6b6354]">
-            Related records from your library
+            Recommendations based on shared topics and recent reading
           </p>
 
           <div className="mt-8 grid gap-6">
             {relatedDocuments.map((relatedDocument, index) => {
-              const reasonLabel = index === 0 ? "Read Next" : "Also Related";
-              const reasonText =
-                relatedDocument.sharedTags.length > 1
-                  ? `Related by ${relatedDocument.sharedTags[0]} + ${
-                      relatedDocument.sharedTags.length - 1
-                    } more`
-                  : relatedDocument.sharedTags[0]
-                    ? `Related by ${relatedDocument.sharedTags[0]}`
-                    : null;
+              const reasonLabel = index === 0 ? "Best Match" : "Keep Reading";
+              const reasonText = buildRelatedReasonText(
+                relatedDocument.sharedTags,
+                relatedDocument.sourceType,
+              );
 
               return (
                 <Link
@@ -203,14 +222,10 @@ async function RelatedDocumentsSection({
                     <span className="font-medium tracking-[0.3px] uppercase">
                       {reasonLabel}
                     </span>
-                    {reasonText ? (
-                      <>
-                        <span className="text-[rgba(107,99,84,0.5)]">·</span>
-                        <span className="text-[12px] leading-4 text-[#6b6354]">
-                          {reasonText}
-                        </span>
-                      </>
-                    ) : null}
+                    <span className="text-[rgba(107,99,84,0.5)]">·</span>
+                    <span className="text-[12px] leading-4 text-[#6b6354]">
+                      {reasonText}
+                    </span>
                   </div>
 
                   <div className="mt-4 flex items-start gap-4">
@@ -261,18 +276,31 @@ async function RelatedDocumentsSection({
       ) : (
         <div className="mt-6 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-6 py-10 text-center md:py-12">
           <p className="text-[16px] leading-6 text-[#6b6354]">
-            No related reading found at the moment.
+            No close follow-up reading found yet.
           </p>
           <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
-            Check back later for more connections.
+            {document.tags[0]
+              ? `Explore ${document.tags[0]} to keep moving through related notes.`
+              : "Browse the newest records to keep moving through the library."}
           </p>
-          <Link
-            href="/#library"
-            className="mt-10 inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
-          >
-            Browse all records
-            <ArrowRightIcon />
-          </Link>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            {document.tags[0] ? (
+              <Link
+                href={`/topics/${encodeURIComponent(document.tags[0])}`}
+                className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
+              >
+                Explore {document.tags[0]}
+                <ArrowRightIcon />
+              </Link>
+            ) : null}
+            <Link
+              href="/#library"
+              className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
+            >
+              Browse all records
+              <ArrowRightIcon />
+            </Link>
+          </div>
         </div>
       )}
     </section>

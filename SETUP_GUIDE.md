@@ -180,11 +180,21 @@ SQL은 아래 순서대로 실행합니다.
 - `record_comments` insert 정책을 public record 전용으로 tighten
 - owner private preview에서 comment write가 우회되지 않도록 정책 정리
 
+### Step 16. v0.6 public record reactions only
+
+실행 파일:
+- [supabase/migrations/20260322T130000Z_v0_6_public_record_reactions_only.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260322T130000Z_v0_6_public_record_reactions_only.sql)
+
+역할:
+- 기존 private record bookmark / like row 정리
+- `record_bookmarks`, `record_likes` insert 정책을 public record 전용으로 tighten
+- 앱의 private record reaction 제거와 policy 계약을 맞춤
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열다섯 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열여섯 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

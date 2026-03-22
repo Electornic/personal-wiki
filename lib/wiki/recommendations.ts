@@ -5,6 +5,10 @@ function normalizeTags(tags: string[]) {
   return tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean);
 }
 
+function getDocumentRecency(document: Pick<WikiDocument, "publishedAt" | "updatedAt">) {
+  return new Date(document.publishedAt ?? document.updatedAt).getTime();
+}
+
 export function getRelatedDocuments(
   document: WikiDocument,
   candidates: WikiDocument[],
@@ -33,9 +37,7 @@ export function getRelatedDocuments(
         return right.sharedTagCount - left.sharedTagCount;
       }
 
-      return (
-        new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
-      );
+      return getDocumentRecency(right) - getDocumentRecency(left);
     })
     .slice(0, limit);
 }

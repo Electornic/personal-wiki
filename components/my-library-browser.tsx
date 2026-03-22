@@ -9,11 +9,9 @@ import {
   applyDiscoveryState,
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
-import type { LibraryTab } from "@/lib/wiki/library";
 import type { WikiDocumentPreview } from "@/entities/record/model/types";
 
 type MyLibraryBrowserProps = {
-  activeTab: LibraryTab;
   records: WikiDocumentPreview[];
   availableTags: string[];
   reactionTotals: Record<string, number>;
@@ -38,7 +36,6 @@ function buildReactionTotalsMap(reactionTotals: Record<string, number>) {
 }
 
 export function MyLibraryBrowser({
-  activeTab,
   records,
   availableTags,
   reactionTotals,
@@ -61,7 +58,6 @@ export function MyLibraryBrowser({
         source={discoveryState.source}
         tags={discoveryState.tags}
         filtersOpen={discoveryState.filtersOpen}
-        preserveParams={{ tab: activeTab }}
       />
 
       {filteredRecords.length ? (
@@ -76,17 +72,11 @@ export function MyLibraryBrowser({
             <MyLibraryIcon />
           </div>
           <h2 className="mt-5 text-[20px] leading-7 font-semibold text-[#2a2419]">
-            {records.length === 0
-              ? activeTab === "bookmarks"
-                ? "No bookmarks yet"
-                : "No likes yet"
-              : "No matching records found"}
+            {records.length === 0 ? "No bookmarks yet" : "No matching records found"}
           </h2>
           <p className="mx-auto mt-3 max-w-[360px] text-[18px] leading-[32.4px] text-[#6b6354]">
             {records.length === 0
-              ? activeTab === "bookmarks"
-                ? "Bookmark records you want to return to later"
-                : "Like records that resonate with you"
+              ? "Bookmark public records you want to return to later"
               : "Adjust your search or filters to see more records."}
           </p>
           {records.length === 0 ? (

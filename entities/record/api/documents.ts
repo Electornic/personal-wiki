@@ -16,9 +16,13 @@ import type {
 } from "@/entities/record/model/types";
 import { filterReadableDocuments } from "@/lib/wiki/visibility";
 
-function sortByUpdatedAt(documents: WikiDocument[]) {
+function getDocumentSortTime(document: Pick<WikiDocument, "publishedAt" | "updatedAt">) {
+  return new Date(document.publishedAt ?? document.updatedAt).getTime();
+}
+
+function sortByRecentDocumentDate(documents: WikiDocument[]) {
   return [...documents].sort((left, right) => {
-    return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+    return getDocumentSortTime(right) - getDocumentSortTime(left);
   });
 }
 
@@ -178,7 +182,7 @@ const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase()
 
 export const listPublicDocuments = cache(async function listPublicDocuments() {
   if (!hasSupabaseEnv()) {
-    return sortByUpdatedAt(filterReadableDocuments(demoDocuments));
+    return sortByRecentDocumentDate(filterReadableDocuments(demoDocuments));
   }
 
   const documents = await fetchRecordsFromSupabase();
@@ -187,14 +191,14 @@ export const listPublicDocuments = cache(async function listPublicDocuments() {
     return [];
   }
 
-  return sortByUpdatedAt(filterReadableDocuments(documents));
+  return sortByRecentDocumentDate(filterReadableDocuments(documents));
 });
 
 export const listAuthorDocuments = cache(async function listAuthorDocuments() {
   const supabase = await getServerSupabaseClient();
 
   if (!supabase) {
-    return sortByUpdatedAt(demoDocuments);
+    return sortByRecentDocumentDate(demoDocuments);
   }
 
   const {
@@ -220,7 +224,7 @@ export const listAuthorDocuments = cache(async function listAuthorDocuments() {
     true,
   );
 
-  return sortByUpdatedAt(await mapRowsToDocuments(recordRows, tagRows));
+  return sortByRecentDocumentDate(await mapRowsToDocuments(recordRows, tagRows));
 });
 
 export const getPublicDocumentBySlug = cache(async function getPublicDocumentBySlug(
