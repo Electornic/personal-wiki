@@ -22,11 +22,15 @@ export type DiscoveryState = {
 
 type DiscoveryDocument = Pick<
   WikiDocument,
-  "id" | "title" | "writerName" | "bookTitle" | "sourceType" | "tags" | "updatedAt"
+  "id" | "title" | "writerName" | "bookTitle" | "sourceType" | "tags" | "publishedAt" | "updatedAt"
 > & {
   contents?: string;
   excerpt?: string;
 };
+
+function getDocumentSortTime(document: Pick<WikiDocument, "publishedAt" | "updatedAt">) {
+  return new Date(document.publishedAt ?? document.updatedAt).getTime();
+}
 
 type SearchParamInput =
   | Record<string, string | string[] | undefined>
@@ -145,7 +149,7 @@ export function applyDiscoveryState<T extends DiscoveryDocument>(
 
   return filtered.sort((left, right) => {
     if (state.sort === "oldest") {
-      return new Date(left.updatedAt).getTime() - new Date(right.updatedAt).getTime();
+      return getDocumentSortTime(left) - getDocumentSortTime(right);
     }
 
     if (state.sort === "title-asc") {
@@ -165,6 +169,6 @@ export function applyDiscoveryState<T extends DiscoveryDocument>(
       }
     }
 
-    return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+    return getDocumentSortTime(right) - getDocumentSortTime(left);
   });
 }

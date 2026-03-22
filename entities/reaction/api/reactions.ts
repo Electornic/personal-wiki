@@ -2,13 +2,19 @@ import {
   getAdminSupabaseClient,
   getServerSupabaseClient,
 } from "@/shared/api/supabase/server";
-import type { LibraryTab } from "@/lib/wiki/library";
 import type { RecordReactionState } from "@/entities/record/model/types";
 
 export class ReactionAuthError extends Error {
   constructor(message = "You must be signed in to react.") {
     super(message);
     this.name = "ReactionAuthError";
+  }
+}
+
+export class ReactionAccessError extends Error {
+  constructor(message = "Reactions are available on public records only.") {
+    super(message);
+    this.name = "ReactionAccessError";
   }
 }
 
@@ -25,6 +31,11 @@ export async function getReactionStateForRecord(
 ) {
   const states = await listReactionStatesForRecords([recordId], userId);
   return states.get(recordId) ?? emptyReactionState();
+}
+
+export async function getLikeCountForRecord(recordId: string) {
+  const totals = await listLikeTotalsForRecords([recordId]);
+  return totals.get(recordId) ?? 0;
 }
 
 export async function listReactionStatesForRecords(
@@ -127,6 +138,8 @@ export async function toggleBookmarkForRecord(recordId: string) {
     return { active: false };
   }
 
+  await assertPublicRecordForReaction(recordId);
+
   const { error } = await supabase.from("record_bookmarks").insert({
     record_id: recordId,
     user_id: user.id,
@@ -175,6 +188,8 @@ export async function toggleLikeForRecord(recordId: string) {
     return { active: false };
   }
 
+  await assertPublicRecordForReaction(recordId);
+
   const { error } = await supabase.from("record_likes").insert({
     record_id: recordId,
     user_id: user.id,
@@ -187,7 +202,29 @@ export async function toggleLikeForRecord(recordId: string) {
   return { active: true };
 }
 
-export async function listReactionRecordIds(tab: LibraryTab) {
+async function assertPublicRecordForReaction(recordId: string) {
+  const supabase = await getServerSupabaseClient();
+
+  if (!supabase) {
+    throw new Error("Supabase server configuration is missing.");
+  }
+
+  const { data: record, error } = await supabase
+    .from("records")
+    .select("visibility")
+    .eq("id", recordId)
+    .maybeSingle();
+
+  if (error || !record) {
+    throw new Error(error?.message ?? "Record could not be found.");
+  }
+
+  if (record.visibility !== "public") {
+    throw new ReactionAccessError();
+  }
+}
+
+export async function listBookmarkRecordIds() {
   const supabase = await getServerSupabaseClient();
 
   if (!supabase) {
@@ -203,9 +240,8 @@ export async function listReactionRecordIds(tab: LibraryTab) {
     return [];
   }
 
-  const table = tab === "likes" ? "record_likes" : "record_bookmarks";
   const result = await supabase
-    .from(table)
+    .from("record_bookmarks")
     .select("record_id, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -217,7 +253,7 @@ export async function listReactionRecordIds(tab: LibraryTab) {
   return result.data.map((row) => row.record_id);
 }
 
-export async function listReactionTotalsForRecords(recordIds: string[]) {
+export async function listLikeTotalsForRecords(recordIds: string[]) {
   const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];
   const totals = new Map<string, number>();
 
@@ -235,20 +271,10 @@ export async function listReactionTotalsForRecords(recordIds: string[]) {
     return totals;
   }
 
-  const [{ data: bookmarks }, { data: likes }] = await Promise.all([
-    adminSupabase
-      .from("record_bookmarks")
-      .select("record_id")
-      .in("record_id", uniqueRecordIds),
-    adminSupabase
+  const { data: likes } = await adminSupabase
       .from("record_likes")
       .select("record_id")
-      .in("record_id", uniqueRecordIds),
-  ]);
-
-  for (const bookmark of bookmarks ?? []) {
-    totals.set(bookmark.record_id, (totals.get(bookmark.record_id) ?? 0) + 1);
-  }
+      .in("record_id", uniqueRecordIds);
 
   for (const like of likes ?? []) {
     totals.set(like.record_id, (totals.get(like.record_id) ?? 0) + 1);

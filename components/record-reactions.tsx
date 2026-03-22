@@ -7,6 +7,7 @@ type RecordReactionsProps = {
   recordId: string;
   recordSlug: string;
   state: RecordReactionState;
+  likeCount: number;
   canReact: boolean;
 };
 
@@ -34,6 +35,7 @@ export function RecordReactions({
   recordId,
   recordSlug,
   state,
+  likeCount,
   canReact,
 }: RecordReactionsProps) {
   const bookmarkLabel = state.isBookmarked ? "Bookmarked" : "Bookmark";
@@ -56,6 +58,7 @@ export function RecordReactions({
         >
           <LikeIcon />
           {likeLabel}
+          <span className="text-[rgba(107,99,84,0.8)]">{likeCount}</span>
         </Link>
       </div>
     );
@@ -88,6 +91,7 @@ export function RecordReactions({
         >
           <LikeIcon />
           {likeLabel}
+          <span className="text-[rgba(107,99,84,0.8)]">{likeCount}</span>
         </button>
       </form>
     </div>

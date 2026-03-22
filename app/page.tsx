@@ -4,7 +4,7 @@ import { PublicLibraryBrowser } from "@/components/public-library-browser";
 import { toDocumentPreview } from "@/entities/record/model/content";
 import { getAvailableTagsFromPreviews } from "@/lib/wiki/discovery";
 import { listPublicDocuments } from "@/entities/record/api/documents";
-import { listReactionTotalsForRecords } from "@/entities/reaction/api/reactions";
+import { listLikeTotalsForRecords } from "@/entities/reaction/api/reactions";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -38,7 +38,7 @@ async function HomeLibrarySection() {
   const documents = await listPublicDocuments();
   const publicRecords = documents.filter((record) => record.visibility === "public");
   const previews = publicRecords.map((record) => toDocumentPreview(record));
-  const reactionTotals = await listReactionTotalsForRecords(
+  const reactionTotals = await listLikeTotalsForRecords(
     publicRecords.map((record) => record.id),
   );
   const availableTags = getAvailableTagsFromPreviews(previews);

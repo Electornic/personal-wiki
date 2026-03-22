@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { createCommentForRecord } from "@/entities/comment/api/comments";
 import {
+  ReactionAccessError,
   ReactionAuthError,
   toggleBookmarkForRecord,
   toggleLikeForRecord,
@@ -67,6 +68,14 @@ export async function toggleBookmarkAction(formData: FormData) {
       redirect("/author/sign-in");
     }
 
+    if (error instanceof ReactionAccessError) {
+      if (recordSlug) {
+        redirect(`/library/${recordSlug}`);
+      }
+
+      redirect("/");
+    }
+
     throw error;
   }
 
@@ -85,6 +94,14 @@ export async function toggleLikeAction(formData: FormData) {
   } catch (error) {
     if (error instanceof ReactionAuthError) {
       redirect("/author/sign-in");
+    }
+
+    if (error instanceof ReactionAccessError) {
+      if (recordSlug) {
+        redirect(`/library/${recordSlug}`);
+      }
+
+      redirect("/");
     }
 
     throw error;

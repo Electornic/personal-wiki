@@ -1,8 +1,6 @@
 import { listDocumentsByIds } from "@/entities/record/api/documents";
 import type { WikiDocument } from "@/entities/record/model/types";
-import { listReactionRecordIds } from "@/entities/reaction/api/reactions";
-
-export type LibraryTab = "bookmarks" | "likes";
+import { listBookmarkRecordIds } from "@/entities/reaction/api/reactions";
 
 function uniqueById(documents: WikiDocument[]) {
   const seen = new Set<string>();
@@ -17,9 +15,18 @@ function uniqueById(documents: WikiDocument[]) {
   });
 }
 
-export async function listMyLibraryPreview(tab: LibraryTab) {
-  const recordIds = await listReactionRecordIds(tab);
+function sortByRecentDocumentDate(documents: WikiDocument[]) {
+  return [...documents].sort((left, right) => {
+    const leftTime = new Date(left.publishedAt ?? left.updatedAt).getTime();
+    const rightTime = new Date(right.publishedAt ?? right.updatedAt).getTime();
+
+    return rightTime - leftTime;
+  });
+}
+
+export async function listMyLibraryPreview() {
+  const recordIds = await listBookmarkRecordIds();
   const documents = await listDocumentsByIds(recordIds);
 
-  return uniqueById(documents);
+  return sortByRecentDocumentDate(uniqueById(documents));
 }
