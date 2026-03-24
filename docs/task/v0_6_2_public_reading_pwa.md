@@ -39,7 +39,7 @@
 - public route 중심 service worker를 등록한다.
 - `/`, `/library/[slug]`, `/topics/[topic]`, `/offline` 중심으로 document cache를 적용한다.
 - `/author`, `/auth`, `/me` 경로는 캐시 대상에서 제외한다.
-- 코드 생성 아이콘 라우트를 추가해 별도 바이너리 자산 없이도 설치 가능한 아이콘 세트를 만든다.
+- 실제 PWA 아이콘 asset을 manifest와 metadata에 연결한다.
 - 오프라인 시에는 `/offline` fallback을 노출한다.
 
 ## Acceptance Criteria

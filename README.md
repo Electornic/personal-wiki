@@ -40,6 +40,7 @@
 - bookmark 중심 `My Library` `/me/library`
 - public comments / replies
 - public reading PWA foundation
+- Vercel Analytics on public reading routes
 - loading states, reading flow, recommendation explanation 개선
 - Supabase SQL migrations
 - Vitest 기반 유틸 테스트
@@ -75,6 +76,7 @@
 - Next.js App Router
 - React 19
 - Supabase SSR / Supabase JS
+- Vercel Analytics
 - Tailwind CSS v4
 - Vitest
 
@@ -155,7 +157,7 @@ PWA 메모:
 현재 PWA 범위는 `public reading` 중심입니다.
 
 - installable manifest
-- generated app icons
+- exported app icons
 - service worker registration
 - public route cache for `/`, `/library/[slug]`, `/topics/[topic]`, `/offline`
 - offline fallback page
