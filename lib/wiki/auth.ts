@@ -32,6 +32,15 @@ const getVerifiedAuthUser = cache(async function getVerifiedAuthUser() {
   };
 });
 
+export const getAuthStatus = cache(async function getAuthStatus() {
+  const { configured, user } = await getVerifiedAuthUser();
+
+  return {
+    configured,
+    isAuthenticated: Boolean(user),
+  };
+});
+
 export const getAuthorAccess = cache(async function getAuthorAccess() {
   const { configured, user } = await getVerifiedAuthUser();
 

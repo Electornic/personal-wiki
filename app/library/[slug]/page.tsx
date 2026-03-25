@@ -194,17 +194,17 @@ async function RelatedDocumentsSection({
   const relatedDocuments = await listRelatedDocumentsForDocument(document, 2);
 
   return (
-    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
-      <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:mt-16 md:pt-10">
+      <h2 className="text-[22px] leading-8 font-semibold text-[#2a2419] md:text-[24px]">
         Continue Reading
       </h2>
       {relatedDocuments.length ? (
         <>
-          <p className="mt-2 text-[16px] leading-6 text-[#6b6354]">
+          <p className="mt-2 text-[14px] leading-5 text-[#6b6354] md:text-[16px] md:leading-6">
             Recommendations based on shared topics and recent reading
           </p>
 
-          <div className="mt-8 grid gap-6">
+          <div className="mt-6 grid gap-4 md:mt-8 md:gap-5">
             {relatedDocuments.map((relatedDocument, index) => {
               const reasonLabel = index === 0 ? "Best Match" : "Keep Reading";
               const reasonText = buildRelatedReasonText(
@@ -216,9 +216,9 @@ async function RelatedDocumentsSection({
                 <Link
                   key={relatedDocument.id}
                   href={`/library/${relatedDocument.slug}`}
-                  className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition hover:bg-[rgba(255,255,255,0.72)]"
+                  className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-5 py-5 transition hover:bg-[rgba(255,255,255,0.72)] md:px-6"
                 >
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[12px] leading-4 text-[#6b6354]">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] leading-4 text-[#6b6354] md:text-[12px]">
                     <span className="font-medium tracking-[0.3px] uppercase">
                       {reasonLabel}
                     </span>
@@ -228,33 +228,33 @@ async function RelatedDocumentsSection({
                     </span>
                   </div>
 
-                  <div className="mt-4 flex items-start gap-4">
-                    <div className="mt-1 shrink-0">
+                  <div className="mt-3 flex items-start gap-3 md:mt-4 md:gap-4">
+                    <div className="mt-0.5 shrink-0 md:mt-1">
                       {relatedDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[20px] leading-[25px] font-semibold text-[#2a2419]">
+                      <p className="text-[18px] leading-6 font-semibold text-[#2a2419] md:text-[20px] md:leading-[25px]">
                         {relatedDocument.title}
                       </p>
                       {relatedDocument.sourceType === "book" && relatedDocument.bookTitle ? (
-                        <p className="mt-2 text-[14px] leading-5 italic text-[#6b6354]">
+                        <p className="mt-1.5 text-[13px] leading-5 italic text-[#6b6354] md:mt-2 md:text-[14px]">
                           from {relatedDocument.bookTitle}
                         </p>
                       ) : null}
-                      <p className="mt-3 text-[16px] leading-[26px] text-[rgba(107,99,84,0.9)]">
+                      <p className="mt-2 hidden text-[15px] leading-6 text-[rgba(107,99,84,0.9)] md:block">
                         {getExcerpt(relatedDocument.contents)}
                       </p>
-                      <p className="mt-4 text-[14px] leading-5 text-[#6b6354]">
+                      <p className="mt-2.5 text-[13px] leading-5 text-[#6b6354] md:mt-3 md:text-[14px]">
                         {relatedDocument.writerName} ·{" "}
                         {formatDisplayDate(relatedDocument.publishedAt)}
                       </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {relatedDocument.tags.slice(0, 5).map((tag) => (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {relatedDocument.tags.slice(0, 3).map((tag) => (
                           <TopicPill key={tag} label={tag} interactive={false} />
                         ))}
                       </div>
                     </div>
-                    <div className="mt-1 shrink-0 text-[#6b6354]">
+                    <div className="mt-0.5 shrink-0 text-[#6b6354] md:mt-1">
                       <ArrowRightIcon />
                     </div>
                   </div>

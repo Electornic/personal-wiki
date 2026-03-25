@@ -326,14 +326,14 @@ export default async function AuthorPage({ searchParams }: PageProps) {
 
                 <div className="flex flex-wrap gap-2 md:ml-6 md:justify-end">
                   <Link
-                    className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[49px] max-md:px-0"
+                    className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
                     href={`/library/${document.slug}`}
                   >
                     <PreviewIcon />
                     <span className="hidden md:inline">Preview</span>
                   </Link>
                   <Link
-                    className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[49px] max-md:px-0"
+                    className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
                     href={`/author/documents/${document.id}`}
                   >
                     <EditIcon />
@@ -342,7 +342,7 @@ export default async function AuthorPage({ searchParams }: PageProps) {
                   <form action={deleteDocument}>
                     <input type="hidden" name="documentId" value={document.id} />
                     <button
-                      className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white text-[#d45c4f]"
+                      className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white text-[#d45c4f]"
                       type="submit"
                     >
                       <DeleteIcon />
