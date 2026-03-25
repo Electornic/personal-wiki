@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { signInWithPassword, signUpWithPassword } from "@/app/author/actions";
+import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { hasAuthoringEnv } from "@/shared/config/env";
 
 type PageProps = {
@@ -46,7 +47,7 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
         <div className="w-full max-w-[448px]">
           <Link
             href="/"
-            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)]"
+            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(232,227,219,0.45)]"
           >
             <span aria-hidden="true" className="text-[18px] leading-none">
               ←
@@ -54,7 +55,7 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
             Back to Library
           </Link>
 
-          <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[32px] py-[32px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] md:px-[33px] md:py-[33px]">
+          <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[32px] py-[32px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] transition-shadow duration-200 md:px-[33px] md:py-[33px] hover:shadow-[0px_18px_40px_rgba(42,36,25,0.08)]">
             <div className="text-center">
               <h1 className="text-[30px] leading-9 font-semibold tracking-[-0.6px] text-[#2a2419]">
                 Welcome
@@ -68,16 +69,20 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
               <div className="grid grid-cols-2 gap-0.5">
                 <Link
                   href="/author/sign-in?tab=signin"
-                  className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
-                    !isSignUp ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
+                  className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium transition-all duration-200 ${
+                    !isSignUp
+                      ? "bg-white text-[#2a2419] shadow-[0_4px_12px_rgba(42,36,25,0.08)]"
+                      : "text-[#2a2419] hover:bg-[rgba(255,255,255,0.45)]"
                   }`}
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/author/sign-in?tab=signup"
-                  className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
-                    isSignUp ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
+                  className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium transition-all duration-200 ${
+                    isSignUp
+                      ? "bg-white text-[#2a2419] shadow-[0_4px_12px_rgba(42,36,25,0.08)]"
+                      : "text-[#2a2419] hover:bg-[rgba(255,255,255,0.45)]"
                   }`}
                 >
                   Sign Up
@@ -109,7 +114,7 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
                     name="userName"
                     required
                     placeholder="Your name"
-                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
                   />
                 </label>
                 <label className="block">
@@ -121,7 +126,7 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
                     type="email"
                     required
                     placeholder="your@email.com"
-                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
                   />
                 </label>
                 <label className="block">
@@ -134,15 +139,13 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
                     minLength={8}
                     required
                     placeholder="••••••••"
-                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
                   />
                 </label>
-                <button
-                  className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-[4px] bg-[#2a2419] text-[14px] leading-5 font-medium text-[#faf8f5]"
-                  type="submit"
-                >
-                  Create Account
-                </button>
+                <AuthSubmitButton
+                  idleLabel="Create Account"
+                  pendingLabel="Creating Account..."
+                />
               </form>
             ) : (
               <form action={signInWithPassword} className="mt-8 space-y-4">
@@ -156,7 +159,7 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
                     type="email"
                     required
                     placeholder="your@email.com"
-                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
                   />
                 </label>
                 <label className="block">
@@ -168,15 +171,10 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
                     type="password"
                     required
                     placeholder="••••••••"
-                    className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
                   />
                 </label>
-                <button
-                  className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-[4px] bg-[#2a2419] text-[14px] leading-5 font-medium text-[#faf8f5]"
-                  type="submit"
-                >
-                  Sign In
-                </button>
+                <AuthSubmitButton idleLabel="Sign In" pendingLabel="Signing In..." />
               </form>
             )}
           </div>
