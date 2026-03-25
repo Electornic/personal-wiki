@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { signInWithPassword, signUpWithPassword } from "@/app/author/actions";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
+import { getAuthorAccess } from "@/lib/wiki/auth";
 import { hasAuthoringEnv } from "@/shared/config/env";
 
 type PageProps = {
@@ -36,6 +38,12 @@ function getAuthErrorMessage(error?: string, message?: string) {
 }
 
 export default async function AuthorSignInPage({ searchParams }: PageProps) {
+  const access = await getAuthorAccess();
+
+  if (access.isAuthenticated) {
+    redirect("/author");
+  }
+
   const { error, success, tab, message } = await searchParams;
   const activeTab = tab === "signup" ? "signup" : "signin";
   const isSignUp = activeTab === "signup";
