@@ -8,18 +8,22 @@
 - 잘 만든 상태의 기준은 `문서 하나를 읽다가 연관 지식으로 자연스럽게 이동하는 경험`이다.
 - 생산성 툴이나 범용 노트 앱처럼 넓게 가지 않는다.
 
-## MVP Product Rules
+## Agent Priorities
 
-- 문서 타입은 v1에서 `책/아티클 기록`만 지원한다.
-- 각 문서는 `public` 또는 `private` 중 하나의 visibility를 가진다.
+- 요구사항 충족
+- 최소 변경
+- 안전성
+- 가독성
+
+## Current Product Rules
+
+- 문서 타입은 현재 `book` / `article` 두 가지만 다룬다.
+- 각 문서는 `public` 또는 `private` visibility를 가진다.
 - 공개 문서는 로그인 없이 읽을 수 있어야 한다.
-- 로그인은 `작성/수정`을 위한 author 전용 기능이다.
-- v1은 `한 명의 author`만 고려한다.
+- 인증은 작성/수정용 기능이며, public reading에는 reader 로그인을 요구하지 않는다.
+- 현재 구현에는 signup/login이 있지만 제품 범위는 여전히 `personal wiki` 중심이며, 범용 multi-user publishing product로 확장하지 않는다.
 - 문서의 핵심 가치는 `원문 요약`보다 `읽고 난 뒤 연결된 생각`에 둔다.
 - 문서 내부 생각 단위는 `카드/불릿 메모` 중심으로 다룬다.
-
-v0.2 branch note:
-- `V0_2_*` 브랜치에서는 위 author-only 가정을 일반 사용자 signup/login 모델로 바꾸는 작업을 진행한다.
 
 ## Recommendation Rules
 
@@ -46,7 +50,7 @@ v0.2 branch note:
 ### Must Have
 
 - Supabase 연동
-- author 로그인
+- authoring auth
 - 문서별 public/private 제어
 - 책/아티클 기록 CRUD
 - 태그 기반 관련 문서 추천
@@ -54,84 +58,69 @@ v0.2 branch note:
 
 ### Must Not Have
 
-- reader 계정
+- reader 계정이 필수인 제품 플로우
 - 블록 단위 권한
 - 여러 문서 타입 동시 지원
 - 임베딩 기반 추천
 - 관리자 기능이 제품 경험을 덮는 UI
 
-## Implementation Bias
+## Execution Checklist
 
-- 읽기 경험을 우선하고 관리 화면은 최소로 유지한다.
-- 초기 구현은 단순하고 설명 가능한 규칙을 선호한다.
-- 자동 추천 품질은 이후 개선할 수 있지만, 추천 자체는 제거하지 않는다.
-- 확신이 낮은 큰 구조 변경보다 작은 단위의 안전한 진행을 우선한다.
+### Before Starting
 
-## Verification
-
-코드 변경 시 가능한 범위에서 아래 순서로 확인한다.
-
-1. `pnpm lint`
-2. `pnpm exec tsc --noEmit`
-3. `pnpm test`
-4. `pnpm build`
-
-주의:
-- 현재 레포에는 `pnpm test` 스크립트가 없을 수 있다. 이 경우 테스트 러너/스크립트를 먼저 추가하고 그 사실을 결과에 명시한다.
-
-## Docs
-
-- 아키텍처, 환경변수, 인증 흐름, 데이터 모델, 주요 사용자 플로우가 바뀌면 문서를 함께 갱신한다.
-- 새 버전 작업을 시작하거나 마무리할 때마다 `README.md` 업데이트가 필요한지 반드시 먼저 검토한다.
-- 새 SQL migration을 만들거나 순서를 바꾸면 `SETUP_GUIDE.md`도 함께 갱신한다.
-- 현재 제품 정의의 기준 문서는 아래 두 파일이다.
+- 새 태스크를 시작할 때는 전용 브랜치를 먼저 만든다.
+- 새 버전 작업을 시작할 때는 `README.md` 업데이트 필요 여부를 먼저 검토한다.
+- 제품 정의와 관련된 변경이면 아래 기준 문서를 먼저 확인한다.
   - `.omx/specs/deep-interview-personal-wiki-foundation.md`
   - `.omx/plans/personal-wiki-mvp-ralplan.md`
-- `docs/task` 아래의 태스크 파일은 `v0_1_[major-topic].md` 같은 형식으로 만든다.
-- `docs/task` 관련 작업을 할 때는 `docs/task/TEMPLATE.md` 템플릿을 기준으로 섹션과 서술 수준을 맞춘다.
-- `docs/figma_prompts` 아래의 프롬프트 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
-- `docs/test_guide` 아래의 테스트 가이드 파일도 `v0_2_[major-topic].md` 같은 형식으로 만든다.
-- `docs/test_guide` 관련 작업을 할 때는 `docs/test_guide/TEMPLATE.md` 템플릿을 기준으로 체크리스트와 expected 결과 형식을 맞춘다.
-- `docs/idea` 아래의 아이디어 파일은 `YYYY_MM_DD_NN_Idea.md` 형식으로 만든다.
-- `docs/idea` 관련 작업을 할 때는 `docs/idea/TEMPLATE.md` 템플릿을 기준으로 문제, 아이디어, 상태, 승격 조건을 정리한다.
-- `docs/idea` 문서는 버전 작업 문서와 별개이며, 특정 버전의 확정 범위를 의미하지 않는다.
-- PR을 만들 때는 `.github/pull_request_template.md` 템플릿을 따른다.
-- 새 태스크 문서를 만들거나 이름을 바꿀 때는 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
-- 새 Figma 프롬프트 문서를 만들거나 이름을 바꿀 때도 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
-- 새 테스트 가이드 문서를 만들거나 이름을 바꿀 때도 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
-- 새 아이디어 문서를 만들거나 이름을 바꿀 때도 `docs/idea/YYYY_MM_DD_NN_Idea.md` 규칙을 유지한다.
-- 아이디어는 생각날 때 기록하는 백로그 성격으로 관리하고, 실제 버전 작업 범위는 별도 태스크/브랜치/계획 문서에서 정한다.
-- `status`, `notes`, `next-steps`처럼 추상적인 이름보다 실제 주요 작업 주제를 드러내는 이름을 우선한다.
-- 예시:
-  - `v0_1_mvp_foundation_and_verification.md`
-  - `v0_2_ui_auth_record_model_comments.md`
-  - `v0_3_reading_editor_reactions_and_library.md`
-  - `v0_2_public_reading_auth_editor_comments.md`
-  - `v0_2_final_smoke_checklist.md`
-- 번호와 주제는 함께 봤을 때 문서의 목적이 바로 드러나야 한다.
+- 요청이 모호하고 제품 범위 판단이 필요하면 바로 구현하지 말고 `deep-interview` 또는 `ralplan` 경로를 우선 검토한다.
 
-## Working Style
+### While Implementing
 
 - 최소 변경으로 진행한다.
 - 불필요한 리팩터링, 대규모 포맷 변경, 파일 이동은 피한다.
 - 제품 정의와 충돌하는 아이디어가 나오면 구현 전에 먼저 지적하고 범위를 다시 맞춘다.
-- 요청이 모호하면 바로 구현하지 말고 `deep-interview` 또는 `ralplan` 경로를 우선 검토한다.
+- auth / visibility / recommendation을 건드릴 때는 public/private 누출 가능성을 먼저 점검한다.
 - 중첩 삼항연산자는 피하고, 삼항연산자는 한 표현식에서 최대 1~2단까지만 사용한다.
+
+### Before PR / Deploy
+
+- 코드 변경 시 가능한 범위에서 아래 순서로 검증한다.
+  1. `pnpm lint`
+  2. `pnpm exec tsc --noEmit`
+  3. `pnpm test`
+  4. `pnpm build`
+- 문서/주석 전용 변경이면 build/test는 생략할 수 있지만, 생략 이유를 결과에 명시한다.
+- PR review 사항을 반영한 뒤에는 해당 review thread에 답글을 달고, resolve 처리까지 진행한다.
+
+## Verification
+
+- 현재 레포의 `pnpm test`는 Vitest 테스트를 실행한다.
+- 검증을 생략하거나 실패하면 어떤 명령을 실행했고 어디서 막혔는지 결과에 남긴다.
+
+## Docs
+
+- 아키텍처, 환경변수, 인증 흐름, 데이터 모델, 주요 사용자 플로우가 바뀌면 관련 문서를 함께 갱신한다.
+- 새 SQL migration을 만들거나 순서를 바꾸면 `SETUP_GUIDE.md`도 함께 갱신한다.
+- `docs/task` 문서는 `docs/task/TEMPLATE.md`를 기준으로 작성한다.
+- `docs/task` 파일명은 `v0_[minor]_[patch]_[major-topic].md`처럼 버전과 주제가 함께 드러나야 한다.
+- `docs/figma_prompts` 파일명도 `v0_[minor]_[patch]_[major-topic].md` 형식을 따른다.
+- `docs/test_guide`는 `docs/test_guide/TEMPLATE.md`를 기준으로 작성하고, 파일명은 `v0_[minor]_[patch]_[major-topic].md` 형식을 따른다.
+- `docs/idea`는 `docs/idea/TEMPLATE.md`를 기준으로 작성하고, 파일명은 `YYYY_MM_DD_NN_Idea.md` 형식을 유지한다.
+- 새 문서나 이름 변경이 있을 때는 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
+- 아이디어는 백로그로 관리하고, 실제 버전 범위는 task / branch / plan 문서에서 확정한다.
+- `status`, `notes`, `next-steps`처럼 추상적인 이름보다 실제 주요 작업 주제를 드러내는 이름을 우선한다.
+- PR을 만들 때는 `.github/pull_request_template.md` 템플릿을 따른다.
 
 ## Git Workflow
 
-- 적당한 작업 단위가 끝날 때마다 `git add .` 후 `git commit`까지 진행해 변경을 작은 단위로 남긴다.
-- 하나의 태스크를 시작할 때는 해당 태스크 전용 브랜치를 만든다.
-- 브랜치 이름은 `V0_2_[Major_Topic]` 형식을 따른다.
+- 적당한 작업 단위가 끝날 때마다 변경을 작은 단위로 커밋한다.
+- 태스크 브랜치 이름은 `V0_[Minor]_[Patch]_[Major_Topic]`처럼 버전과 주제가 함께 드러나야 한다.
 - 아이디어 검토/브레인스토밍용 브랜치는 `idea/YYYY_MM_DD` 형식을 따른다.
-- 하나의 태스크가 끝나면 PR을 만들고 `main`에 머지한 뒤, 배포는 `dist` 브랜치 기준으로 진행한다.
-- 앞으로 배포용 기준 브랜치는 `dist`다. 릴리스/배포 상태는 `dist`에서 관리한다.
-- 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서로 본다.
+- 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서다.
 - 기본 배포 절차는 `PR merge -> local main sync -> task branch delete (remote/local) -> dist를 main commit으로 맞춤 -> dist push` 순서로 진행한다.
-- 배포용 버전 태그는 기본적으로 `VX.Y.Z_MajorTopic` 형식을 따른다. 예: `V0.4.0_Design_Speed_Reading_Flow`
-- `dist` 브랜치 push 시에는 `package.json`의 `version`과 관련 작업 주제를 기준으로 GitHub Actions가 tag와 GitHub Release를 자동 생성하는 흐름을 우선한다.
+- 배포용 기준 브랜치는 `dist`다.
+- 배포용 태그는 기본적으로 `VX.Y.Z_MajorTopic` 형식을 따른다.
 - 새 릴리즈 버전 작업을 시작하거나, 최소한 `dist` 브랜치에 올리기 전에는 `package.json.version`을 해당 릴리즈 버전으로 올린다.
-- 브랜치 이름이 `V0_5_3_Major_Topic`처럼 세 자리 버전을 포함해도 release topic에는 버전 숫자가 다시 남지 않도록 정규화된 이름을 사용한다.
+- 브랜치 이름이 `V0_6_4_Major_Topic`처럼 세 자리 버전을 포함해도 release topic에는 버전 숫자가 다시 남지 않도록 정규화된 이름을 사용한다.
 - GitHub 관련 작업은 가능하면 `gh` CLI를 우선 사용한다.
-- PR 조회, 리뷰 확인, 코멘트 확인, PR 생성 같은 작업은 `gh` 기준으로 수행한다.
-- PR review 사항을 반영한 뒤에는 해당 review thread에 답글을 달고, resolve 처리까지 진행한다.
