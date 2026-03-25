@@ -106,6 +106,8 @@
 - `docs/task` 파일명은 `v0_[minor]_[patch]_[major-topic].md`처럼 버전과 주제가 함께 드러나야 한다.
 - `docs/figma_prompts` 파일명도 `v0_[minor]_[patch]_[major-topic].md` 형식을 따른다.
 - `docs/test_guide`는 `docs/test_guide/TEMPLATE.md`를 기준으로 작성하고, 파일명은 `v0_[minor]_[patch]_[major-topic].md` 형식을 따른다.
+- 태스크 작업을 마치면 해당 버전의 `docs/test_guide`를 새로 만들거나 기존 가이드를 업데이트한다.
+- PR 전에는 이번 작업 범위를 커버하는 `docs/test_guide`가 존재하는지 확인하고, 없으면 먼저 작성한다.
 - `docs/idea`는 `docs/idea/TEMPLATE.md`를 기준으로 작성하고, 파일명은 `YYYY_MM_DD_NN_Idea.md` 형식을 유지한다.
 - 새 문서나 이름 변경이 있을 때는 파일 내용을 읽고 가장 이해하기 쉬운 주제를 파일명에 반영한다.
 - 아이디어는 백로그로 관리하고, 실제 버전 범위는 task / branch / plan 문서에서 확정한다.
