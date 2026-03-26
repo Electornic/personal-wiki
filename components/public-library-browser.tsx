@@ -14,6 +14,7 @@ type PublicLibraryBrowserProps = {
   records: WikiDocumentPreview[];
   availableTags: string[];
   reactionTotals: Record<string, number>;
+  recordCount?: number;
 };
 
 function buildReactionTotalsMap(reactionTotals: Record<string, number>) {
@@ -26,6 +27,7 @@ export function PublicLibraryBrowser({
   records,
   availableTags,
   reactionTotals,
+  recordCount,
 }: PublicLibraryBrowserProps) {
   const searchParams = useSearchParams();
   const discoveryState = parseDiscoveryState(searchParams);
@@ -42,7 +44,8 @@ export function PublicLibraryBrowser({
           Browse Library
         </h2>
         <span className="text-[14px] leading-5 text-[#6b6354]">
-          {filteredRecords.length} {filteredRecords.length === 1 ? "record" : "records"}
+          {recordCount ?? filteredRecords.length}{" "}
+          {(recordCount ?? filteredRecords.length) === 1 ? "record" : "records"}
         </span>
       </div>
 

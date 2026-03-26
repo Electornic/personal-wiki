@@ -88,6 +88,16 @@ export function DiscoveryControls({
   ) {
     const params = new URLSearchParams(searchParams.toString());
 
+    if (
+      updates.q !== undefined ||
+      updates.sort !== undefined ||
+      updates.source !== undefined ||
+      updates.tags !== undefined ||
+      updates.filters !== undefined
+    ) {
+      params.delete("page");
+    }
+
     if (preserveParams) {
       for (const [key, value] of Object.entries(preserveParams)) {
         params.set(key, value);

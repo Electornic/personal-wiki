@@ -4,6 +4,8 @@ import type {
   WikiDocumentPreview,
 } from "@/entities/record/model/types";
 
+export const DISCOVERY_PAGE_SIZE = 8;
+
 export type DiscoverySort =
   | "newest"
   | "oldest"
@@ -94,6 +96,15 @@ export function parseDiscoveryState(searchParams?: SearchParamInput): DiscoveryS
     tags,
     filtersOpen: filtersParam === "open",
   };
+}
+
+export function isDefaultDiscoveryState(state: DiscoveryState) {
+  return (
+    !state.query &&
+    state.sort === "newest" &&
+    state.source === "all" &&
+    state.tags.length === 0
+  );
 }
 
 export function getAvailableTags(documents: WikiDocument[]) {
