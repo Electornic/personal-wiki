@@ -7,7 +7,11 @@ import { cache } from "react";
 import { hasSupabaseEnv } from "@/shared/config/env";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 import type { DiscoveryState } from "@/lib/wiki/discovery";
-import { applyDiscoveryState, isDefaultDiscoveryState } from "@/lib/wiki/discovery";
+import {
+  applyDiscoveryState,
+  isDefaultDiscoveryState,
+  sortDiscoveryDocuments,
+} from "@/lib/wiki/discovery";
 import { getProfilesForUsers } from "@/lib/wiki/profiles";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 import { createSlug } from "@/lib/wiki/slugs";
@@ -79,6 +83,27 @@ function paginateDocuments(
   };
 }
 
+function paginateIds(
+  ids: string[],
+  page: number,
+  pageSize: number,
+) {
+  const resolvedPage = normalizePage(page);
+  const resolvedPageSize = Math.max(1, Math.floor(pageSize));
+  const totalCount = ids.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / resolvedPageSize));
+  const currentPage = Math.min(resolvedPage, totalPages);
+  const startIndex = (currentPage - 1) * resolvedPageSize;
+
+  return {
+    ids: ids.slice(startIndex, startIndex + resolvedPageSize),
+    totalCount,
+    totalPages,
+    page: currentPage,
+    pageSize: resolvedPageSize,
+  };
+}
+
 function emptyPaginatedDocuments(pageSize: number) {
   return {
     documents: [] as WikiDocument[],
@@ -114,6 +139,13 @@ type RecordTagRow = {
   record_id: string;
   tag_id?: string;
   tags?: { name?: string | null } | Array<{ name?: string | null }> | null;
+};
+
+type DiscoverySortRow = {
+  id: string;
+  title: string;
+  published_at: string | null;
+  updated_at: string;
 };
 
 function getTagNameFromRow(tagRow: RecordTagRow) {
@@ -398,13 +430,52 @@ async function listDiscoveryDocumentsPageFromIds(
     return emptyPaginatedDocuments(pageSize);
   }
 
-  const documents = await listDocumentsByIds(uniqueRecordIds);
+  const publicSupabase = getPublicSupabaseClient();
+  const serverSupabase = await getServerSupabaseClient();
+  const supabase = serverSupabase ?? publicSupabase;
+
+  if (!supabase) {
+    const documents = await listDocumentsByIds(uniqueRecordIds);
+    const reactionTotals = state.sort === "most-reacted"
+      ? await listLikeTotalsForRecords(uniqueRecordIds)
+      : undefined;
+    const filteredDocuments = applyDiscoveryState(documents, state, reactionTotals);
+
+    return paginateDocuments(filteredDocuments, page, pageSize);
+  }
+
+  const { data: sortRows, error: sortRowsError } = await supabase
+    .from("records")
+    .select("id, title, published_at, updated_at")
+    .in("id", uniqueRecordIds);
+
+  if (sortRowsError || !sortRows) {
+    return emptyPaginatedDocuments(pageSize);
+  }
+
   const reactionTotals = state.sort === "most-reacted"
     ? await listLikeTotalsForRecords(uniqueRecordIds)
     : undefined;
-  const filteredDocuments = applyDiscoveryState(documents, state, reactionTotals);
+  const sortedRecordIds = sortDiscoveryDocuments(
+    (sortRows as DiscoverySortRow[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      publishedAt: row.published_at,
+      updatedAt: row.updated_at,
+    })),
+    state,
+    reactionTotals,
+  ).map((row) => row.id);
+  const paginated = paginateIds(sortedRecordIds, page, pageSize);
+  const documents = await listDocumentsByIds(paginated.ids);
 
-  return paginateDocuments(filteredDocuments, page, pageSize);
+  return {
+    documents,
+    totalCount: paginated.totalCount,
+    totalPages: paginated.totalPages,
+    page: paginated.page,
+    pageSize: paginated.pageSize,
+  };
 }
 
 export const listPublicDocuments = cache(async function listPublicDocuments() {

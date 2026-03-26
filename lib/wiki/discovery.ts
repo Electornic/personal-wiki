@@ -30,6 +30,11 @@ type DiscoveryDocument = Pick<
   excerpt?: string;
 };
 
+type DiscoverySortableDocument = Pick<
+  WikiDocument,
+  "id" | "title" | "publishedAt" | "updatedAt"
+>;
+
 function getDocumentSortTime(document: Pick<WikiDocument, "publishedAt" | "updatedAt">) {
   return new Date(document.publishedAt ?? document.updatedAt).getTime();
 }
@@ -119,6 +124,37 @@ export function getAvailableTagsFromPreviews(documents: WikiDocumentPreview[]) {
     .sort((left, right) => left.localeCompare(right));
 }
 
+export function sortDiscoveryDocuments<T extends DiscoverySortableDocument>(
+  documents: T[],
+  state: Pick<DiscoveryState, "sort">,
+  reactionTotals?: Map<string, number>,
+) {
+  return [...documents].sort((left, right) => {
+    if (state.sort === "oldest") {
+      return getDocumentSortTime(left) - getDocumentSortTime(right);
+    }
+
+    if (state.sort === "title-asc") {
+      return left.title.localeCompare(right.title);
+    }
+
+    if (state.sort === "title-desc") {
+      return right.title.localeCompare(left.title);
+    }
+
+    if (state.sort === "most-reacted") {
+      const totalDelta =
+        (reactionTotals?.get(right.id) ?? 0) - (reactionTotals?.get(left.id) ?? 0);
+
+      if (totalDelta !== 0) {
+        return totalDelta;
+      }
+    }
+
+    return getDocumentSortTime(right) - getDocumentSortTime(left);
+  });
+}
+
 export function applyDiscoveryState<T extends DiscoveryDocument>(
   documents: T[],
   state: DiscoveryState,
@@ -158,28 +194,5 @@ export function applyDiscoveryState<T extends DiscoveryDocument>(
     return haystack.includes(query);
   });
 
-  return filtered.sort((left, right) => {
-    if (state.sort === "oldest") {
-      return getDocumentSortTime(left) - getDocumentSortTime(right);
-    }
-
-    if (state.sort === "title-asc") {
-      return left.title.localeCompare(right.title);
-    }
-
-    if (state.sort === "title-desc") {
-      return right.title.localeCompare(left.title);
-    }
-
-    if (state.sort === "most-reacted") {
-      const totalDelta =
-        (reactionTotals?.get(right.id) ?? 0) - (reactionTotals?.get(left.id) ?? 0);
-
-      if (totalDelta !== 0) {
-        return totalDelta;
-      }
-    }
-
-    return getDocumentSortTime(right) - getDocumentSortTime(left);
-  });
+  return sortDiscoveryDocuments(filtered, state, reactionTotals);
 }
