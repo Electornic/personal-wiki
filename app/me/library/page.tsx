@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 
 import { MyLibraryBrowser } from "@/components/my-library-browser";
+import { PaginationNav } from "@/components/pagination-nav";
 import { toDocumentPreview } from "@/entities/record/model/content";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import {
@@ -73,38 +73,11 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
           reactionTotals={Object.fromEntries(reactionTotals)}
         />
 
-        {paginated.totalPages > 1 ? (
-          <nav className="mt-8 flex items-center justify-between gap-4 border-t border-[rgba(42,36,25,0.1)] pt-6">
-            <Link
-              href={buildPageHref(
-                resolvedSearchParams,
-                Math.max(paginated.page - 1, 1),
-              )}
-              aria-disabled={paginated.page === 1}
-              className={`inline-flex h-[42px] items-center justify-center rounded-[4px] border px-4 text-[14px] leading-5 font-medium ${
-                paginated.page === 1
-                  ? "pointer-events-none border-[rgba(42,36,25,0.08)] text-[rgba(42,36,25,0.35)]"
-                  : "border-[rgba(42,36,25,0.1)] bg-white text-[#2a2419]"
-              }`}
-            >
-              Previous
-            </Link>
-            <Link
-              href={buildPageHref(
-                resolvedSearchParams,
-                Math.min(paginated.page + 1, paginated.totalPages),
-              )}
-              aria-disabled={paginated.page === paginated.totalPages}
-              className={`inline-flex h-[42px] items-center justify-center rounded-[4px] border px-4 text-[14px] leading-5 font-medium ${
-                paginated.page === paginated.totalPages
-                  ? "pointer-events-none border-[rgba(42,36,25,0.08)] text-[rgba(42,36,25,0.35)]"
-                  : "border-[rgba(42,36,25,0.1)] bg-white text-[#2a2419]"
-              }`}
-            >
-              Next
-            </Link>
-          </nav>
-        ) : null}
+        <PaginationNav
+          currentPage={paginated.page}
+          totalPages={paginated.totalPages}
+          buildHref={(page) => buildPageHref(resolvedSearchParams, page)}
+        />
       </section>
     </main>
   );

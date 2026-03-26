@@ -35,7 +35,7 @@
 - 댓글 depth 상한을 3레벨로 맞추고, reply 버튼 노출 조건도 동일 기준으로 통일한다.
 - conversation UI를 가벼운 카드형 스레드와 단계별 들여쓰기로 정리한다.
 - markdown renderer에 이미지 스타일을 추가하고, 작성 툴바에 image 삽입 버튼을 넣는다.
-- 작성 워크스페이스와 기본 discovery 목록은 페이지당 8개씩 조회하고 이전/다음 네비게이션을 제공한다.
+- 작성 워크스페이스와 기본 discovery 목록은 페이지당 8개씩 조회하고, 현재 페이지 표시와 최대 8개 번호 버튼을 포함한 페이지네이션을 제공한다.
 - server/route handler Supabase client를 tokens-only cookie encoding으로 맞춰 세션 메타데이터 기반 cookie 직렬화 리스크를 낮춘다.
 
 ## Acceptance Criteria

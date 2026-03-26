@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
+import { PaginationNav } from "@/components/pagination-nav";
 import {
   AUTHOR_WORKSPACE_PAGE_SIZE,
   listAuthorDocumentsPage,
@@ -444,41 +445,12 @@ export default async function AuthorPage({ searchParams }: PageProps) {
         ) : null}
       </section>
 
-      {paginatedDocuments.totalPages > 1 ? (
-        <nav className="mt-10 flex items-center justify-between gap-4 border-t border-[rgba(42,36,25,0.1)] pt-6">
-          <Link
-            href={buildAuthorPageHref(
-              resolvedSearchParams,
-              Math.max(paginatedDocuments.page - 1, 1),
-            )}
-            aria-disabled={paginatedDocuments.page === 1}
-            className={`inline-flex h-[42px] items-center justify-center rounded-[4px] border px-4 text-[14px] leading-5 font-medium ${
-              paginatedDocuments.page === 1
-                ? "pointer-events-none border-[rgba(42,36,25,0.08)] text-[rgba(42,36,25,0.35)]"
-                : "border-[rgba(42,36,25,0.1)] bg-white text-[#2a2419]"
-            }`}
-          >
-            Previous
-          </Link>
-          <Link
-            href={buildAuthorPageHref(
-              resolvedSearchParams,
-              Math.min(
-                paginatedDocuments.page + 1,
-                paginatedDocuments.totalPages,
-              ),
-            )}
-            aria-disabled={paginatedDocuments.page === paginatedDocuments.totalPages}
-            className={`inline-flex h-[42px] items-center justify-center rounded-[4px] border px-4 text-[14px] leading-5 font-medium ${
-              paginatedDocuments.page === paginatedDocuments.totalPages
-                ? "pointer-events-none border-[rgba(42,36,25,0.08)] text-[rgba(42,36,25,0.35)]"
-                : "border-[rgba(42,36,25,0.1)] bg-white text-[#2a2419]"
-            }`}
-          >
-            Next
-          </Link>
-        </nav>
-      ) : null}
+      <PaginationNav
+        className="mt-10"
+        currentPage={paginatedDocuments.page}
+        totalPages={paginatedDocuments.totalPages}
+        buildHref={(page) => buildAuthorPageHref(resolvedSearchParams, page)}
+      />
 
     </main>
   );
