@@ -36,8 +36,12 @@ function getVisiblePages(currentPage: number, totalPages: number, maxVisible = 8
   ];
 }
 
-function buildPaginationItems(currentPage: number, totalPages: number) {
-  const pages = getVisiblePages(currentPage, totalPages);
+function buildPaginationItems(
+  currentPage: number,
+  totalPages: number,
+  maxVisible: number,
+) {
+  const pages = getVisiblePages(currentPage, totalPages, maxVisible);
   const items: PaginationItem[] = [];
 
   for (const page of pages) {
@@ -98,7 +102,8 @@ export function PaginationNav({
     return null;
   }
 
-  const visiblePages = buildPaginationItems(currentPage, totalPages);
+  const mobilePages = buildPaginationItems(currentPage, totalPages, 5);
+  const desktopPages = buildPaginationItems(currentPage, totalPages, 8);
 
   return (
     <nav
@@ -108,24 +113,65 @@ export function PaginationNav({
       ].join(" ")}
       aria-label="Pagination"
     >
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-[14px] leading-5 text-[#6b6354]">
-          Page {currentPage} of {totalPages}
-        </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[14px] leading-5 text-[#6b6354]">
+            Page {currentPage} of {totalPages}
+          </p>
+          <div className="inline-flex w-fit items-center rounded-full border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.2)] px-3 py-1 text-[12px] leading-4 text-[#6b6354]">
+            {totalPages} pages total
+          </div>
+        </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:hidden">
           <PaginationLink
             href={buildHref(Math.max(currentPage - 1, 1))}
             disabled={currentPage === 1}
           >
-            <span className="hidden sm:inline">Previous</span>
-            <span className="sm:hidden">Prev</span>
+            Prev
           </PaginationLink>
 
-          {visiblePages.map((item) =>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {mobilePages.map((item) =>
+              item.type === "page" ? (
+                <PaginationLink
+                  key={`mobile-${item.value}`}
+                  href={buildHref(item.value)}
+                  active={item.value === currentPage}
+                >
+                  {item.value}
+                </PaginationLink>
+              ) : (
+                <span
+                  key={item.value}
+                  className="inline-flex h-10 min-w-5 items-center justify-center px-0.5 text-[13px] text-[#8a826f]"
+                >
+                  ...
+                </span>
+              ),
+            )}
+          </div>
+
+          <PaginationLink
+            href={buildHref(Math.min(currentPage + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </PaginationLink>
+        </div>
+
+        <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
+          <PaginationLink
+            href={buildHref(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </PaginationLink>
+
+          {desktopPages.map((item) =>
             item.type === "page" ? (
               <PaginationLink
-                key={item.value}
+                key={`desktop-${item.value}`}
                 href={buildHref(item.value)}
                 active={item.value === currentPage}
               >
