@@ -1,17 +1,23 @@
 import { Suspense } from "react";
 
+import { PaginationNav } from "@/components/pagination-nav";
 import { PublicLibraryBrowser } from "@/components/public-library-browser";
 import { toDocumentPreview } from "@/entities/record/model/content";
-import { getAvailableTagsFromPreviews } from "@/lib/wiki/discovery";
-import { listPublicDocuments } from "@/entities/record/api/documents";
-import { listLikeTotalsForRecords } from "@/entities/reaction/api/reactions";
+import {
+  DISCOVERY_PAGE_SIZE,
+  parseDiscoveryState,
+} from "@/lib/wiki/discovery";
+import {
+  listAvailableTagsForPublicDocuments,
+  listPublicDiscoveryPage,
+} from "@/entities/record/api/documents";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function Home({ searchParams }: PageProps) {
-  await searchParams;
+  const resolvedSearchParams = await searchParams;
 
   return (
     <main className="site-shell pb-16 pt-12 md:pb-20 md:pt-16">
@@ -27,28 +33,83 @@ export default async function Home({ searchParams }: PageProps) {
 
       <section id="library" className="mt-16 md:mt-20">
         <Suspense fallback={<HomeLibraryFallback />}>
-          <HomeLibrarySection />
+          <HomeLibrarySection searchParams={resolvedSearchParams} />
         </Suspense>
       </section>
     </main>
   );
 }
 
-async function HomeLibrarySection() {
-  const documents = await listPublicDocuments();
-  const publicRecords = documents.filter((record) => record.visibility === "public");
-  const previews = publicRecords.map((record) => toDocumentPreview(record));
-  const reactionTotals = await listLikeTotalsForRecords(
-    publicRecords.map((record) => record.id),
+function getPageNumber(searchParams: Record<string, string | string[] | undefined>) {
+  const page = Number(
+    Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page ?? "1",
   );
-  const availableTags = getAvailableTagsFromPreviews(previews);
+
+  if (!Number.isFinite(page) || page < 1) {
+    return 1;
+  }
+
+  return Math.floor(page);
+}
+
+function buildPageHref(
+  searchParams: Record<string, string | string[] | undefined>,
+  page: number,
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (key === "page" || value === undefined) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((entry) => params.append(key, entry));
+      continue;
+    }
+
+    params.set(key, value);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+  return query ? `/?${query}#library` : "/#library";
+}
+
+async function HomeLibrarySection({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  const discoveryState = parseDiscoveryState(searchParams);
+  const currentPage = getPageNumber(searchParams);
+  const paginated = await listPublicDiscoveryPage(
+    discoveryState,
+    currentPage,
+    DISCOVERY_PAGE_SIZE,
+  );
+  const publicRecords = paginated.documents;
+  const previews = publicRecords.map((record) => toDocumentPreview(record));
+  const availableTags = await listAvailableTagsForPublicDocuments();
 
   return (
-    <PublicLibraryBrowser
-      records={previews}
-      availableTags={availableTags}
-      reactionTotals={Object.fromEntries(reactionTotals)}
-    />
+    <>
+      <PublicLibraryBrowser
+        records={previews}
+        availableTags={availableTags}
+        recordCount={paginated.totalCount}
+        discoveryState={discoveryState}
+      />
+
+      <PaginationNav
+        currentPage={paginated.page}
+        totalPages={paginated.totalPages}
+        buildHref={(page) => buildPageHref(searchParams, page)}
+      />
+    </>
   );
 }
 

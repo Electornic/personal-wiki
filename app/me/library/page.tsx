@@ -1,13 +1,17 @@
 import { redirect } from "next/navigation";
 
 import { MyLibraryBrowser } from "@/components/my-library-browser";
+import { PaginationNav } from "@/components/pagination-nav";
 import { toDocumentPreview } from "@/entities/record/model/content";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import {
-  getAvailableTagsFromPreviews,
+  DISCOVERY_PAGE_SIZE,
+  parseDiscoveryState,
 } from "@/lib/wiki/discovery";
-import { listMyLibraryPreview } from "@/lib/wiki/library";
-import { listLikeTotalsForRecords } from "@/entities/reaction/api/reactions";
+import {
+  listAvailableTagsForMyLibrary,
+  listMyLibraryDiscoveryPage,
+} from "@/lib/wiki/library";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -32,11 +36,17 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
     redirect("/author");
   }
 
-  await searchParams;
-  const records = await listMyLibraryPreview();
+  const resolvedSearchParams = await searchParams;
+  const discoveryState = parseDiscoveryState(resolvedSearchParams);
+  const currentPage = getPageNumber(resolvedSearchParams);
+  const paginated = await listMyLibraryDiscoveryPage(
+    discoveryState,
+    currentPage,
+    DISCOVERY_PAGE_SIZE,
+  );
+  const records = paginated.documents;
   const previews = records.map((record) => toDocumentPreview(record));
-  const reactionTotals = await listLikeTotalsForRecords(records.map((record) => record.id));
-  const availableTags = getAvailableTagsFromPreviews(previews);
+  const availableTags = await listAvailableTagsForMyLibrary();
 
   return (
     <main className="site-shell pb-20 pt-12">
@@ -58,9 +68,54 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
         <MyLibraryBrowser
           records={previews}
           availableTags={availableTags}
-          reactionTotals={Object.fromEntries(reactionTotals)}
+          discoveryState={discoveryState}
+        />
+
+        <PaginationNav
+          currentPage={paginated.page}
+          totalPages={paginated.totalPages}
+          buildHref={(page) => buildPageHref(resolvedSearchParams, page)}
         />
       </section>
     </main>
   );
+}
+
+function getPageNumber(searchParams: Record<string, string | string[] | undefined>) {
+  const page = Number(
+    Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page ?? "1",
+  );
+
+  if (!Number.isFinite(page) || page < 1) {
+    return 1;
+  }
+
+  return Math.floor(page);
+}
+
+function buildPageHref(
+  searchParams: Record<string, string | string[] | undefined>,
+  page: number,
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (key === "page" || value === undefined) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((entry) => params.append(key, entry));
+      continue;
+    }
+
+    params.set(key, value);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+  return query ? `/me/library?${query}` : "/me/library";
 }

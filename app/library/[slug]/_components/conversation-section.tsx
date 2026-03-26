@@ -12,6 +12,14 @@ type ConversationSectionProps = {
   visibility: DocumentVisibility;
 };
 
+function countComments(
+  comments: Awaited<ReturnType<typeof listCommentsForRecord>>,
+): number {
+  return comments.reduce((total, comment) => {
+    return total + 1 + countComments(comment.replies);
+  }, 0);
+}
+
 export async function ConversationSection({
   documentId,
   recordSlug,
@@ -23,13 +31,14 @@ export async function ConversationSection({
   ]);
   const canComment = access.isAuthenticated && visibility === "public";
   const showPrivateCommentNotice = visibility === "private";
+  const commentCount = countComments(comments);
 
   return (
     <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
       <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
         Conversation
         <span className="ml-1 text-[18px] leading-7 font-normal text-[#6b6354]">
-          {comments.length}
+          {commentCount}
         </span>
       </h2>
       <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">

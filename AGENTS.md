@@ -116,7 +116,7 @@
 
 ## Git Workflow
 
-- 적당한 작업 단위가 끝날 때마다 변경을 작은 단위로 커밋한다.
+- 적당한 작업 단위가 끝날 때마다 관련 파일만 선택적으로 `git add` 하고, 변경을 작은 단위로 커밋한다.
 - 태스크 브랜치 이름은 `V0_[Minor]_[Patch]_[Major_Topic]`처럼 버전과 주제가 함께 드러나야 한다.
 - 아이디어 검토/브레인스토밍용 브랜치는 `idea/YYYY_MM_DD` 형식을 따른다.
 - 기본 흐름은 `task branch -> PR -> main merge -> dist deploy` 순서다.

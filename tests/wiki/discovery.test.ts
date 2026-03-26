@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { toDocumentPreview } from "@/entities/record/model/content";
-import { applyDiscoveryState } from "@/lib/wiki/discovery";
+import { applyDiscoveryState, isDefaultDiscoveryState } from "@/lib/wiki/discovery";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 
 describe("applyDiscoveryState", () => {
@@ -85,5 +85,27 @@ describe("applyDiscoveryState", () => {
 
     expect(filtered).toHaveLength(1);
     expect(filtered[0]?.slug).toBe("seeing-like-a-designer");
+  });
+
+  it("detects the default discovery state", () => {
+    expect(
+      isDefaultDiscoveryState({
+        query: "",
+        sort: "newest",
+        source: "all",
+        tags: [],
+        filtersOpen: false,
+      }),
+    ).toBe(true);
+
+    expect(
+      isDefaultDiscoveryState({
+        query: "design",
+        sort: "newest",
+        source: "all",
+        tags: [],
+        filtersOpen: false,
+      }),
+    ).toBe(false);
   });
 });

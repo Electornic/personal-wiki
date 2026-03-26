@@ -4,6 +4,8 @@ import type {
   WikiDocumentPreview,
 } from "@/entities/record/model/types";
 
+export const DISCOVERY_PAGE_SIZE = 8;
+
 export type DiscoverySort =
   | "newest"
   | "oldest"
@@ -27,6 +29,11 @@ type DiscoveryDocument = Pick<
   contents?: string;
   excerpt?: string;
 };
+
+type DiscoverySortableDocument = Pick<
+  WikiDocument,
+  "id" | "title" | "publishedAt" | "updatedAt"
+>;
 
 function getDocumentSortTime(document: Pick<WikiDocument, "publishedAt" | "updatedAt">) {
   return new Date(document.publishedAt ?? document.updatedAt).getTime();
@@ -96,6 +103,15 @@ export function parseDiscoveryState(searchParams?: SearchParamInput): DiscoveryS
   };
 }
 
+export function isDefaultDiscoveryState(state: DiscoveryState) {
+  return (
+    !state.query &&
+    state.sort === "newest" &&
+    state.source === "all" &&
+    state.tags.length === 0
+  );
+}
+
 export function getAvailableTags(documents: WikiDocument[]) {
   return [...new Set(documents.flatMap((document) => document.tags))]
     .filter(Boolean)
@@ -106,6 +122,37 @@ export function getAvailableTagsFromPreviews(documents: WikiDocumentPreview[]) {
   return [...new Set(documents.flatMap((document) => document.tags))]
     .filter(Boolean)
     .sort((left, right) => left.localeCompare(right));
+}
+
+export function sortDiscoveryDocuments<T extends DiscoverySortableDocument>(
+  documents: T[],
+  state: Pick<DiscoveryState, "sort">,
+  reactionTotals?: Map<string, number>,
+) {
+  return [...documents].sort((left, right) => {
+    if (state.sort === "oldest") {
+      return getDocumentSortTime(left) - getDocumentSortTime(right);
+    }
+
+    if (state.sort === "title-asc") {
+      return left.title.localeCompare(right.title);
+    }
+
+    if (state.sort === "title-desc") {
+      return right.title.localeCompare(left.title);
+    }
+
+    if (state.sort === "most-reacted") {
+      const totalDelta =
+        (reactionTotals?.get(right.id) ?? 0) - (reactionTotals?.get(left.id) ?? 0);
+
+      if (totalDelta !== 0) {
+        return totalDelta;
+      }
+    }
+
+    return getDocumentSortTime(right) - getDocumentSortTime(left);
+  });
 }
 
 export function applyDiscoveryState<T extends DiscoveryDocument>(
@@ -147,28 +194,5 @@ export function applyDiscoveryState<T extends DiscoveryDocument>(
     return haystack.includes(query);
   });
 
-  return filtered.sort((left, right) => {
-    if (state.sort === "oldest") {
-      return getDocumentSortTime(left) - getDocumentSortTime(right);
-    }
-
-    if (state.sort === "title-asc") {
-      return left.title.localeCompare(right.title);
-    }
-
-    if (state.sort === "title-desc") {
-      return right.title.localeCompare(left.title);
-    }
-
-    if (state.sort === "most-reacted") {
-      const totalDelta =
-        (reactionTotals?.get(right.id) ?? 0) - (reactionTotals?.get(left.id) ?? 0);
-
-      if (totalDelta !== 0) {
-        return totalDelta;
-      }
-    }
-
-    return getDocumentSortTime(right) - getDocumentSortTime(left);
-  });
+  return sortDiscoveryDocuments(filtered, state, reactionTotals);
 }

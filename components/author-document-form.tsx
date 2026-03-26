@@ -132,6 +132,7 @@ const reflectionTemplate = `## Questions to push further
 const markdownTips = [
   "Headings shape the reading flow.",
   "Preview uses the same markdown renderer as the public page.",
+  "Images use standard markdown syntax with an alt label and URL.",
   "Short, explicit tags keep recommendation quality stable.",
 ];
 
@@ -261,6 +262,23 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
         nextValue,
         nextSelectionStart: selectionStart + 1,
         nextSelectionEnd: selectionStart + 1 + selected.length,
+      };
+    });
+  }
+
+  function insertImage() {
+    updateContentsFromTextarea((currentValue, selectionStart, selectionEnd) => {
+      const selected = currentValue.slice(selectionStart, selectionEnd).trim() || "Describe image";
+      const inserted = `![${selected}](https://example.com/image.jpg)`;
+      const nextValue =
+        currentValue.slice(0, selectionStart) +
+        inserted +
+        currentValue.slice(selectionEnd);
+
+      return {
+        nextValue,
+        nextSelectionStart: selectionStart + 2,
+        nextSelectionEnd: selectionStart + 2 + selected.length,
       };
     });
   }
@@ -536,6 +554,13 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
                 >
                   Link
+                </button>
+                <button
+                  type="button"
+                  onClick={insertImage}
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                >
+                  Image
                 </button>
               </div>
             </div>

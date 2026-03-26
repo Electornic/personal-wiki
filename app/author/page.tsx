@@ -1,7 +1,11 @@
 import Link from "next/link";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
-import { listAuthorDocuments } from "@/entities/record/api/documents";
+import { PaginationNav } from "@/components/pagination-nav";
+import {
+  AUTHOR_WORKSPACE_PAGE_SIZE,
+  listAuthorDocumentsPage,
+} from "@/entities/record/api/documents";
 import { formatLongDisplayDate } from "@/entities/record/model/content";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { hasAuthoringEnv } from "@/shared/config/env";
@@ -175,11 +179,66 @@ function getWorkspaceMessage(searchParams: Record<string, string | string[] | un
   };
 }
 
+function getPageNumber(searchParams: Record<string, string | string[] | undefined>) {
+  const page = Number(getSearchParam(searchParams, "page") ?? "1");
+
+  if (!Number.isFinite(page) || page < 1) {
+    return 1;
+  }
+
+  return Math.floor(page);
+}
+
+function buildAuthorPageHref(
+  searchParams: Record<string, string | string[] | undefined>,
+  page: number,
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (key === "page" || value === undefined) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((entry) => params.append(key, entry));
+      continue;
+    }
+
+    params.set(key, value);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+  return query ? `/author?${query}` : "/author";
+}
+
 export default async function AuthorPage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
   const access = await getAuthorAccess();
-  const documents = access.isAuthenticated ? await listAuthorDocuments() : [];
+  const currentPage = getPageNumber(resolvedSearchParams);
+  const paginatedDocuments = access.isAuthenticated
+    ? await listAuthorDocumentsPage(currentPage)
+    : {
+        documents: [],
+        totalCount: 0,
+        totalPages: 1,
+        page: 1,
+        pageSize: AUTHOR_WORKSPACE_PAGE_SIZE,
+      };
+  const documents = paginatedDocuments.documents;
   const workspaceMessage = getWorkspaceMessage(resolvedSearchParams);
+  const pageStart =
+    paginatedDocuments.totalCount === 0
+      ? 0
+      : (paginatedDocuments.page - 1) * paginatedDocuments.pageSize + 1;
+  const pageEnd =
+    paginatedDocuments.totalCount === 0
+      ? 0
+      : pageStart + documents.length - 1;
 
   if (!hasAuthoringEnv()) {
     return (
@@ -269,6 +328,17 @@ export default async function AuthorPage({ searchParams }: PageProps) {
           >
             {workspaceMessage.text}
           </div>
+        </section>
+      ) : null}
+
+      {documents.length ? (
+        <section className="mt-8 flex flex-col gap-2 text-[14px] leading-5 text-[#6b6354] md:flex-row md:items-center md:justify-between">
+          <p>
+            Showing {pageStart}-{pageEnd} of {paginatedDocuments.totalCount} records
+          </p>
+          <p>
+            Page {paginatedDocuments.page} of {paginatedDocuments.totalPages}
+          </p>
         </section>
       ) : null}
 
@@ -374,6 +444,13 @@ export default async function AuthorPage({ searchParams }: PageProps) {
           </div>
         ) : null}
       </section>
+
+      <PaginationNav
+        className="mt-10"
+        currentPage={paginatedDocuments.page}
+        totalPages={paginatedDocuments.totalPages}
+        buildHref={(page) => buildAuthorPageHref(resolvedSearchParams, page)}
+      />
 
     </main>
   );
