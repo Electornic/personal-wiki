@@ -4,6 +4,9 @@ import {
 } from "@/shared/api/supabase/server";
 import { getProfilesForUsers } from "@/lib/wiki/profiles";
 
+export const MAX_COMMENT_DEPTH = 2;
+export const MAX_COMMENT_LEVELS = MAX_COMMENT_DEPTH + 1;
+
 export type RecordComment = {
   id: string;
   recordId: string;
@@ -142,8 +145,8 @@ export async function createCommentForRecord(input: {
 
     depth = Number(parentResult.data.depth) + 1;
 
-    if (depth > 5) {
-      throw new Error("Comment reply depth cannot exceed 5.");
+    if (depth > MAX_COMMENT_DEPTH) {
+      throw new Error(`Comment reply depth cannot exceed ${MAX_COMMENT_LEVELS} levels.`);
     }
   }
 

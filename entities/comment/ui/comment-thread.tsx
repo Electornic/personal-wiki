@@ -1,4 +1,5 @@
 import { CommentReplyToggle } from "@/components/comment-reply-toggle";
+import { MAX_COMMENT_DEPTH } from "@/entities/comment/api/comments";
 import { formatDisplayDate } from "@/entities/record/model/content";
 import type { RecordComment } from "@/entities/comment/api/comments";
 
@@ -8,6 +9,18 @@ type CommentThreadProps = {
   recordSlug: string;
   canComment: boolean;
 };
+
+function getThreadOffset(depth: number) {
+  if (depth <= 0) {
+    return "";
+  }
+
+  if (depth === 1) {
+    return "ml-5 md:ml-8";
+  }
+
+  return "ml-8 md:ml-12";
+}
 
 function CommentNode({
   comment,
@@ -21,35 +34,38 @@ function CommentNode({
   canComment: boolean;
 }) {
   return (
-    <div className="space-y-3">
-      <article className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e8e3db] text-[14px] leading-5 font-medium text-[#2a2419]">
-          {comment.userName.charAt(0).toUpperCase()}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="text-[14px] leading-5 font-medium text-[#2a2419]">
-              {comment.userName}
-            </span>
-            <time className="text-[12px] leading-4 text-[#6b6354]">
-              {formatDisplayDate(comment.createdAt)}
-            </time>
+    <div className={`space-y-3 ${getThreadOffset(comment.depth)}`}>
+      <article className="rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(250,248,245,0.92)] px-4 py-4 shadow-[0_8px_24px_rgba(42,36,25,0.04)]">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e8e3db] text-[14px] leading-5 font-medium text-[#2a2419]">
+            {comment.userName.charAt(0).toUpperCase()}
           </div>
-          <p className="whitespace-pre-wrap text-[16px] leading-[26px] text-[#2a2419]">
-            {comment.contents}
-          </p>
-          {canComment && comment.depth < 5 ? (
-            <CommentReplyToggle
-              recordId={recordId}
-              recordSlug={recordSlug}
-              parentCommentId={comment.id}
-              depth={comment.depth}
-            />
-          ) : null}
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="text-[14px] leading-5 font-medium text-[#2a2419]">
+                {comment.userName}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-[rgba(42,36,25,0.18)]" />
+              <time className="text-[12px] leading-4 text-[#6b6354]">
+                {formatDisplayDate(comment.createdAt)}
+              </time>
+            </div>
+            <p className="whitespace-pre-wrap text-[15px] leading-[25px] text-[#2a2419]">
+              {comment.contents}
+            </p>
+            {canComment && comment.depth < MAX_COMMENT_DEPTH ? (
+              <CommentReplyToggle
+                recordId={recordId}
+                recordSlug={recordSlug}
+                parentCommentId={comment.id}
+                depth={comment.depth}
+              />
+            ) : null}
+          </div>
         </div>
       </article>
       {comment.replies.length ? (
-        <div className="ml-12 border-l-2 border-[rgba(42,36,25,0.1)] pl-[26px] pt-3">
+        <div className="border-l border-[rgba(42,36,25,0.12)] pl-4 pt-1">
           <CommentThread
             comments={comment.replies}
             recordId={recordId}
@@ -69,7 +85,7 @@ export function CommentThread({
   canComment,
 }: CommentThreadProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {comments.map((comment) => (
         <CommentNode
           key={comment.id}

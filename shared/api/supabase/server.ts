@@ -21,6 +21,7 @@ export async function getServerSupabaseClient() {
 
   return createServerClient(env.url!, env.anonKey!, {
     cookies: {
+      encode: "tokens-only",
       getAll() {
         return cookieStore.getAll();
       },
@@ -79,6 +80,7 @@ export function getRouteHandlerSupabaseClient(
 
   return createServerClient(env.url!, env.anonKey!, {
     cookies: {
+      encode: "tokens-only",
       getAll() {
         return request.cookies.getAll();
       },

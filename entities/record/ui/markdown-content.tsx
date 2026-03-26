@@ -65,6 +65,16 @@ export function MarkdownContent({ contents, className }: MarkdownContentProps) {
               {children}
             </a>
           ),
+          img: ({ src, alt }) => (
+            // Plain img keeps markdown image support simple across public and preview surfaces.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src ?? ""}
+              alt={alt ?? ""}
+              className="my-8 w-full rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.24)] object-cover shadow-[0_12px_36px_rgba(42,36,25,0.08)]"
+              loading="lazy"
+            />
+          ),
           strong: ({ children }) => (
             <strong className="font-semibold text-[#2a2419]">{children}</strong>
           ),

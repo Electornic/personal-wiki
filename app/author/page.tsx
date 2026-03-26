@@ -1,7 +1,10 @@
 import Link from "next/link";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
-import { listAuthorDocuments } from "@/entities/record/api/documents";
+import {
+  AUTHOR_WORKSPACE_PAGE_SIZE,
+  listAuthorDocumentsPage,
+} from "@/entities/record/api/documents";
 import { formatLongDisplayDate } from "@/entities/record/model/content";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { hasAuthoringEnv } from "@/shared/config/env";
@@ -175,11 +178,66 @@ function getWorkspaceMessage(searchParams: Record<string, string | string[] | un
   };
 }
 
+function getPageNumber(searchParams: Record<string, string | string[] | undefined>) {
+  const page = Number(getSearchParam(searchParams, "page") ?? "1");
+
+  if (!Number.isFinite(page) || page < 1) {
+    return 1;
+  }
+
+  return Math.floor(page);
+}
+
+function buildAuthorPageHref(
+  searchParams: Record<string, string | string[] | undefined>,
+  page: number,
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (key === "page" || value === undefined) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((entry) => params.append(key, entry));
+      continue;
+    }
+
+    params.set(key, value);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+  return query ? `/author?${query}` : "/author";
+}
+
 export default async function AuthorPage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
   const access = await getAuthorAccess();
-  const documents = access.isAuthenticated ? await listAuthorDocuments() : [];
+  const currentPage = getPageNumber(resolvedSearchParams);
+  const paginatedDocuments = access.isAuthenticated
+    ? await listAuthorDocumentsPage(currentPage)
+    : {
+        documents: [],
+        totalCount: 0,
+        totalPages: 1,
+        page: 1,
+        pageSize: AUTHOR_WORKSPACE_PAGE_SIZE,
+      };
+  const documents = paginatedDocuments.documents;
   const workspaceMessage = getWorkspaceMessage(resolvedSearchParams);
+  const pageStart =
+    paginatedDocuments.totalCount === 0
+      ? 0
+      : (paginatedDocuments.page - 1) * paginatedDocuments.pageSize + 1;
+  const pageEnd =
+    paginatedDocuments.totalCount === 0
+      ? 0
+      : pageStart + documents.length - 1;
 
   if (!hasAuthoringEnv()) {
     return (
@@ -269,6 +327,17 @@ export default async function AuthorPage({ searchParams }: PageProps) {
           >
             {workspaceMessage.text}
           </div>
+        </section>
+      ) : null}
+
+      {documents.length ? (
+        <section className="mt-8 flex flex-col gap-2 text-[14px] leading-5 text-[#6b6354] md:flex-row md:items-center md:justify-between">
+          <p>
+            Showing {pageStart}-{pageEnd} of {paginatedDocuments.totalCount} records
+          </p>
+          <p>
+            Page {paginatedDocuments.page} of {paginatedDocuments.totalPages}
+          </p>
         </section>
       ) : null}
 
@@ -374,6 +443,42 @@ export default async function AuthorPage({ searchParams }: PageProps) {
           </div>
         ) : null}
       </section>
+
+      {paginatedDocuments.totalPages > 1 ? (
+        <nav className="mt-10 flex items-center justify-between gap-4 border-t border-[rgba(42,36,25,0.1)] pt-6">
+          <Link
+            href={buildAuthorPageHref(
+              resolvedSearchParams,
+              Math.max(paginatedDocuments.page - 1, 1),
+            )}
+            aria-disabled={paginatedDocuments.page === 1}
+            className={`inline-flex h-[42px] items-center justify-center rounded-[4px] border px-4 text-[14px] leading-5 font-medium ${
+              paginatedDocuments.page === 1
+                ? "pointer-events-none border-[rgba(42,36,25,0.08)] text-[rgba(42,36,25,0.35)]"
+                : "border-[rgba(42,36,25,0.1)] bg-white text-[#2a2419]"
+            }`}
+          >
+            Previous
+          </Link>
+          <Link
+            href={buildAuthorPageHref(
+              resolvedSearchParams,
+              Math.min(
+                paginatedDocuments.page + 1,
+                paginatedDocuments.totalPages,
+              ),
+            )}
+            aria-disabled={paginatedDocuments.page === paginatedDocuments.totalPages}
+            className={`inline-flex h-[42px] items-center justify-center rounded-[4px] border px-4 text-[14px] leading-5 font-medium ${
+              paginatedDocuments.page === paginatedDocuments.totalPages
+                ? "pointer-events-none border-[rgba(42,36,25,0.08)] text-[rgba(42,36,25,0.35)]"
+                : "border-[rgba(42,36,25,0.1)] bg-white text-[#2a2419]"
+            }`}
+          >
+            Next
+          </Link>
+        </nav>
+      ) : null}
 
     </main>
   );

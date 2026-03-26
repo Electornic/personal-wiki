@@ -46,7 +46,7 @@ export function CommentReplyToggle({
         Reply
       </button>
       {replyOpen ? (
-        <div className="ml-12 pt-3">
+        <div className="pt-3">
           <CommentForm
             recordId={recordId}
             recordSlug={recordSlug}
