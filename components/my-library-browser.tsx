@@ -1,20 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
 import { DiscoveryControls } from "@/components/discovery-controls";
 import { MyLibraryCard } from "@/components/my-library-card";
-import {
-  applyDiscoveryState,
-  parseDiscoveryState,
-} from "@/lib/wiki/discovery";
+import type { DiscoveryState } from "@/lib/wiki/discovery";
 import type { WikiDocumentPreview } from "@/entities/record/model/types";
 
 type MyLibraryBrowserProps = {
   records: WikiDocumentPreview[];
   availableTags: string[];
-  reactionTotals: Record<string, number>;
+  discoveryState: DiscoveryState;
 };
 
 function MyLibraryIcon({ className = "h-12 w-12" }: { className?: string }) {
@@ -29,25 +25,11 @@ function MyLibraryIcon({ className = "h-12 w-12" }: { className?: string }) {
   );
 }
 
-function buildReactionTotalsMap(reactionTotals: Record<string, number>) {
-  return new Map(
-    Object.entries(reactionTotals).map(([recordId, total]) => [recordId, Number(total)]),
-  );
-}
-
 export function MyLibraryBrowser({
   records,
   availableTags,
-  reactionTotals,
+  discoveryState,
 }: MyLibraryBrowserProps) {
-  const searchParams = useSearchParams();
-  const discoveryState = parseDiscoveryState(searchParams);
-  const filteredRecords = applyDiscoveryState(
-    records,
-    discoveryState,
-    buildReactionTotalsMap(reactionTotals),
-  );
-
   return (
     <>
       <DiscoveryControls
@@ -60,9 +42,9 @@ export function MyLibraryBrowser({
         filtersOpen={discoveryState.filtersOpen}
       />
 
-      {filteredRecords.length ? (
+      {records.length ? (
         <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {filteredRecords.map((record) => (
+          {records.map((record) => (
             <MyLibraryCard key={record.id} document={record} />
           ))}
         </div>

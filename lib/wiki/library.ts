@@ -41,20 +41,19 @@ export async function listMyLibraryPreviewPage(
   page = 1,
   pageSize = DISCOVERY_PAGE_SIZE,
 ) {
-  const recordIds = [...new Set((await listBookmarkRecordIds()).filter(Boolean))];
+  const documents = await listMyLibraryPreview();
   const resolvedPage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
   const resolvedPageSize = Math.max(1, Math.floor(pageSize));
-  const totalCount = recordIds.length;
+  const totalCount = documents.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / resolvedPageSize));
   const currentPage = Math.min(resolvedPage, totalPages);
-  const visibleRecordIds = recordIds.slice(
+  const visibleDocuments = documents.slice(
     (currentPage - 1) * resolvedPageSize,
     currentPage * resolvedPageSize,
   );
-  const documents = await listDocumentsByIds(visibleRecordIds);
 
   return {
-    documents: sortByRecentDocumentDate(uniqueById(documents)),
+    documents: visibleDocuments,
     totalCount,
     totalPages,
     page: currentPage,

@@ -11,7 +11,6 @@ import {
   listAvailableTagsForPublicDocuments,
   listPublicDiscoveryPage,
 } from "@/entities/record/api/documents";
-import { listLikeTotalsForRecords } from "@/entities/reaction/api/reactions";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -94,9 +93,6 @@ async function HomeLibrarySection({
   );
   const publicRecords = paginated.documents;
   const previews = publicRecords.map((record) => toDocumentPreview(record));
-  const reactionTotals = await listLikeTotalsForRecords(
-    publicRecords.map((record) => record.id),
-  );
   const availableTags = await listAvailableTagsForPublicDocuments();
 
   return (
@@ -104,8 +100,8 @@ async function HomeLibrarySection({
       <PublicLibraryBrowser
         records={previews}
         availableTags={availableTags}
-        reactionTotals={Object.fromEntries(reactionTotals)}
         recordCount={paginated.totalCount}
+        discoveryState={discoveryState}
       />
 
       <PaginationNav

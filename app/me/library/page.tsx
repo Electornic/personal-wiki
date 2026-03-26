@@ -12,7 +12,6 @@ import {
   listAvailableTagsForMyLibrary,
   listMyLibraryDiscoveryPage,
 } from "@/lib/wiki/library";
-import { listLikeTotalsForRecords } from "@/entities/reaction/api/reactions";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -47,7 +46,6 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
   );
   const records = paginated.documents;
   const previews = records.map((record) => toDocumentPreview(record));
-  const reactionTotals = await listLikeTotalsForRecords(records.map((record) => record.id));
   const availableTags = await listAvailableTagsForMyLibrary();
 
   return (
@@ -70,7 +68,7 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
         <MyLibraryBrowser
           records={previews}
           availableTags={availableTags}
-          reactionTotals={Object.fromEntries(reactionTotals)}
+          discoveryState={discoveryState}
         />
 
         <PaginationNav
