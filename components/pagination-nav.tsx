@@ -81,7 +81,7 @@ function PaginationLink({
       aria-current={active ? "page" : undefined}
       className={`inline-flex h-10 min-w-10 items-center justify-center rounded-[4px] border px-2.5 text-[13px] leading-5 font-medium md:h-[42px] md:min-w-[42px] md:px-3 md:text-[14px] ${
         active
-          ? "border-[#2a2419] bg-[#2a2419] text-[#faf8f5]"
+          ? "border-[#2a2419] bg-[#2a2419] !text-[#faf8f5] visited:!text-[#faf8f5]"
           : disabled
             ? "pointer-events-none border-[rgba(42,36,25,0.08)] text-[rgba(42,36,25,0.35)]"
             : "border-[rgba(42,36,25,0.1)] bg-white text-[#2a2419]"
