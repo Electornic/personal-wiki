@@ -30,10 +30,7 @@ export async function GET(request: NextRequest) {
         await upsertProfileRow(adminSupabase, {
           id: user.id,
           email: user.email.toLowerCase(),
-          userName:
-            typeof user.user_metadata?.user_name === "string"
-              ? user.user_metadata.user_name
-              : null,
+          userName: null,
         });
       }
     }

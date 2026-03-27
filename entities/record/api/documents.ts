@@ -146,6 +146,7 @@ type DiscoverySortRow = {
   title: string;
   published_at: string | null;
   updated_at: string;
+  reaction_count: number | null;
 };
 
 function getTagNameFromRow(tagRow: RecordTagRow) {
@@ -433,10 +434,11 @@ async function listDiscoveryDocumentsPageFromIds(
   const publicSupabase = getPublicSupabaseClient();
   const serverSupabase = await getServerSupabaseClient();
   const supabase = serverSupabase ?? publicSupabase;
+  let reactionTotals: Map<string, number> | undefined;
 
   if (!supabase) {
     const documents = await listDocumentsByIds(uniqueRecordIds);
-    const reactionTotals = state.sort === "most-reacted"
+    reactionTotals = state.sort === "most-reacted"
       ? await listLikeTotalsForRecords(uniqueRecordIds)
       : undefined;
     const filteredDocuments = applyDiscoveryState(documents, state, reactionTotals);
@@ -444,24 +446,38 @@ async function listDiscoveryDocumentsPageFromIds(
     return paginateDocuments(filteredDocuments, page, pageSize);
   }
 
-  const { data: sortRows, error: sortRowsError } = await supabase
+  const sortRowsResult = await supabase
     .from("records")
-    .select("id, title, published_at, updated_at")
+    .select("id, title, published_at, updated_at, reaction_count")
     .in("id", uniqueRecordIds);
+  let sortRows = sortRowsResult.data;
 
-  if (sortRowsError || !sortRows) {
-    return emptyPaginatedDocuments(pageSize);
+  if (sortRowsResult.error || !sortRows) {
+    const legacySortResult = await supabase
+      .from("records")
+      .select("id, title, published_at, updated_at")
+      .in("id", uniqueRecordIds);
+
+    if (legacySortResult.error || !legacySortResult.data) {
+      return emptyPaginatedDocuments(pageSize);
+    }
+
+    sortRows = legacySortResult.data.map((row) => ({
+      ...row,
+      reaction_count: null,
+    }));
+    reactionTotals = state.sort === "most-reacted"
+      ? await listLikeTotalsForRecords(uniqueRecordIds)
+      : undefined;
   }
 
-  const reactionTotals = state.sort === "most-reacted"
-    ? await listLikeTotalsForRecords(uniqueRecordIds)
-    : undefined;
   const sortedRecordIds = sortDiscoveryDocuments(
     (sortRows as DiscoverySortRow[]).map((row) => ({
       id: row.id,
       title: row.title,
       publishedAt: row.published_at,
       updatedAt: row.updated_at,
+      reactionCount: row.reaction_count ?? 0,
     })),
     state,
     reactionTotals,

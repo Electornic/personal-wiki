@@ -33,7 +33,9 @@ type DiscoveryDocument = Pick<
 type DiscoverySortableDocument = Pick<
   WikiDocument,
   "id" | "title" | "publishedAt" | "updatedAt"
->;
+> & {
+  reactionCount?: number;
+};
 
 function getDocumentSortTime(document: Pick<WikiDocument, "publishedAt" | "updatedAt">) {
   return new Date(document.publishedAt ?? document.updatedAt).getTime();
@@ -144,7 +146,8 @@ export function sortDiscoveryDocuments<T extends DiscoverySortableDocument>(
 
     if (state.sort === "most-reacted") {
       const totalDelta =
-        (reactionTotals?.get(right.id) ?? 0) - (reactionTotals?.get(left.id) ?? 0);
+        (reactionTotals?.get(right.id) ?? right.reactionCount ?? 0) -
+        (reactionTotals?.get(left.id) ?? left.reactionCount ?? 0);
 
       if (totalDelta !== 0) {
         return totalDelta;

@@ -1,5 +1,6 @@
 import {
   getAdminSupabaseClient,
+  getPublicSupabaseClient,
   getServerSupabaseClient,
 } from "@/shared/api/supabase/server";
 import type { RecordReactionState } from "@/entities/record/model/types";
@@ -34,6 +35,22 @@ export async function getReactionStateForRecord(
 }
 
 export async function getLikeCountForRecord(recordId: string) {
+  const serverSupabase = await getServerSupabaseClient();
+  const publicSupabase = getPublicSupabaseClient();
+  const supabase = serverSupabase ?? publicSupabase;
+
+  if (supabase) {
+    const { data: record, error } = await supabase
+      .from("records")
+      .select("reaction_count")
+      .eq("id", recordId)
+      .maybeSingle();
+
+    if (!error && record && typeof record.reaction_count === "number") {
+      return record.reaction_count;
+    }
+  }
+
   const totals = await listLikeTotalsForRecords([recordId]);
   return totals.get(recordId) ?? 0;
 }

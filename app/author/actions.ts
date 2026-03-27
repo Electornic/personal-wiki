@@ -96,16 +96,12 @@ export async function signUpWithPassword(formData: FormData) {
     password,
     options: {
       emailRedirectTo: getAuthRedirectUrl(),
-      data: {
-        user_name: userName,
-      },
     },
   });
 
   if (error) {
     authRedirect(tab, {
       error: "signup-failed",
-      message: error.message,
     });
   }
 
@@ -155,7 +151,6 @@ export async function signInWithPassword(formData: FormData) {
   if (error) {
     authRedirect(tab, {
       error: "login-failed",
-      message: error.message,
     });
   }
 
@@ -163,10 +158,7 @@ export async function signInWithPassword(formData: FormData) {
     await upsertProfileRow(safeAdminSupabase, {
       id: data.user.id,
       email,
-      userName:
-        typeof data.user.user_metadata?.user_name === "string"
-          ? data.user.user_metadata.user_name
-          : null,
+      userName: null,
     });
   }
 

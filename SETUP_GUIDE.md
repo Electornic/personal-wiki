@@ -190,11 +190,21 @@ SQL은 아래 순서대로 실행합니다.
 - `record_bookmarks`, `record_likes` insert 정책을 public record 전용으로 tighten
 - 앱의 private record reaction 제거와 policy 계약을 맞춤
 
+### Step 17. v0.6.6 record reaction count
+
+실행 파일:
+- [supabase/migrations/20260327T120000Z_v0_6_6_record_reaction_count.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260327T120000Z_v0_6_6_record_reaction_count.sql)
+
+역할:
+- `records.reaction_count` 컬럼 추가 및 기존 like 수 backfill
+- `record_likes` insert/delete 시 reaction count를 유지하는 trigger 추가
+- public discovery의 `most-reacted` 정렬 비용을 줄이기 위한 index 추가
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열여섯 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열일곱 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

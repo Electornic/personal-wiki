@@ -121,7 +121,7 @@ PWA 메모:
 ## Supabase Setup
 
 1. Supabase 프로젝트를 생성합니다.
-2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 16개를 순서대로 실행합니다.
+2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 17개를 순서대로 실행합니다.
 3. Authentication에서 Email/Password 로그인을 활성화합니다.
 4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
 5. 위 환경변수를 `.env.local`에 채웁니다.
@@ -135,6 +135,7 @@ PWA 메모:
 - Step 11~14: runtime record schema hardening
 - Step 15: public record comments only
 - Step 16: public record reactions only
+- Step 17: record reaction count + `most-reacted` sort support
 
 ## Working With Data
 
