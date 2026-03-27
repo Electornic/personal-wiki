@@ -17,6 +17,7 @@ export async function proxy(request: NextRequest) {
   const env = getSupabasePublicEnv();
   const supabase = createServerClient(env.url!, env.anonKey!, {
     cookies: {
+      encode: "tokens-only",
       getAll() {
         return request.cookies.getAll();
       },

@@ -89,9 +89,16 @@ export async function upsertProfileRow(
   supabase: SupabaseClient,
   input: { id: string; email: string; userName?: string | null },
 ) {
-  const normalizedUserName = normalizeUserName(
-    input.userName || fallbackUserName(input.email),
-  );
+  let normalizedUserName: string;
+
+  if (input.userName) {
+    normalizedUserName = normalizeUserName(input.userName);
+  } else {
+    const existingProfile = await getProfileForUser(supabase, input.id);
+    normalizedUserName = normalizeUserName(
+      existingProfile?.user_name || fallbackUserName(input.email),
+    );
+  }
 
   const result = await supabase
     .from("profiles")

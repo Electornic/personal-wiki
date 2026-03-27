@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { toDocumentPreview } from "@/entities/record/model/content";
-import { applyDiscoveryState, isDefaultDiscoveryState } from "@/lib/wiki/discovery";
+import {
+  applyDiscoveryState,
+  isDefaultDiscoveryState,
+  sortDiscoveryDocuments,
+} from "@/lib/wiki/discovery";
 import { demoDocuments } from "@/lib/wiki/demo-data";
 
 describe("applyDiscoveryState", () => {
@@ -52,6 +56,30 @@ describe("applyDiscoveryState", () => {
 
     expect(sorted[0]?.id).toBe(demoDocuments[1].id);
     expect(sorted[1]?.id).toBe(demoDocuments[2].id);
+  });
+
+  it("sorts by reactionCount metadata when totals are not provided", () => {
+    const sorted = sortDiscoveryDocuments(
+      [
+        {
+          id: "a",
+          title: "A",
+          publishedAt: "2026-01-01",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+          reactionCount: 1,
+        },
+        {
+          id: "b",
+          title: "B",
+          publishedAt: "2026-01-02",
+          updatedAt: "2026-01-02T00:00:00.000Z",
+          reactionCount: 4,
+        },
+      ],
+      { sort: "most-reacted" },
+    );
+
+    expect(sorted.map((document) => document.id)).toEqual(["b", "a"]);
   });
 
   it("filters by source and tag together", () => {

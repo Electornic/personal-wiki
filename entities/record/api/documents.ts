@@ -146,6 +146,7 @@ type DiscoverySortRow = {
   title: string;
   published_at: string | null;
   updated_at: string;
+  reaction_count: number | null;
 };
 
 function getTagNameFromRow(tagRow: RecordTagRow) {
@@ -446,25 +447,22 @@ async function listDiscoveryDocumentsPageFromIds(
 
   const { data: sortRows, error: sortRowsError } = await supabase
     .from("records")
-    .select("id, title, published_at, updated_at")
+    .select("id, title, published_at, updated_at, reaction_count")
     .in("id", uniqueRecordIds);
 
   if (sortRowsError || !sortRows) {
     return emptyPaginatedDocuments(pageSize);
   }
 
-  const reactionTotals = state.sort === "most-reacted"
-    ? await listLikeTotalsForRecords(uniqueRecordIds)
-    : undefined;
   const sortedRecordIds = sortDiscoveryDocuments(
     (sortRows as DiscoverySortRow[]).map((row) => ({
       id: row.id,
       title: row.title,
       publishedAt: row.published_at,
       updatedAt: row.updated_at,
+      reactionCount: row.reaction_count ?? 0,
     })),
     state,
-    reactionTotals,
   ).map((row) => row.id);
   const paginated = paginateIds(sortedRecordIds, page, pageSize);
   const documents = await listDocumentsByIds(paginated.ids);

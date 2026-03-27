@@ -11,11 +11,10 @@ type PageProps = {
     error?: string;
     success?: string;
     tab?: string;
-    message?: string;
   }>;
 };
 
-function getAuthErrorMessage(error?: string, message?: string) {
+function getAuthErrorMessage(error?: string) {
   switch (error) {
     case "user-name-taken":
       return "That user name is already taken.";
@@ -27,10 +26,6 @@ function getAuthErrorMessage(error?: string, message?: string) {
     case "config":
       return "Authentication is not configured yet.";
     default:
-      if (message) {
-        return message;
-      }
-
       return error
         ? "Authentication failed. Check the form values and Supabase settings."
         : null;
@@ -44,10 +39,10 @@ export default async function AuthorSignInPage({ searchParams }: PageProps) {
     redirect("/author");
   }
 
-  const { error, success, tab, message } = await searchParams;
+  const { error, success, tab } = await searchParams;
   const activeTab = tab === "signup" ? "signup" : "signin";
   const isSignUp = activeTab === "signup";
-  const errorMessage = getAuthErrorMessage(error, message);
+  const errorMessage = getAuthErrorMessage(error);
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[#faf8f5] px-4 py-8 md:px-0 md:py-16">
