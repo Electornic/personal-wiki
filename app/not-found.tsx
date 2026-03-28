@@ -3,7 +3,6 @@ import { ErrorStateShell } from "@/components/error-state-shell";
 export default function NotFound() {
   return (
     <ErrorStateShell
-      badge="404"
       title="This page could not be found"
       description="The link may be outdated, the topic may not exist yet, or the document is no longer available."
       actions={[

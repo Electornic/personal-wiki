@@ -16,7 +16,6 @@ type ErrorStateAction =
     };
 
 type ErrorStateShellProps = {
-  badge: string;
   title: string;
   description: string;
   actions: ErrorStateAction[];
@@ -47,7 +46,6 @@ function ShellAction({ action }: { action: ErrorStateAction }) {
 }
 
 export function ErrorStateShell({
-  badge,
   title,
   description,
   actions,
@@ -72,11 +70,7 @@ export function ErrorStateShell({
         />
 
         <div className="relative">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.9)] text-[20px] text-[#2a2419] shadow-[0_8px_24px_rgba(42,36,25,0.08)]">
-            {badge}
-          </div>
-
-          <h1 className="mx-auto mt-6 max-w-[620px] text-[34px] leading-[40px] font-semibold tracking-[-0.03em] text-[#2a2419] md:text-[42px] md:leading-[48px]">
+          <h1 className="mx-auto max-w-[620px] text-[34px] leading-[40px] font-semibold tracking-[-0.03em] text-[#2a2419] md:text-[42px] md:leading-[48px]">
             {title}
           </h1>
 

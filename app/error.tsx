@@ -16,7 +16,6 @@ export default function Error({
 
   return (
     <ErrorStateShell
-      badge="!"
       title="Something went wrong"
       description="Try loading the page again. If the issue continues, return to the library and continue from there."
       actions={[

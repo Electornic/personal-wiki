@@ -18,7 +18,6 @@ export default function GlobalError({
     <html lang="en">
       <body className="bg-[#faf8f5] text-[#2a2419]">
         <ErrorStateShell
-          badge="!"
           title="The app hit an unexpected problem"
           description="Reload the page or try again. If the issue persists, return to the home page and restart the flow."
           actions={[
