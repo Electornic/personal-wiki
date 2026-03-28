@@ -5,6 +5,7 @@ import { formatTopicTitle, normalizeTopic } from "@/app/topics/[topic]/_lib/topi
 import { listPublicDocuments } from "@/entities/record/api/documents";
 import { formatDisplayDate, getExcerpt } from "@/entities/record/model/content";
 import { TopicPill } from "@/entities/tag/ui/topic-pill";
+import { decodeRouteSegment, encodeRouteSegment } from "@/lib/wiki/routes";
 
 type PageProps = {
   params: Promise<{ topic: string }>;
@@ -49,7 +50,7 @@ function BookIcon() {
 
 export default async function TopicHubPage({ params }: PageProps) {
   const { topic } = await params;
-  const decodedTopic = topic;
+  const decodedTopic = decodeRouteSegment(topic);
   const normalizedTopic = normalizeTopic(decodedTopic);
 
   const publicDocuments = await listPublicDocuments();
@@ -143,7 +144,7 @@ export default async function TopicHubPage({ params }: PageProps) {
               {relatedTopics.map((tag) => (
                 <Link
                   key={tag}
-                  href={`/topics/${encodeURIComponent(tag)}`}
+                  href={`/topics/${encodeRouteSegment(tag)}`}
                   className="inline-flex h-[38px] items-center rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.4)] px-4 text-[14px] leading-5 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.6)]"
                 >
                   {tag}
