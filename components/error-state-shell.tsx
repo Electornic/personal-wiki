@@ -28,7 +28,7 @@ function ShellAction({ action }: { action: ErrorStateAction }) {
   const tone = action.tone ?? "secondary";
   const className =
     tone === "primary"
-      ? "inline-flex h-[44px] items-center justify-center rounded-[4px] bg-[#2a2419] px-5 text-[14px] leading-5 font-medium text-[#faf8f5]"
+      ? "inline-flex h-[44px] items-center justify-center rounded-[4px] bg-[#2a2419] px-5 text-[14px] leading-5 font-medium !text-[#faf8f5] visited:!text-[#faf8f5]"
       : "inline-flex h-[44px] items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-5 text-[14px] leading-5 font-medium text-[#2a2419]";
 
   if (action.type === "link") {
