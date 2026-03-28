@@ -9,3 +9,7 @@ export function decodeRouteSegment(segment: string) {
 export function encodeRouteSegment(value: string) {
   return encodeURIComponent(value.trim());
 }
+
+export function buildTopicHref(topic: string) {
+  return `/topics/${encodeRouteSegment(topic)}`;
+}

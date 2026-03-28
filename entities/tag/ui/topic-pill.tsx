@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { encodeRouteSegment } from "@/lib/wiki/routes";
+import { buildTopicHref } from "@/lib/wiki/routes";
 
 type TopicPillProps = {
   label: string;
@@ -21,7 +21,7 @@ function TopicPillInner({ label, interactive }: { label: string; interactive: bo
 
 export function TopicPill({
   label,
-  href = `/topics/${encodeRouteSegment(label)}`,
+  href = buildTopicHref(label),
   interactive = true,
 }: TopicPillProps) {
   if (!interactive) {
