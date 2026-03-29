@@ -132,7 +132,7 @@ const reflectionTemplate = `## Questions to push further
 const markdownTips = [
   "Headings shape the reading flow.",
   "Preview uses the same markdown renderer as the public page.",
-  "Images use standard markdown syntax with an alt label and URL.",
+  "Images upload into markdown with a storage token and render through a secure route.",
   "Short, explicit tags keep recommendation quality stable.",
 ];
 
@@ -149,6 +149,10 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   );
   const [bookTitle, setBookTitle] = useState(document?.bookTitle ?? "");
   const [tags, setTags] = useState(document?.tags.join(", ") ?? "");
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const wordCount = contents.trim() ? contents.trim().split(/\s+/).length : 0;
   const lineCount = contents ? contents.split(/\r?\n/).length : 0;
@@ -281,6 +285,101 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
         nextSelectionEnd: selectionStart + 2 + selected.length,
       };
     });
+  }
+
+  function insertUploadedImage(alt: string, token: string) {
+    updateContentsFromTextarea((currentValue, selectionStart, selectionEnd) => {
+      const inserted = `![${alt}](${token})`;
+      const prefix =
+        currentValue.length > 0 && !currentValue.slice(0, selectionStart).endsWith("\n\n")
+          ? "\n\n"
+          : "";
+      const suffix =
+        currentValue.length > selectionEnd && !currentValue.slice(selectionEnd).startsWith("\n\n")
+          ? "\n\n"
+          : "";
+      const nextValue =
+        currentValue.slice(0, selectionStart) +
+        prefix +
+        inserted +
+        suffix +
+        currentValue.slice(selectionEnd);
+      const start = selectionStart + prefix.length;
+
+      return {
+        nextValue,
+        nextSelectionStart: start,
+        nextSelectionEnd: start + inserted.length,
+      };
+    });
+  }
+
+  async function uploadImages(files: File[]) {
+    if (files.length === 0) {
+      return;
+    }
+
+    setUploadError(null);
+    setIsUploadingImage(true);
+
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/author/images", {
+          method: "POST",
+          body: formData,
+        });
+
+        const payload = await response.json() as {
+          error?: string;
+          token?: string;
+          alt?: string;
+        };
+
+        if (!response.ok || !payload.token) {
+          throw new Error(payload.error ?? "Image upload failed.");
+        }
+
+        insertUploadedImage(payload.alt ?? "Uploaded image", payload.token);
+      }
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Image upload failed.");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
+
+  async function handleFileInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    await uploadImages(files);
+    event.currentTarget.value = "";
+  }
+
+  async function handlePaste(event: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const files = Array.from(event.clipboardData.items)
+      .filter((item) => item.kind === "file")
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => Boolean(file));
+
+    if (files.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    await uploadImages(files);
+  }
+
+  async function handleDrop(event: React.DragEvent<HTMLTextAreaElement>) {
+    event.preventDefault();
+    setIsDraggingImage(false);
+
+    const files = Array.from(event.dataTransfer.files).filter((file) =>
+      file.type.startsWith("image/"),
+    );
+
+    await uploadImages(files);
   }
 
   function insertTemplate(template: string) {
@@ -562,23 +661,55 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 >
                   Image
                 </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                >
+                  {isUploadingImage ? "Uploading..." : "Upload"}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleFileInputChange}
+                />
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] leading-4 text-[#6b6354]">
               <span>{wordCount} words</span>
               <span>{lineCount} lines</span>
-              <span>Markdown shortcuts stay in plain text until preview or publish.</span>
+              <span>Drag, drop, or paste images directly into the editor.</span>
             </div>
             <textarea
               ref={textareaRef}
               name="contents"
               value={contents}
               onChange={(event) => setContents(event.target.value)}
+              onPaste={handlePaste}
+              onDragOver={(event) => {
+                event.preventDefault();
+                if (!isDraggingImage) {
+                  setIsDraggingImage(true);
+                }
+              }}
+              onDragLeave={() => setIsDraggingImage(false)}
+              onDrop={handleDrop}
               rows={18}
               placeholder="Begin writing your thoughts..."
-              className="min-h-[600px] rounded-[4px] border border-transparent bg-white px-3 py-2 text-[18px] leading-[29.25px] text-[#2a2419] placeholder:text-[#6b6354]"
+              className={`min-h-[600px] rounded-[4px] border px-3 py-2 text-[18px] leading-[29.25px] text-[#2a2419] placeholder:text-[#6b6354] ${
+                isDraggingImage
+                  ? "border-dashed border-[#2a2419] bg-[rgba(232,227,219,0.28)]"
+                  : "border-transparent bg-white"
+              }`}
               required
             />
+            {uploadError ? (
+              <p className="rounded-[6px] border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] leading-5 text-rose-900">
+                {uploadError}
+              </p>
+            ) : null}
           </div>
         ) : (
           <div className="space-y-3">
