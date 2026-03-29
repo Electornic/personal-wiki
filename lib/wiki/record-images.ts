@@ -7,6 +7,7 @@ export const RECORD_IMAGE_ALLOWED_MIME_TYPES = [
   "image/png",
   "image/webp",
 ] as const;
+export const RECORD_IMAGE_MAX_TOTAL_BYTES = 20 * 1024 * 1024;
 
 const STORAGE_TOKEN_PREFIX = `storage://${RECORD_IMAGE_BUCKET}/`;
 const LOCAL_IMAGE_TOKEN_PREFIX = "local-image://";

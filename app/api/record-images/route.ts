@@ -57,10 +57,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: signed.error?.message ?? "Unable to load image." }, { status: 500 });
   }
 
-  return NextResponse.redirect(signed.data.signedUrl, {
+  const redirectResponse = NextResponse.redirect(signed.data.signedUrl, {
     status: 307,
-    headers: {
-      "Cache-Control": "private, max-age=300, stale-while-revalidate=60",
-    },
   });
+
+  response.cookies.getAll().forEach((cookie) => {
+    redirectResponse.cookies.set(cookie);
+  });
+
+  redirectResponse.headers.set("Cache-Control", "private, max-age=300, stale-while-revalidate=60");
+
+  return redirectResponse;
 }

@@ -13,6 +13,7 @@ import {
   getRecordImageAltText,
   isRecordImageMimeType,
   RECORD_IMAGE_MAX_BYTES,
+  RECORD_IMAGE_MAX_TOTAL_BYTES,
 } from "@/lib/wiki/record-images";
 
 type AuthorDocumentFormProps = {
@@ -331,9 +332,15 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     });
   }
 
-  function insertStagedImage(alt: string, token: string) {
+  function insertStagedImages(items: Array<{ alt: string; token: string }>) {
+    if (items.length === 0) {
+      return;
+    }
+
     updateContentsFromTextarea((currentValue, selectionStart, selectionEnd) => {
-      const inserted = `![${alt}](${token})`;
+      const inserted = items
+        .map((item) => `![${item.alt}](${item.token})`)
+        .join("\n\n");
       const prefix =
         currentValue.length > 0 && !currentValue.slice(0, selectionStart).endsWith("\n\n")
           ? "\n\n"
@@ -367,6 +374,14 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
 
     try {
       const nextImages: StagedImage[] = [];
+      const nextInsertions: Array<{ alt: string; token: string }> = [];
+
+      const stagedTotalBytes = stagedImages.reduce((total, image) => total + image.file.size, 0);
+      const incomingTotalBytes = files.reduce((total, file) => total + file.size, 0);
+
+      if (stagedTotalBytes + incomingTotalBytes > RECORD_IMAGE_MAX_TOTAL_BYTES) {
+        throw new Error("Total staged image size must stay within 20MB.");
+      }
 
       for (const file of files) {
         if (!isRecordImageMimeType(file.type)) {
@@ -392,10 +407,13 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
           file: stagedFile,
           previewUrl,
         });
-
-        insertStagedImage(getRecordImageAltText(file.name), token);
+        nextInsertions.push({
+          alt: getRecordImageAltText(file.name),
+          token,
+        });
       }
 
+      insertStagedImages(nextInsertions);
       setStagedImages((current) => [...current, ...nextImages]);
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "Image staging failed.");
