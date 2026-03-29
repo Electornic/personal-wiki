@@ -38,6 +38,7 @@ const RECORD_DETAIL_SELECT = [
   "visibility",
   "author_name",
   "published_at",
+  "reaction_count",
   "created_at",
   "updated_at",
 ].join(", ");
@@ -190,6 +191,7 @@ function mapRecordToDocument(row: RecordRow, tags: string[]): WikiDocument {
     writerName: String(row.author_name ?? "unknown"),
     publishedAt: row.published_at ?? null,
     tags,
+    reactionCount: row.reaction_count ?? 0,
     createdAt: String(row.created_at ?? row.updated_at),
     updatedAt: String(row.updated_at),
   } satisfies WikiDocument;
@@ -308,6 +310,17 @@ async function fetchTagRowsForRecordIds(
 
   return data as RecordTagRow[];
 }
+
+const fetchTagRowsForRecordId = cache(async function fetchTagRowsForRecordId(
+  recordId: string,
+  useServerClient = false,
+) {
+  if (!recordId) {
+    return [] as RecordTagRow[];
+  }
+
+  return fetchTagRowsForRecordIds([recordId], useServerClient);
+});
 
 const fetchRecordsFromSupabase = cache(async function fetchRecordsFromSupabase() {
   const supabase = getPublicSupabaseClient();
@@ -1052,7 +1065,7 @@ export const getPublicDocumentBySlug = cache(async function getPublicDocumentByS
   }
 
   const typedRow = row as unknown as RecordRow;
-  const tagRows = await fetchTagRowsForRecordIds([String(typedRow.id)]);
+  const tagRows = await fetchTagRowsForRecordId(String(typedRow.id));
   return (await mapRowsToDocuments([typedRow], tagRows))[0] ?? null;
 });
 
@@ -1083,7 +1096,7 @@ export const getReadableDocumentBySlug = cache(async function getReadableDocumen
   }
 
   const typedRow = row as unknown as RecordRow;
-  const tagRows = await fetchTagRowsForRecordIds([String(typedRow.id)], true);
+  const tagRows = await fetchTagRowsForRecordId(String(typedRow.id), true);
   return (await mapRowsToDocuments([typedRow], tagRows))[0] ?? null;
 });
 
@@ -1117,7 +1130,7 @@ export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
   }
 
   const typedRow = row as unknown as RecordRow;
-  const tagRows = await fetchTagRowsForRecordIds([String(typedRow.id)], true);
+  const tagRows = await fetchTagRowsForRecordId(String(typedRow.id), true);
   return (await mapRowsToDocuments([typedRow], tagRows))[0] ?? null;
 });
 
@@ -1193,7 +1206,7 @@ export async function getPublicDiscoveryView(
 }
 
 export async function listRelatedDocumentsForDocument(
-  document: WikiDocument,
+  document: Pick<WikiDocument, "id" | "tags" | "visibility">,
   limit = 3,
 ) {
   if (!hasSupabaseEnv()) {
@@ -1212,7 +1225,7 @@ export async function listRelatedDocumentsForDocument(
     return [];
   }
 
-  const sourceTagRows = await fetchTagRowsForRecordIds([document.id], useServerClient);
+  const sourceTagRows = await fetchTagRowsForRecordId(document.id, useServerClient);
   const sourceTagIds = [...new Set(sourceTagRows.map((row) => row.tag_id).filter(Boolean))];
 
   if (sourceTagIds.length === 0) {

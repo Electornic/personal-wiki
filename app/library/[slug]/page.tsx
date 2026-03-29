@@ -173,6 +173,7 @@ export default async function LibraryDocumentPage({ params, searchParams }: Page
                 documentId={document.id}
                 recordSlug={document.slug}
                 visibility={document.visibility}
+                initialLikeCount={document.reactionCount ?? 0}
               />
             </Suspense>
           ) : null}
@@ -200,7 +201,7 @@ async function RelatedDocumentsSection({
   document: NonNullable<Awaited<ReturnType<typeof getReadableDocumentBySlug>>>;
 }) {
   const relatedDocuments = document.visibility === "public"
-    ? await getCachedRelatedDocuments(document.slug)
+    ? await getCachedRelatedDocuments(document.id, document.slug, document.tags)
     : await listRelatedDocumentsForDocument(document, 2);
 
   return (
@@ -341,7 +342,9 @@ async function getCachedPublicDocument(slug: string) {
 }
 
 async function getCachedRelatedDocuments(
+  documentId: string,
   slug: string,
+  tags: string[],
 ) {
   "use cache";
 
@@ -349,13 +352,14 @@ async function getCachedRelatedDocuments(
   cacheTag("public-discovery");
   cacheTag(`record:${slug}`);
 
-  const document = await getPublicDocumentBySlug(slug);
-
-  if (!document) {
-    return [];
-  }
-
-  return listRelatedDocumentsForDocument(document, 2);
+  return listRelatedDocumentsForDocument(
+    {
+      id: documentId,
+      tags,
+      visibility: "public",
+    } as const,
+    2,
+  );
 }
 
 function RecordReactionsFallback() {

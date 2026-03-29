@@ -19,6 +19,7 @@ export type WikiDocument = {
   writerName: string;
   publishedAt?: string | null;
   tags: string[];
+  reactionCount?: number;
   createdAt: string;
   updatedAt: string;
 };

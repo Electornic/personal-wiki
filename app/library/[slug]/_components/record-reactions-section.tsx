@@ -1,31 +1,27 @@
 import type { DocumentVisibility } from "@/entities/record/model/types";
-import {
-  getLikeCountForRecord,
-  getReactionStateForRecord,
-} from "@/entities/reaction/api/reactions";
+import { getReactionStateForRecord } from "@/entities/reaction/api/reactions";
 import { RecordReactions } from "@/components/record-reactions";
-import { getAuthorAccess } from "@/lib/wiki/auth";
+import { getViewerAccess } from "@/lib/wiki/auth";
 
 type RecordReactionsSectionProps = {
   documentId: string;
   recordSlug: string;
   visibility: DocumentVisibility;
+  initialLikeCount: number;
 };
 
 export async function RecordReactionsSection({
   documentId,
   recordSlug,
   visibility,
+  initialLikeCount,
 }: RecordReactionsSectionProps) {
   if (visibility !== "public") {
     return null;
   }
 
-  const access = await getAuthorAccess();
-  const [reactionState, likeCount] = await Promise.all([
-    getReactionStateForRecord(documentId, access.userId),
-    getLikeCountForRecord(documentId),
-  ]);
+  const access = await getViewerAccess();
+  const reactionState = await getReactionStateForRecord(documentId, access.userId);
 
   return (
     <section className="mt-12 border-b border-t border-[rgba(42,36,25,0.1)] py-6">
@@ -33,7 +29,7 @@ export async function RecordReactionsSection({
         recordId={documentId}
         recordSlug={recordSlug}
         state={reactionState}
-        likeCount={likeCount}
+        likeCount={initialLikeCount}
         canReact={access.isAuthenticated}
       />
     </section>
