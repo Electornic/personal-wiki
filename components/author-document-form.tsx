@@ -1,15 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { saveDocument } from "@/app/author/actions";
 import type { DocumentFormState, WikiDocument } from "@/entities/record/model/types";
 import { MarkdownContent } from "@/entities/record/ui/markdown-content";
+import {
+  buildLocalImageToken,
+  buildStagedImageFileName,
+  getRecordImageAltText,
+  isRecordImageMimeType,
+  RECORD_IMAGE_MAX_BYTES,
+} from "@/lib/wiki/record-images";
 
 type AuthorDocumentFormProps = {
   document?: WikiDocument;
+};
+
+type StagedImage = {
+  id: string;
+  token: string;
+  file: File;
+  previewUrl: string;
 };
 
 function SubmitButton({ visibility }: { visibility: "public" | "private" }) {
@@ -132,7 +146,7 @@ const reflectionTemplate = `## Questions to push further
 const markdownTips = [
   "Headings shape the reading flow.",
   "Preview uses the same markdown renderer as the public page.",
-  "Images upload into markdown with a storage token and render through a secure route.",
+  "Images stay local until save, then upload into private storage.",
   "Short, explicit tags keep recommendation quality stable.",
 ];
 
@@ -150,12 +164,42 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   const [bookTitle, setBookTitle] = useState(document?.bookTitle ?? "");
   const [tags, setTags] = useState(document?.tags.join(", ") ?? "");
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [stagedImages, setStagedImages] = useState<StagedImage[]>([]);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const stagedFileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const stagedImagesRef = useRef<StagedImage[]>([]);
   const wordCount = contents.trim() ? contents.trim().split(/\s+/).length : 0;
   const lineCount = contents ? contents.split(/\r?\n/).length : 0;
+
+  useEffect(() => {
+    stagedImagesRef.current = stagedImages;
+  }, [stagedImages]);
+
+  useEffect(() => {
+    const stagedInput = stagedFileInputRef.current;
+
+    if (!stagedInput) {
+      return;
+    }
+
+    const transfer = new DataTransfer();
+
+    stagedImages.forEach((image) => {
+      transfer.items.add(image.file);
+    });
+
+    stagedInput.files = transfer.files;
+  }, [stagedImages]);
+
+  useEffect(() => {
+    return () => {
+      stagedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl);
+      });
+    };
+  }, []);
 
   function updateContentsFromTextarea(
     updater: (currentValue: string, selectionStart: number, selectionEnd: number) => {
@@ -287,7 +331,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     });
   }
 
-  function insertUploadedImage(alt: string, token: string) {
+  function insertStagedImage(alt: string, token: string) {
     updateContentsFromTextarea((currentValue, selectionStart, selectionEnd) => {
       const inserted = `![${alt}](${token})`;
       const prefix =
@@ -314,50 +358,57 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     });
   }
 
-  async function uploadImages(files: File[]) {
+  function stageImages(files: File[]) {
     if (files.length === 0) {
       return;
     }
 
     setUploadError(null);
-    setIsUploadingImage(true);
 
     try {
+      const nextImages: StagedImage[] = [];
+
       for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch("/api/author/images", {
-          method: "POST",
-          body: formData,
-        });
-
-        const payload = await response.json() as {
-          error?: string;
-          token?: string;
-          alt?: string;
-        };
-
-        if (!response.ok || !payload.token) {
-          throw new Error(payload.error ?? "Image upload failed.");
+        if (!isRecordImageMimeType(file.type)) {
+          throw new Error("Only JPG, PNG, and WebP images are supported.");
         }
 
-        insertUploadedImage(payload.alt ?? "Uploaded image", payload.token);
+        if (file.size > RECORD_IMAGE_MAX_BYTES) {
+          throw new Error("Images must be 10MB or smaller.");
+        }
+
+        const id = crypto.randomUUID();
+        const token = buildLocalImageToken(id);
+        const stagedFile = new File(
+          [file],
+          buildStagedImageFileName(id, file.type),
+          { type: file.type },
+        );
+        const previewUrl = URL.createObjectURL(file);
+
+        nextImages.push({
+          id,
+          token,
+          file: stagedFile,
+          previewUrl,
+        });
+
+        insertStagedImage(getRecordImageAltText(file.name), token);
       }
+
+      setStagedImages((current) => [...current, ...nextImages]);
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : "Image upload failed.");
-    } finally {
-      setIsUploadingImage(false);
+      setUploadError(error instanceof Error ? error.message : "Image staging failed.");
     }
   }
 
-  async function handleFileInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
-    await uploadImages(files);
+    stageImages(files);
     event.currentTarget.value = "";
   }
 
-  async function handlePaste(event: React.ClipboardEvent<HTMLTextAreaElement>) {
+  function handlePaste(event: React.ClipboardEvent<HTMLTextAreaElement>) {
     const files = Array.from(event.clipboardData.items)
       .filter((item) => item.kind === "file")
       .map((item) => item.getAsFile())
@@ -368,10 +419,10 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     }
 
     event.preventDefault();
-    await uploadImages(files);
+    stageImages(files);
   }
 
-  async function handleDrop(event: React.DragEvent<HTMLTextAreaElement>) {
+  function handleDrop(event: React.DragEvent<HTMLTextAreaElement>) {
     event.preventDefault();
     setIsDraggingImage(false);
 
@@ -379,7 +430,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
       file.type.startsWith("image/"),
     );
 
-    await uploadImages(files);
+    stageImages(files);
   }
 
   function insertTemplate(template: string) {
@@ -400,6 +451,22 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     <form action={formAction} className="grid gap-8">
       <input type="hidden" name="documentId" defaultValue={document?.id ?? ""} />
       <input type="hidden" name="visibility" value={visibility} />
+      <input
+        type="hidden"
+        name="stagedImageIds"
+        value={JSON.stringify(stagedImages.map((image) => image.id))}
+      />
+      {stagedImages.length > 0 ? (
+        <input
+          ref={stagedFileInputRef}
+          type="file"
+          name="stagedImages"
+          multiple
+          className="hidden"
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+      ) : null}
 
       <div className="-mt-8 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.95)] py-3 backdrop-blur-sm">
         <div className="mx-auto flex w-full items-center justify-between">
@@ -666,7 +733,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   onClick={() => fileInputRef.current?.click()}
                   className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
                 >
-                  {isUploadingImage ? "Uploading..." : "Upload"}
+                  Upload
                 </button>
                 <input
                   ref={fileInputRef}
@@ -680,6 +747,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] leading-4 text-[#6b6354]">
               <span>{wordCount} words</span>
               <span>{lineCount} lines</span>
+              <span>{stagedImages.length} staged image{stagedImages.length === 1 ? "" : "s"}</span>
               <span>Drag, drop, or paste images directly into the editor.</span>
             </div>
             <textarea
@@ -715,7 +783,12 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
           <div className="space-y-3">
             <div className="min-h-[600px] rounded-[4px] border border-transparent bg-white px-6 py-6">
               {contents ? (
-                <MarkdownContent contents={contents} />
+                <MarkdownContent
+                  contents={contents}
+                  imageUrlOverrides={Object.fromEntries(
+                    stagedImages.map((image) => [image.token, image.previewUrl]),
+                  )}
+                />
               ) : (
                 <p className="text-[18px] leading-[29.25px] text-[#6b6354]">
                   Nothing to preview yet.

@@ -10,6 +10,16 @@ export async function proxy(request: NextRequest) {
     request,
   });
 
+  const isServerActionRequest = request.headers.has("next-action");
+  const isMutationRequest =
+    request.method !== "GET" && request.method !== "HEAD";
+
+  // Server Action multipart requests can contain non-ASCII form content.
+  // Bypass proxy/session refresh on mutations to avoid request cloning issues.
+  if (isServerActionRequest || isMutationRequest) {
+    return response;
+  }
+
   if (!hasSupabaseEnv()) {
     return response;
   }

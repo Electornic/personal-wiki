@@ -10,6 +10,7 @@ import {
   toggleBookmarkForRecord,
   toggleLikeForRecord,
 } from "@/entities/reaction/api/reactions";
+import { buildLibraryHref, buildRecordCacheTag } from "@/lib/wiki/routes";
 
 export async function createCommentAction(
   _previousState: { error?: string },
@@ -39,8 +40,8 @@ export async function createCommentAction(
 
   revalidatePath("/");
   if (recordSlug) {
-    revalidatePath(`/library/${recordSlug}`);
-    revalidateTag(`record:${recordSlug}`, "max");
+    revalidatePath(buildLibraryHref(recordSlug));
+    revalidateTag(buildRecordCacheTag(recordSlug), "max");
   }
   return {};
 }
@@ -70,8 +71,8 @@ export async function toggleBookmarkAction(formData: FormData) {
     }
 
     if (error instanceof ReactionAccessError) {
-      if (recordSlug) {
-        redirect(`/library/${recordSlug}`);
+    if (recordSlug) {
+        redirect(buildLibraryHref(recordSlug));
       }
 
       redirect("/");
@@ -83,8 +84,8 @@ export async function toggleBookmarkAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/me/library");
   if (recordSlug) {
-    revalidatePath(`/library/${recordSlug}`);
-    revalidateTag(`record:${recordSlug}`, "max");
+    revalidatePath(buildLibraryHref(recordSlug));
+    revalidateTag(buildRecordCacheTag(recordSlug), "max");
   }
 }
 
@@ -99,8 +100,8 @@ export async function toggleLikeAction(formData: FormData) {
     }
 
     if (error instanceof ReactionAccessError) {
-      if (recordSlug) {
-        redirect(`/library/${recordSlug}`);
+    if (recordSlug) {
+        redirect(buildLibraryHref(recordSlug));
       }
 
       redirect("/");
@@ -113,7 +114,7 @@ export async function toggleLikeAction(formData: FormData) {
   revalidatePath("/me/library");
   revalidateTag("public-discovery", "max");
   if (recordSlug) {
-    revalidatePath(`/library/${recordSlug}`);
-    revalidateTag(`record:${recordSlug}`, "max");
+    revalidatePath(buildLibraryHref(recordSlug));
+    revalidateTag(buildRecordCacheTag(recordSlug), "max");
   }
 }

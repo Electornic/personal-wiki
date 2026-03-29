@@ -15,8 +15,14 @@ import {
 } from "@/lib/wiki/discovery";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 import {
+  buildRecordImagePath,
+  buildRecordImageToken,
+  extractLocalImageTokens,
   getRemovedRecordImageTokens,
+  isRecordImageMimeType,
+  parseLocalImageToken,
   parseRecordImageToken,
+  RECORD_IMAGE_MAX_BYTES,
 } from "@/lib/wiki/record-images";
 import { decodeRouteSegment } from "@/lib/wiki/routes";
 import { createSlug } from "@/lib/wiki/slugs";
@@ -209,7 +215,7 @@ function mapRecordToListItem(
     id: String(row.id),
     slug: String(row.slug),
     title: String(row.title),
-    excerpt: String(row.excerpt ?? "").trim() || getExcerpt(String(row.contents ?? row.title)),
+    excerpt: getExcerpt(String(row.excerpt ?? row.contents ?? row.title)),
     sourceType: row.source_type,
     bookTitle: row.book_title ?? (row.source_type === "book" ? String(row.title) : null),
     writerName: String(row.author_name ?? "unknown"),
@@ -1326,6 +1332,10 @@ type UpsertDocumentInput = {
   bookTitle?: string | null;
   visibility: DocumentVisibility;
   tags: string[];
+  stagedImages?: {
+    ids: string[];
+    files: File[];
+  };
 };
 
 function fallbackAuthorName(email?: string | null) {
@@ -1412,6 +1422,76 @@ async function removeUnusedRecordImages(
   await adminSupabase.storage.from("record-images").remove(removablePaths);
 }
 
+async function uploadStagedRecordImages(
+  contents: string,
+  userId: string,
+  adminSupabase: NonNullable<ReturnType<typeof getAdminSupabaseClient>>,
+  stagedImages?: {
+    ids: string[];
+    files: File[];
+  },
+) {
+  const localTokens = extractLocalImageTokens(contents);
+
+  if (localTokens.length === 0) {
+    return contents;
+  }
+
+  if (!stagedImages || stagedImages.ids.length === 0 || stagedImages.files.length === 0) {
+    throw new Error("Referenced local images are missing from the save payload.");
+  }
+
+  const fileMap = new Map<string, File>();
+
+  stagedImages.ids.forEach((id, index) => {
+    const file = stagedImages.files[index];
+
+    if (id && file) {
+      fileMap.set(id, file);
+    }
+  });
+
+  let nextContents = contents;
+
+  for (const token of localTokens) {
+    const parsed = parseLocalImageToken(token);
+
+    if (!parsed) {
+      continue;
+    }
+
+    const file = fileMap.get(parsed.id);
+
+    if (!file) {
+      throw new Error("A staged image could not be found while saving the document.");
+    }
+
+    if (!isRecordImageMimeType(file.type)) {
+      throw new Error("Only JPG, PNG, and WebP images are supported.");
+    }
+
+    if (file.size > RECORD_IMAGE_MAX_BYTES) {
+      throw new Error("Images must be 10MB or smaller.");
+    }
+
+    const path = buildRecordImagePath(userId, file.type);
+    const uploadResult = await adminSupabase.storage
+      .from("record-images")
+      .upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (uploadResult.error) {
+      throw new Error(uploadResult.error.message);
+    }
+
+    nextContents = nextContents.replaceAll(token, buildRecordImageToken(path));
+  }
+
+  return nextContents;
+}
+
 export async function upsertDocument(input: UpsertDocumentInput) {
   const supabase = await getServerSupabaseClient();
   const adminSupabase = getAdminSupabaseClient();
@@ -1439,9 +1519,27 @@ export async function upsertDocument(input: UpsertDocumentInput) {
       ).data?.contents ?? ""
     : "";
 
+  if (!adminSupabase) {
+    throw new Error("Supabase admin configuration is missing.");
+  }
+
+  const resolvedContents = await uploadStagedRecordImages(
+    input.contents,
+    user.id,
+    adminSupabase,
+    input.stagedImages,
+  );
+
   const authorName = await resolveAuthorNameForUser(user, supabase);
   const payload = {
-    ...buildRecordPayload(input, user, authorName),
+    ...buildRecordPayload(
+      {
+        ...input,
+        contents: resolvedContents,
+      },
+      user,
+      authorName,
+    ),
   };
 
   const { data: savedDocument, error: saveDocumentError } = input.documentId
@@ -1503,7 +1601,7 @@ export async function upsertDocument(input: UpsertDocumentInput) {
 
   if (adminSupabase) {
     await removeUnusedRecordImages(
-      getRemovedRecordImageTokens(previousContents, input.contents),
+      getRemovedRecordImageTokens(previousContents, resolvedContents),
       adminSupabase,
       documentId,
     );

@@ -1,4 +1,4 @@
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import {
@@ -9,9 +9,14 @@ import {
 type MarkdownContentProps = {
   contents: string;
   className?: string;
+  imageUrlOverrides?: Record<string, string>;
 };
 
-export function MarkdownContent({ contents, className }: MarkdownContentProps) {
+export function MarkdownContent({
+  contents,
+  className,
+  imageUrlOverrides,
+}: MarkdownContentProps) {
   return (
     <div
       className={[
@@ -21,6 +26,13 @@ export function MarkdownContent({ contents, className }: MarkdownContentProps) {
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        urlTransform={(url) => {
+          if (url.startsWith("storage://") || url.startsWith("local-image://")) {
+            return url;
+          }
+
+          return defaultUrlTransform(url);
+        }}
         components={{
           h1: ({ children }) => (
             <h1 className="mt-0 mb-4 text-[30px] leading-9 font-semibold tracking-[-0.3px] text-[#2a2419]">
@@ -71,20 +83,31 @@ export function MarkdownContent({ contents, className }: MarkdownContentProps) {
             </a>
           ),
           img: ({ src, alt }) => (
-            // Plain img keeps markdown image support simple across public and preview surfaces.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={
-                typeof src === "string" && isRecordImageToken(src)
-                  ? buildRecordImageProxyUrl(src)
+            (() => {
+              const resolvedSrc =
+                typeof src === "string" && imageUrlOverrides?.[src]
+                  ? imageUrlOverrides[src]
+                  : typeof src === "string" && isRecordImageToken(src)
+                    ? buildRecordImageProxyUrl(src)
                   : typeof src === "string"
                     ? src
-                    : ""
+                    : null;
+
+              if (!resolvedSrc) {
+                return null;
               }
-              alt={alt ?? ""}
-              className="my-8 w-full rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.24)] object-cover shadow-[0_12px_36px_rgba(42,36,25,0.08)]"
-              loading="lazy"
-            />
+
+              return (
+                // Plain img keeps markdown image support simple across public and preview surfaces.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={resolvedSrc}
+                  alt={alt ?? ""}
+                  className="my-8 w-full rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.24)] object-cover shadow-[0_12px_36px_rgba(42,36,25,0.08)]"
+                  loading="lazy"
+                />
+              );
+            })()
           ),
           strong: ({ children }) => (
             <strong className="font-semibold text-[#2a2419]">{children}</strong>

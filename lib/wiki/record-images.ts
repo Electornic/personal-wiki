@@ -9,6 +9,7 @@ export const RECORD_IMAGE_ALLOWED_MIME_TYPES = [
 ] as const;
 
 const STORAGE_TOKEN_PREFIX = `storage://${RECORD_IMAGE_BUCKET}/`;
+const LOCAL_IMAGE_TOKEN_PREFIX = "local-image://";
 
 const MIME_EXTENSION_MAP: Record<(typeof RECORD_IMAGE_ALLOWED_MIME_TYPES)[number], string> = {
   "image/jpeg": "jpg",
@@ -36,8 +37,22 @@ export function buildRecordImagePath(userId: string, mimeType: string) {
   return `${userId}/${crypto.randomUUID()}.${extension}`;
 }
 
+export function buildStagedImageFileName(id: string, mimeType: string) {
+  const extension = getRecordImageExtension(mimeType);
+
+  if (!extension) {
+    throw new Error("Unsupported image type.");
+  }
+
+  return `${id}.${extension}`;
+}
+
 export function buildRecordImageToken(path: string) {
   return `${STORAGE_TOKEN_PREFIX}${path}`;
+}
+
+export function buildLocalImageToken(id: string) {
+  return `${LOCAL_IMAGE_TOKEN_PREFIX}${id}`;
 }
 
 export function parseRecordImageToken(value: string) {
@@ -62,8 +77,34 @@ export function isRecordImageToken(value?: string | null) {
   return Boolean(value && parseRecordImageToken(value));
 }
 
+export function parseLocalImageToken(value: string) {
+  if (!value.startsWith(LOCAL_IMAGE_TOKEN_PREFIX)) {
+    return null;
+  }
+
+  const id = value.slice(LOCAL_IMAGE_TOKEN_PREFIX.length).trim();
+
+  if (!id) {
+    return null;
+  }
+
+  return {
+    id,
+    token: `${LOCAL_IMAGE_TOKEN_PREFIX}${id}`,
+  };
+}
+
+export function isLocalImageToken(value?: string | null) {
+  return Boolean(value && parseLocalImageToken(value));
+}
+
 export function extractRecordImageTokens(contents: string) {
   const matches = contents.match(/storage:\/\/record-images\/[^\s)]+/g) ?? [];
+  return [...new Set(matches.map((token) => token.trim()).filter(Boolean))];
+}
+
+export function extractLocalImageTokens(contents: string) {
+  const matches = contents.match(/local-image:\/\/[^\s)]+/g) ?? [];
   return [...new Set(matches.map((token) => token.trim()).filter(Boolean))];
 }
 
