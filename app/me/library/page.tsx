@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 import { MyLibraryBrowser } from "@/components/my-library-browser";
 import { PaginationNav } from "@/components/pagination-nav";
@@ -30,6 +31,8 @@ function MyLibraryIcon({ className = "h-4 w-4" }: { className?: string }) {
 }
 
 export default async function MyLibraryPage({ searchParams }: PageProps) {
+  await connection();
+
   const access = await requireAuthorAccess();
 
   if (!access.configured) {

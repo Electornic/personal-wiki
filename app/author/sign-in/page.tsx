@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 import { signInWithPassword, signUpWithPassword } from "@/app/author/actions";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
@@ -33,6 +34,8 @@ function getAuthErrorMessage(error?: string) {
 }
 
 export default async function AuthorSignInPage({ searchParams }: PageProps) {
+  await connection();
+
   const access = await getAuthorAccess();
 
   if (access.isAuthenticated) {

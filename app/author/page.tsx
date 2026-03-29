@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
 import { PaginationNav } from "@/components/pagination-nav";
@@ -217,6 +218,8 @@ function buildAuthorPageHref(
 }
 
 export default async function AuthorPage({ searchParams }: PageProps) {
+  await connection();
+
   const resolvedSearchParams = await searchParams;
   const access = await getAuthorAccess();
   const currentPage = getPageNumber(resolvedSearchParams);
@@ -397,7 +400,11 @@ export default async function AuthorPage({ searchParams }: PageProps) {
                 <div className="flex flex-wrap gap-2 md:ml-6 md:justify-end">
                   <Link
                     className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
-                    href={`/library/${document.slug}`}
+                    href={
+                      document.visibility === "private"
+                        ? `/library/${document.slug}?preview=1`
+                        : `/library/${document.slug}`
+                    }
                   >
                     <PreviewIcon />
                     <span className="hidden md:inline">Preview</span>

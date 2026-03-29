@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { formatTopicTitle, normalizeTopic } from "@/app/topics/[topic]/_lib/topic";
-import { listPublicDocuments } from "@/entities/record/api/documents";
-import { formatDisplayDate, getExcerpt } from "@/entities/record/model/content";
+import { listPublicDocumentsByTag } from "@/entities/record/api/documents";
+import { formatDisplayDate } from "@/entities/record/model/content";
 import { TopicPill } from "@/entities/tag/ui/topic-pill";
 import { buildTopicHref, decodeRouteSegment } from "@/lib/wiki/routes";
 
@@ -53,10 +54,7 @@ export default async function TopicHubPage({ params }: PageProps) {
   const decodedTopic = decodeRouteSegment(topic);
   const normalizedTopic = normalizeTopic(decodedTopic);
 
-  const publicDocuments = await listPublicDocuments();
-  const records = publicDocuments.filter((document) =>
-    document.tags.some((tag) => normalizeTopic(tag) === normalizedTopic),
-  );
+  const records = await getCachedTopicDocuments(normalizedTopic);
 
   if (records.length === 0) {
     notFound();
@@ -113,7 +111,7 @@ export default async function TopicHubPage({ params }: PageProps) {
                       {record.title}
                     </h3>
                     <p className="mt-3 text-[14px] leading-[22.75px] text-[rgba(107,99,84,0.9)] md:max-w-[761px]">
-                      {getExcerpt(record.contents)}
+                      {record.excerpt}
                     </p>
                     <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-4 text-[#6b6354]">
                       <span className="font-medium">{record.writerName}</span>
@@ -156,4 +154,14 @@ export default async function TopicHubPage({ params }: PageProps) {
       </div>
     </main>
   );
+}
+
+async function getCachedTopicDocuments(topic: string) {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag("public-discovery");
+  cacheTag(`topic:${topic}`);
+
+  return listPublicDocumentsByTag(topic);
 }

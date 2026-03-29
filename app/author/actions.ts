@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
@@ -223,6 +223,8 @@ export async function saveDocument(
   revalidatePath("/");
   revalidatePath("/author");
   revalidatePath(`/library/${slug}`);
+  revalidateTag("public-discovery", "max");
+  revalidateTag(`record:${slug}`, "max");
 
   redirect("/author?saved=1");
 }
@@ -240,14 +242,22 @@ export async function deleteDocument(formData: FormData) {
     redirect("/author?error=missing-document");
   }
 
+  let deletedSlug: string | null = null;
+
   try {
-    await deleteDocumentById(documentId);
+    deletedSlug = await deleteDocumentById(documentId);
   } catch {
     redirect("/author?error=delete");
   }
 
   revalidatePath("/");
   revalidatePath("/author");
+  revalidateTag("public-discovery", "max");
+
+  if (deletedSlug) {
+    revalidatePath(`/library/${deletedSlug}`);
+    revalidateTag(`record:${deletedSlug}`, "max");
+  }
 
   redirect("/author?deleted=1");
 }

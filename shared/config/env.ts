@@ -3,6 +3,7 @@ const publicSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const authRedirectUrl =
   process.env.SUPABASE_AUTH_REDIRECT_URL ?? "http://localhost:3000/auth/callback";
+const supabaseDebugLog = process.env.SUPABASE_DEBUG_LOG;
 
 export function hasSupabaseEnv() {
   return Boolean(publicSupabaseUrl && publicSupabaseAnonKey);
@@ -32,4 +33,8 @@ export function getSupabaseAdminEnv() {
 
 export function getAuthRedirectUrl() {
   return authRedirectUrl;
+}
+
+export function shouldLogSupabaseQueries() {
+  return process.env.NODE_ENV === "development" && supabaseDebugLog === "1";
 }
