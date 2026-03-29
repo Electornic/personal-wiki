@@ -7,6 +7,7 @@ import { ConversationSection } from "@/app/library/[slug]/_components/conversati
 import { RecordReactionsSection } from "@/app/library/[slug]/_components/record-reactions-section";
 import {
   getPublicDocumentBySlug,
+  getReadableDocumentBySlug,
   listRelatedDocumentsForDocument,
 } from "@/entities/record/api/documents";
 import { formatDisplayDate, formatLongDisplayDate } from "@/entities/record/model/content";
@@ -16,6 +17,7 @@ import { buildTopicHref } from "@/lib/wiki/routes";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function BackIcon() {
@@ -105,9 +107,13 @@ function buildRelatedReasonText(
     : "A nearby article from the same reading shelf";
 }
 
-export default async function LibraryDocumentPage({ params }: PageProps) {
+export default async function LibraryDocumentPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const document = await getCachedPublicDocument(slug);
+  const resolvedSearchParams = await searchParams;
+  const previewMode = getSearchParam(resolvedSearchParams, "preview") === "1";
+  const document = previewMode
+    ? await getReadableDocumentBySlug(slug)
+    : await getCachedPublicDocument(slug);
 
   if (!document) {
     notFound();
@@ -191,9 +197,11 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
 async function RelatedDocumentsSection({
   document,
 }: {
-  document: NonNullable<Awaited<ReturnType<typeof getPublicDocumentBySlug>>>;
+  document: NonNullable<Awaited<ReturnType<typeof getReadableDocumentBySlug>>>;
 }) {
-  const relatedDocuments = await getCachedRelatedDocuments(document.slug);
+  const relatedDocuments = document.visibility === "public"
+    ? await getCachedRelatedDocuments(document.slug)
+    : await listRelatedDocumentsForDocument(document, 2);
 
   return (
     <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:mt-16 md:pt-10">
@@ -307,6 +315,19 @@ async function RelatedDocumentsSection({
       )}
     </section>
   );
+}
+
+function getSearchParam(
+  searchParams: Record<string, string | string[] | undefined>,
+  key: string,
+) {
+  const value = searchParams[key];
+
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
 }
 
 async function getCachedPublicDocument(slug: string) {
