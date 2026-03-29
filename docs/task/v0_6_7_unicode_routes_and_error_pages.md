@@ -55,4 +55,4 @@
 
 ## Related Docs
 
-- [docs/test_guide/v0_6_7_unicode_routes_and_error_pages.md](/Users/leejun/Desktop/Projects/personal-wiki/docs/test_guide/v0_6_7_unicode_routes_and_error_pages.md)
+- [docs/test_guide/v0_6_7_unicode_routes_and_error_pages.md](../test_guide/v0_6_7_unicode_routes_and_error_pages.md)
