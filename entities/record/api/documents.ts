@@ -1123,6 +1123,7 @@ export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
 
 export async function listPublicDocumentsByTag(tag: string) {
   const normalizedTag = normalizeDiscoveryTag(tag);
+  const tagSlug = createSlug(normalizedTag);
 
   if (!hasSupabaseEnv()) {
     return sortListItemsByRecentDocumentDate(
@@ -1143,7 +1144,7 @@ export async function listPublicDocumentsByTag(tag: string) {
   const { data: topicRows, error: topicError } = await supabase
     .from("record_tags")
     .select("record_id, tags!inner(id, slug, name)")
-    .eq("tags.slug", normalizedTag);
+    .eq("tags.slug", tagSlug);
 
   if (topicError || !topicRows) {
     return [] as WikiDocumentListItem[];
