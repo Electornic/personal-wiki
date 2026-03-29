@@ -11,6 +11,7 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
+SUPABASE_DEBUG_LOG=0
 ```
 
 ## 2. Supabase Auth Settings
@@ -200,11 +201,21 @@ SQL은 아래 순서대로 실행합니다.
 - `record_likes` insert/delete 시 reaction count를 유지하는 trigger 추가
 - public discovery의 `most-reacted` 정렬 비용을 줄이기 위한 index 추가
 
+### Step 18. v0.6.8 public reading search performance
+
+실행 파일:
+- [supabase/migrations/20260329T120000Z_v0_6_8_public_reading_search_performance.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260329T120000Z_v0_6_8_public_reading_search_performance.sql)
+
+역할:
+- `records.excerpt`, `records.search_vector` 컬럼 추가 및 기존 row backfill
+- public reading list/query 최적화를 위한 trigger, GIN index, 복합 index 추가
+- public discovery query에서 사용할 `search_public_records` RPC 추가
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열일곱 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열여덟 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash

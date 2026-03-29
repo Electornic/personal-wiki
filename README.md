@@ -52,6 +52,7 @@
 - like는 public record 전용 반응이며 공개 count 신호로만 사용합니다.
 - private record에서는 bookmark / like를 제공하지 않습니다.
 - 추천은 shared topic 수를 우선하고, 같은 점수에서는 더 최근 문서를 먼저 보여줍니다.
+- public reading route는 public client + cached data path를 우선하고, 로그인 상태가 필요한 섹션만 동적으로 분리합니다.
 - PWA 캐시는 public reading route 중심으로만 적용하고, `author` / `auth` / `me` 경로는 캐시 대상에서 제외합니다.
 
 ## Current Content Contract
@@ -89,6 +90,7 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
+SUPABASE_DEBUG_LOG=0
 ```
 
 설명:
@@ -99,6 +101,8 @@ SUPABASE_AUTH_REDIRECT_URL=http://localhost:3000/auth/callback
   signup/login 후 profile bootstrap과 protected server actions 보조에 사용됩니다.
 - `SUPABASE_AUTH_REDIRECT_URL`
   auth callback URL입니다.
+- `SUPABASE_DEBUG_LOG`
+  development에서만 동작하는 Supabase query 로그 스위치입니다. `1`이면 서버 터미널에 `/rest/v1`와 `/rpc` 요청을 순서대로 출력합니다.
 
 ## Local Development
 
@@ -121,7 +125,7 @@ PWA 메모:
 ## Supabase Setup
 
 1. Supabase 프로젝트를 생성합니다.
-2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 17개를 순서대로 실행합니다.
+2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 18개를 순서대로 실행합니다.
 3. Authentication에서 Email/Password 로그인을 활성화합니다.
 4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
 5. 위 환경변수를 `.env.local`에 채웁니다.
@@ -136,6 +140,7 @@ PWA 메모:
 - Step 15: public record comments only
 - Step 16: public record reactions only
 - Step 17: record reaction count + `most-reacted` sort support
+- Step 18: public reading excerpt/search vector + discovery query performance
 
 ## Working With Data
 

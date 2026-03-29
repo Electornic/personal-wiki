@@ -9,7 +9,41 @@ import {
   getSupabasePublicEnv,
   hasSupabaseAdminEnv,
   hasSupabaseEnv,
+  shouldLogSupabaseQueries,
 } from "@/shared/config/env";
+
+function getSupabaseDebugFetch(label: string): typeof fetch | undefined {
+  if (!shouldLogSupabaseQueries()) {
+    return undefined;
+  }
+
+  return async (input, init) => {
+    const request = input instanceof URL
+      ? input
+      : typeof input === "string"
+        ? new URL(input)
+        : new URL(input.url);
+    const isSupabaseQuery = request.pathname.includes("/rest/v1/") || request.pathname.includes("/rpc/");
+
+    if (isSupabaseQuery) {
+      const currentCount =
+        ((globalThis as typeof globalThis & { __supabaseQueryCount?: number }).__supabaseQueryCount ?? 0) + 1;
+
+      (globalThis as typeof globalThis & { __supabaseQueryCount?: number }).__supabaseQueryCount = currentCount;
+
+      const queryTarget = `${request.pathname}${request.search}`;
+      const method = init?.method ?? (
+        typeof input === "string" || input instanceof URL
+          ? "GET"
+          : input.method || "GET"
+      );
+
+      console.log(`[supabase:${label}] #${currentCount} ${method} ${queryTarget}`);
+    }
+
+    return fetch(input, init);
+  };
+}
 
 export async function getServerSupabaseClient() {
   if (!hasSupabaseEnv()) {
@@ -35,6 +69,9 @@ export async function getServerSupabaseClient() {
         }
       },
     },
+    global: {
+      fetch: getSupabaseDebugFetch("server"),
+    },
   });
 }
 
@@ -50,6 +87,9 @@ export function getPublicSupabaseClient() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: {
+      fetch: getSupabaseDebugFetch("public"),
+    },
   });
 }
 
@@ -64,6 +104,9 @@ export function getAdminSupabaseClient() {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    global: {
+      fetch: getSupabaseDebugFetch("admin"),
     },
   });
 }
@@ -89,6 +132,9 @@ export function getRouteHandlerSupabaseClient(
           response.cookies.set(name, value, options);
         });
       },
+    },
+    global: {
+      fetch: getSupabaseDebugFetch("route"),
     },
   });
 }
