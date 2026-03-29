@@ -14,6 +14,7 @@ import {
 } from "@/lib/wiki/discovery";
 import { getProfilesForUsers } from "@/lib/wiki/profiles";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
+import { decodeRouteSegment } from "@/lib/wiki/routes";
 import { createSlug } from "@/lib/wiki/slugs";
 import type {
   DocumentVisibility,
@@ -43,11 +44,7 @@ function sortByRecentDocumentDate(documents: WikiDocument[]) {
 }
 
 function normalizeRouteSlug(slug: string) {
-  try {
-    return decodeURIComponent(slug);
-  } catch {
-    return slug;
-  }
+  return decodeRouteSegment(slug);
 }
 
 function normalizePage(page: number) {

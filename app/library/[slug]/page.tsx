@@ -11,6 +11,7 @@ import {
 import { formatDisplayDate, formatLongDisplayDate, getExcerpt } from "@/entities/record/model/content";
 import { MarkdownContent } from "@/entities/record/ui/markdown-content";
 import { TopicPill } from "@/entities/tag/ui/topic-pill";
+import { buildTopicHref } from "@/lib/wiki/routes";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -286,7 +287,7 @@ async function RelatedDocumentsSection({
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             {document.tags[0] ? (
               <Link
-                href={`/topics/${encodeURIComponent(document.tags[0])}`}
+                href={buildTopicHref(document.tags[0])}
                 className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
               >
                 Explore {document.tags[0]}
