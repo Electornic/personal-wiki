@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useEffectEvent, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import type { DiscoverySort, DiscoverySource } from "@/lib/wiki/discovery";
 
@@ -69,8 +69,10 @@ export function DiscoveryControls({
   preserveParams,
   className,
 }: DiscoveryControlsProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const [queryValue, setQueryValue] = useState(query);
 
   useEffect(() => {
@@ -148,12 +150,40 @@ export function DiscoveryControls({
     return params.toString() ? `${pathname}?${params.toString()}` : pathname;
   }
 
-  function navigate(url: string) {
-    window.history.pushState(null, "", url);
+  function navigate(url: string, mode: "push" | "replace" = "push") {
+    startTransition(() => {
+      if (mode === "replace") {
+        router.replace(url, { scroll: false });
+        return;
+      }
+
+      router.push(url, { scroll: false });
+    });
   }
 
   const showPanel =
     filtersOpen || sort !== "newest" || source !== "all" || tags.length > 0;
+
+  const commitQuery = useEffectEvent((nextQuery: string) => {
+    navigate(buildParams({ q: nextQuery }), "replace");
+  });
+
+  useEffect(() => {
+    const normalizedQuery = query.trim();
+    const normalizedInput = queryValue.trim();
+
+    if (normalizedInput === normalizedQuery) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      commitQuery(queryValue);
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [query, queryValue]);
 
   function toggleTag(tag: string) {
     const normalized = tag.toLowerCase();
@@ -171,7 +201,7 @@ export function DiscoveryControls({
           className="relative flex-1"
           onSubmit={(event) => {
             event.preventDefault();
-            navigate(buildParams({ q: queryValue }));
+            navigate(buildParams({ q: queryValue }), "replace");
           }}
         >
           <div className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-center text-[#8f8778]">
@@ -182,6 +212,7 @@ export function DiscoveryControls({
             value={queryValue}
             onChange={(event) => setQueryValue(event.currentTarget.value)}
             placeholder="Search records..."
+            aria-busy={isPending}
             className="h-[42px] w-full rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] pl-4 pr-[42px] text-[14px] leading-5 text-[#2a2419] placeholder:text-[rgba(42,36,25,0.5)]"
           />
         </form>
