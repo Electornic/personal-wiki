@@ -30,8 +30,52 @@ export async function getReactionStateForRecord(
   recordId: string,
   userId?: string | null,
 ) {
-  const states = await listReactionStatesForRecords([recordId], userId);
-  return states.get(recordId) ?? emptyReactionState();
+  if (!recordId) {
+    return emptyReactionState();
+  }
+
+  const supabase = await getServerSupabaseClient();
+
+  if (!supabase) {
+    return emptyReactionState();
+  }
+
+  const resolvedUserId =
+    userId !== undefined
+      ? userId
+      : (
+          await supabase.auth.getUser()
+        ).data.user?.id ?? null;
+
+  if (!resolvedUserId) {
+    return emptyReactionState();
+  }
+
+  const { data, error } = await supabase
+    .from("records")
+    .select("id, record_bookmarks(record_id), record_likes(record_id)")
+    .eq("id", recordId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return emptyReactionState();
+  }
+
+  const bookmarks = Array.isArray((data as {
+    record_bookmarks?: Array<{ record_id?: string }>;
+  }).record_bookmarks)
+    ? (data as { record_bookmarks: Array<{ record_id?: string }> }).record_bookmarks
+    : [];
+  const likes = Array.isArray((data as {
+    record_likes?: Array<{ record_id?: string }>;
+  }).record_likes)
+    ? (data as { record_likes: Array<{ record_id?: string }> }).record_likes
+    : [];
+
+  return {
+    isBookmarked: bookmarks.length > 0,
+    isLiked: likes.length > 0,
+  };
 }
 
 export async function getLikeCountForRecord(recordId: string) {

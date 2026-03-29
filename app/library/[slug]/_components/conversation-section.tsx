@@ -4,7 +4,7 @@ import { CommentForm } from "@/components/comment-form";
 import { listCommentsForRecord } from "@/entities/comment/api/comments";
 import { CommentThread } from "@/entities/comment/ui/comment-thread";
 import type { DocumentVisibility } from "@/entities/record/model/types";
-import { getAuthorAccess } from "@/lib/wiki/auth";
+import { getViewerAccess } from "@/lib/wiki/auth";
 
 type ConversationSectionProps = {
   documentId: string;
@@ -26,7 +26,7 @@ export async function ConversationSection({
   visibility,
 }: ConversationSectionProps) {
   const [access, comments] = await Promise.all([
-    getAuthorAccess(),
+    getViewerAccess(),
     listCommentsForRecord(documentId),
   ]);
   const canComment = access.isAuthenticated && visibility === "public";
