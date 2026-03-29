@@ -41,6 +41,7 @@
 - public comments / replies
 - public reading PWA foundation
 - Vercel Analytics on public reading routes
+- author image uploads with private storage-backed markdown rendering
 - loading states, reading flow, recommendation explanation 개선
 - Supabase SQL migrations
 - Vitest 기반 유틸 테스트
@@ -71,6 +72,7 @@
 - public page에 보이는 `writerName`은 현재 로그인한 profile 이름 기준입니다.
 - article의 원문 저자, source URL, publication 같은 출처 메타는 현재 핵심 입력 계약에 포함되어 있지 않습니다.
 - 실데이터를 많이 넣기 전에는 tag naming과 markdown 구조를 먼저 고정하는 편이 좋습니다.
+- markdown 이미지 자산은 `storage://record-images/...` 토큰 형태로 저장되고, render 시 private storage proxy 경로를 통해 제공됩니다.
 
 ## Stack
 
@@ -125,7 +127,7 @@ PWA 메모:
 ## Supabase Setup
 
 1. Supabase 프로젝트를 생성합니다.
-2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 18개를 순서대로 실행합니다.
+2. [SETUP_GUIDE.md](/Users/leejun/Desktop/Projects/personal-wiki/SETUP_GUIDE.md)를 기준으로 SQL migration 19개를 순서대로 실행합니다.
 3. Authentication에서 Email/Password 로그인을 활성화합니다.
 4. Redirect URL에 `http://localhost:3000/auth/callback`을 추가합니다.
 5. 위 환경변수를 `.env.local`에 채웁니다.
@@ -141,6 +143,7 @@ PWA 메모:
 - Step 16: public record reactions only
 - Step 17: record reaction count + `most-reacted` sort support
 - Step 18: public reading excerpt/search vector + discovery query performance
+- Step 19: private storage-backed record image uploads
 
 ## Working With Data
 

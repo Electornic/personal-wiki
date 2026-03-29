@@ -1,15 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { saveDocument } from "@/app/author/actions";
 import type { DocumentFormState, WikiDocument } from "@/entities/record/model/types";
 import { MarkdownContent } from "@/entities/record/ui/markdown-content";
+import {
+  buildLocalImageToken,
+  buildStagedImageFileName,
+  getRecordImageAltText,
+  isRecordImageMimeType,
+  RECORD_IMAGE_MAX_BYTES,
+  RECORD_IMAGE_MAX_TOTAL_BYTES,
+} from "@/lib/wiki/record-images";
 
 type AuthorDocumentFormProps = {
   document?: WikiDocument;
+};
+
+type StagedImage = {
+  id: string;
+  token: string;
+  file: File;
+  previewUrl: string;
 };
 
 function SubmitButton({ visibility }: { visibility: "public" | "private" }) {
@@ -132,7 +147,7 @@ const reflectionTemplate = `## Questions to push further
 const markdownTips = [
   "Headings shape the reading flow.",
   "Preview uses the same markdown renderer as the public page.",
-  "Images use standard markdown syntax with an alt label and URL.",
+  "Images stay local until save, then upload into private storage.",
   "Short, explicit tags keep recommendation quality stable.",
 ];
 
@@ -149,9 +164,43 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   );
   const [bookTitle, setBookTitle] = useState(document?.bookTitle ?? "");
   const [tags, setTags] = useState(document?.tags.join(", ") ?? "");
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [stagedImages, setStagedImages] = useState<StagedImage[]>([]);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const stagedFileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const stagedImagesRef = useRef<StagedImage[]>([]);
   const wordCount = contents.trim() ? contents.trim().split(/\s+/).length : 0;
   const lineCount = contents ? contents.split(/\r?\n/).length : 0;
+
+  useEffect(() => {
+    stagedImagesRef.current = stagedImages;
+  }, [stagedImages]);
+
+  useEffect(() => {
+    const stagedInput = stagedFileInputRef.current;
+
+    if (!stagedInput) {
+      return;
+    }
+
+    const transfer = new DataTransfer();
+
+    stagedImages.forEach((image) => {
+      transfer.items.add(image.file);
+    });
+
+    stagedInput.files = transfer.files;
+  }, [stagedImages]);
+
+  useEffect(() => {
+    return () => {
+      stagedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl);
+      });
+    };
+  }, []);
 
   function updateContentsFromTextarea(
     updater: (currentValue: string, selectionStart: number, selectionEnd: number) => {
@@ -283,6 +332,125 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     });
   }
 
+  function insertStagedImages(items: Array<{ alt: string; token: string }>) {
+    if (items.length === 0) {
+      return;
+    }
+
+    updateContentsFromTextarea((currentValue, selectionStart, selectionEnd) => {
+      const inserted = items
+        .map((item) => `![${item.alt}](${item.token})`)
+        .join("\n\n");
+      const prefix =
+        currentValue.length > 0 && !currentValue.slice(0, selectionStart).endsWith("\n\n")
+          ? "\n\n"
+          : "";
+      const suffix =
+        currentValue.length > selectionEnd && !currentValue.slice(selectionEnd).startsWith("\n\n")
+          ? "\n\n"
+          : "";
+      const nextValue =
+        currentValue.slice(0, selectionStart) +
+        prefix +
+        inserted +
+        suffix +
+        currentValue.slice(selectionEnd);
+      const start = selectionStart + prefix.length;
+
+      return {
+        nextValue,
+        nextSelectionStart: start,
+        nextSelectionEnd: start + inserted.length,
+      };
+    });
+  }
+
+  function stageImages(files: File[]) {
+    if (files.length === 0) {
+      return;
+    }
+
+    setUploadError(null);
+
+    try {
+      const nextImages: StagedImage[] = [];
+      const nextInsertions: Array<{ alt: string; token: string }> = [];
+
+      const stagedTotalBytes = stagedImages.reduce((total, image) => total + image.file.size, 0);
+      const incomingTotalBytes = files.reduce((total, file) => total + file.size, 0);
+
+      if (stagedTotalBytes + incomingTotalBytes > RECORD_IMAGE_MAX_TOTAL_BYTES) {
+        throw new Error("Total staged image size must stay within 20MB.");
+      }
+
+      for (const file of files) {
+        if (!isRecordImageMimeType(file.type)) {
+          throw new Error("Only JPG, PNG, and WebP images are supported.");
+        }
+
+        if (file.size > RECORD_IMAGE_MAX_BYTES) {
+          throw new Error("Images must be 10MB or smaller.");
+        }
+
+        const id = crypto.randomUUID();
+        const token = buildLocalImageToken(id);
+        const stagedFile = new File(
+          [file],
+          buildStagedImageFileName(id, file.type),
+          { type: file.type },
+        );
+        const previewUrl = URL.createObjectURL(file);
+
+        nextImages.push({
+          id,
+          token,
+          file: stagedFile,
+          previewUrl,
+        });
+        nextInsertions.push({
+          alt: getRecordImageAltText(file.name),
+          token,
+        });
+      }
+
+      insertStagedImages(nextInsertions);
+      setStagedImages((current) => [...current, ...nextImages]);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Image staging failed.");
+    }
+  }
+
+  function handleFileInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    stageImages(files);
+    event.currentTarget.value = "";
+  }
+
+  function handlePaste(event: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const files = Array.from(event.clipboardData.items)
+      .filter((item) => item.kind === "file")
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => Boolean(file));
+
+    if (files.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    stageImages(files);
+  }
+
+  function handleDrop(event: React.DragEvent<HTMLTextAreaElement>) {
+    event.preventDefault();
+    setIsDraggingImage(false);
+
+    const files = Array.from(event.dataTransfer.files).filter((file) =>
+      file.type.startsWith("image/"),
+    );
+
+    stageImages(files);
+  }
+
   function insertTemplate(template: string) {
     updateContentsFromTextarea((currentValue) => {
       const trimmedValue = currentValue.trimEnd();
@@ -301,6 +469,22 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     <form action={formAction} className="grid gap-8">
       <input type="hidden" name="documentId" defaultValue={document?.id ?? ""} />
       <input type="hidden" name="visibility" value={visibility} />
+      <input
+        type="hidden"
+        name="stagedImageIds"
+        value={JSON.stringify(stagedImages.map((image) => image.id))}
+      />
+      {stagedImages.length > 0 ? (
+        <input
+          ref={stagedFileInputRef}
+          type="file"
+          name="stagedImages"
+          multiple
+          className="hidden"
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+      ) : null}
 
       <div className="-mt-8 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.95)] py-3 backdrop-blur-sm">
         <div className="mx-auto flex w-full items-center justify-between">
@@ -562,29 +746,67 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 >
                   Image
                 </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                >
+                  Upload
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleFileInputChange}
+                />
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] leading-4 text-[#6b6354]">
               <span>{wordCount} words</span>
               <span>{lineCount} lines</span>
-              <span>Markdown shortcuts stay in plain text until preview or publish.</span>
+              <span>{stagedImages.length} staged image{stagedImages.length === 1 ? "" : "s"}</span>
+              <span>Drag, drop, or paste images directly into the editor.</span>
             </div>
             <textarea
               ref={textareaRef}
               name="contents"
               value={contents}
               onChange={(event) => setContents(event.target.value)}
+              onPaste={handlePaste}
+              onDragOver={(event) => {
+                event.preventDefault();
+                if (!isDraggingImage) {
+                  setIsDraggingImage(true);
+                }
+              }}
+              onDragLeave={() => setIsDraggingImage(false)}
+              onDrop={handleDrop}
               rows={18}
               placeholder="Begin writing your thoughts..."
-              className="min-h-[600px] rounded-[4px] border border-transparent bg-white px-3 py-2 text-[18px] leading-[29.25px] text-[#2a2419] placeholder:text-[#6b6354]"
+              className={`min-h-[600px] rounded-[4px] border px-3 py-2 text-[18px] leading-[29.25px] text-[#2a2419] placeholder:text-[#6b6354] ${
+                isDraggingImage
+                  ? "border-dashed border-[#2a2419] bg-[rgba(232,227,219,0.28)]"
+                  : "border-transparent bg-white"
+              }`}
               required
             />
+            {uploadError ? (
+              <p className="rounded-[6px] border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] leading-5 text-rose-900">
+                {uploadError}
+              </p>
+            ) : null}
           </div>
         ) : (
           <div className="space-y-3">
             <div className="min-h-[600px] rounded-[4px] border border-transparent bg-white px-6 py-6">
               {contents ? (
-                <MarkdownContent contents={contents} />
+                <MarkdownContent
+                  contents={contents}
+                  imageUrlOverrides={Object.fromEntries(
+                    stagedImages.map((image) => [image.token, image.previewUrl]),
+                  )}
+                />
               ) : (
                 <p className="text-[18px] leading-[29.25px] text-[#6b6354]">
                   Nothing to preview yet.

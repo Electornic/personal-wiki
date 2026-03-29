@@ -13,7 +13,7 @@ import {
 import { formatDisplayDate, formatLongDisplayDate } from "@/entities/record/model/content";
 import { MarkdownContent } from "@/entities/record/ui/markdown-content";
 import { TopicPill } from "@/entities/tag/ui/topic-pill";
-import { buildTopicHref } from "@/lib/wiki/routes";
+import { buildLibraryHref, buildRecordCacheTag, buildTopicHref } from "@/lib/wiki/routes";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -226,7 +226,7 @@ async function RelatedDocumentsSection({
               return (
                 <Link
                   key={relatedDocument.id}
-                  href={`/library/${relatedDocument.slug}`}
+                  href={buildLibraryHref(relatedDocument.slug)}
                   className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-5 py-5 transition hover:bg-[rgba(255,255,255,0.72)] md:px-6"
                 >
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] leading-4 text-[#6b6354] md:text-[12px]">
@@ -336,7 +336,7 @@ async function getCachedPublicDocument(slug: string) {
 
   cacheLife("hours");
   cacheTag("public-discovery");
-  cacheTag(`record:${slug}`);
+  cacheTag(buildRecordCacheTag(slug));
 
   return getPublicDocumentBySlug(slug);
 }
@@ -350,7 +350,7 @@ async function getCachedRelatedDocuments(
 
   cacheLife("hours");
   cacheTag("public-discovery");
-  cacheTag(`record:${slug}`);
+  cacheTag(buildRecordCacheTag(slug));
 
   return listRelatedDocumentsForDocument(
     {

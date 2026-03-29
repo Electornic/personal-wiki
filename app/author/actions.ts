@@ -11,6 +11,7 @@ import type { DocumentFormState, SourceType } from "@/entities/record/model/type
 import { getAdminSupabaseClient, getServerSupabaseClient } from "@/shared/api/supabase/server";
 import { getAuthRedirectUrl, hasAuthoringEnv } from "@/shared/config/env";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
+import { buildLibraryHref, buildRecordCacheTag } from "@/lib/wiki/routes";
 import {
   normalizeUserName,
   profileUserNameTaken,
@@ -56,6 +57,27 @@ function parseDocumentPayload(formData: FormData) {
     bookTitle: bookTitle || null,
     visibility,
     tags,
+  };
+}
+
+function parseStagedImagePayload(formData: FormData) {
+  const rawIds = String(formData.get("stagedImageIds") ?? "[]");
+  let ids: string[] = [];
+
+  try {
+    const parsed = JSON.parse(rawIds);
+    ids = Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : [];
+  } catch {
+    ids = [];
+  }
+
+  const files = formData
+    .getAll("stagedImages")
+    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
+
+  return {
+    ids,
+    files,
   };
 }
 
@@ -188,6 +210,7 @@ export async function saveDocument(
   }
 
   const payload = parseDocumentPayload(formData);
+  const stagedImages = parseStagedImagePayload(formData);
 
   if (!payload.title || !payload.contents) {
     return {
@@ -210,7 +233,10 @@ export async function saveDocument(
   let slug: string;
 
   try {
-    slug = await upsertDocument(payload);
+    slug = await upsertDocument({
+      ...payload,
+      stagedImages,
+    });
   } catch (error) {
     return {
       error:
@@ -222,9 +248,9 @@ export async function saveDocument(
 
   revalidatePath("/");
   revalidatePath("/author");
-  revalidatePath(`/library/${slug}`);
+  revalidatePath(buildLibraryHref(slug));
   revalidateTag("public-discovery", "max");
-  revalidateTag(`record:${slug}`, "max");
+  revalidateTag(buildRecordCacheTag(slug), "max");
 
   redirect("/author?saved=1");
 }
@@ -255,8 +281,8 @@ export async function deleteDocument(formData: FormData) {
   revalidateTag("public-discovery", "max");
 
   if (deletedSlug) {
-    revalidatePath(`/library/${deletedSlug}`);
-    revalidateTag(`record:${deletedSlug}`, "max");
+    revalidatePath(buildLibraryHref(deletedSlug));
+    revalidateTag(buildRecordCacheTag(deletedSlug), "max");
   }
 
   redirect("/author?deleted=1");

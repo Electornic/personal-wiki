@@ -1,5 +1,9 @@
 export function getExcerpt(contents: string) {
   const plain = contents
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, " $1 ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, " $1 ")
+    .replace(/!\S+/g, " ")
+    .replace(/\b(?:storage|https?):\/\/\S+/g, "")
     .replace(/^#+\s+/gm, "")
     .replace(/[*_`>\-\[\]\(\)]/g, "")
     .replace(/\s+/g, " ")
