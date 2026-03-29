@@ -211,11 +211,22 @@ SQL은 아래 순서대로 실행합니다.
 - public reading list/query 최적화를 위한 trigger, GIN index, 복합 index 추가
 - public discovery query에서 사용할 `search_public_records` RPC 추가
 
+### Step 19. v0.6.11 record image storage
+
+실행 파일:
+- [supabase/migrations/20260330T120000Z_v0_6_11_record_images_storage.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260330T120000Z_v0_6_11_record_images_storage.sql)
+
+역할:
+- private storage bucket `record-images` 추가
+- 업로드 제한 `10MB`, `jpg/png/webp` 허용 mime 설정
+- owner 기준 insert/update/delete/select storage policy 추가
+- author editor 이미지 업로드/preview/cleanup 경로 준비
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열여덟 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 열아홉 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash
