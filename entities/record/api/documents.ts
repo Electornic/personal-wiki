@@ -55,6 +55,11 @@ const RECORD_LIST_SELECT = [
   "reaction_count",
 ].join(", ");
 
+const RECORD_LIST_WITH_TAGS_SELECT = [
+  RECORD_LIST_SELECT,
+  "record_tags(tags(name))",
+].join(", ");
+
 type RecordRow = {
   id: string;
   slug: string;
@@ -70,6 +75,9 @@ type RecordRow = {
   created_at?: string;
   updated_at: string;
   reaction_count?: number | null;
+  record_tags?: Array<{
+    tags?: { name?: string | null } | Array<{ name?: string | null }> | null;
+  }> | null;
 };
 
 type PaginatedDocuments<T> = {
@@ -211,6 +219,11 @@ type RecordTagRow = {
   tags?: { name?: string | null } | Array<{ name?: string | null }> | null;
 };
 
+type TopicFilterRow = {
+  record_id: string;
+  tags?: { id?: string | null; slug?: string | null; name?: string | null } | null;
+};
+
 type DiscoverySortRow = {
   id: string;
   title: string;
@@ -250,12 +263,20 @@ async function mapRowsToDocuments(
   return recordRows.map((row) => mapRecordToDocument(row, tagMap.get(String(row.id)) ?? []));
 }
 
-async function mapRowsToListItems(
-  recordRows: RecordRow[],
-  tagRows: RecordTagRow[],
-) {
-  const tagMap = buildTagMap(tagRows);
-  return recordRows.map((row) => mapRecordToListItem(row, tagMap.get(String(row.id)) ?? []));
+function getTagNamesFromRecordRow(row: RecordRow) {
+  const tagRows = Array.isArray(row.record_tags) ? row.record_tags : [];
+  const tagNames = tagRows
+    .map((tagRow) => {
+      const tag = Array.isArray(tagRow.tags) ? tagRow.tags[0] : tagRow.tags;
+      return typeof tag?.name === "string" ? tag.name : null;
+    })
+    .filter((tagName): tagName is string => Boolean(tagName));
+
+  return [...new Set(tagNames)];
+}
+
+function mapRowsWithNestedTagsToListItems(recordRows: RecordRow[]) {
+  return recordRows.map((row) => mapRecordToListItem(row, getTagNamesFromRecordRow(row)));
 }
 
 async function fetchTagRowsForRecordIds(
@@ -586,6 +607,8 @@ async function listPublicRecordListPage(
     return emptyPaginatedListItems(pageSize);
   }
 
+  const safeSupabase = supabase;
+
   const uniqueCandidateIds = candidateIds
     ? [...new Set(candidateIds.filter(Boolean))]
     : null;
@@ -596,22 +619,31 @@ async function listPublicRecordListPage(
 
   const resolvedPage = normalizePage(page);
   const resolvedPageSize = Math.max(1, Math.floor(pageSize));
-  let countQuery = supabase
-    .from("records")
-    .select("id", { count: "exact", head: true })
-    .eq("visibility", "public");
+  function createRowsQuery(targetPage: number) {
+    let rowsQuery = safeSupabase
+      .from("records")
+      .select(RECORD_LIST_WITH_TAGS_SELECT, { count: "exact" })
+      .eq("visibility", "public");
 
-  if (state.source !== "all") {
-    countQuery = countQuery.eq("source_type", state.source);
+    if (state.source !== "all") {
+      rowsQuery = rowsQuery.eq("source_type", state.source);
+    }
+
+    if (uniqueCandidateIds) {
+      rowsQuery = rowsQuery.in("id", uniqueCandidateIds);
+    }
+
+    return applyListSortOrder(rowsQuery, state.sort).range(
+      (targetPage - 1) * resolvedPageSize,
+      targetPage * resolvedPageSize - 1,
+    );
   }
 
-  if (uniqueCandidateIds) {
-    countQuery = countQuery.in("id", uniqueCandidateIds);
-  }
+  const initialResult = await createRowsQuery(resolvedPage);
+  let recordRows = initialResult.data;
+  const { error: recordsError, count } = initialResult;
 
-  const { count, error: countError } = await countQuery;
-
-  if (countError) {
+  if (recordsError || !recordRows) {
     return emptyPaginatedListItems(resolvedPageSize);
   }
 
@@ -619,38 +651,20 @@ async function listPublicRecordListPage(
   const totalPages = Math.max(1, Math.ceil(totalCount / resolvedPageSize));
   const currentPage = Math.min(resolvedPage, totalPages);
 
-  let rowsQuery = supabase
-    .from("records")
-    .select(RECORD_LIST_SELECT)
-    .eq("visibility", "public");
+  if (currentPage !== resolvedPage) {
+    const fallbackResult = await createRowsQuery(currentPage);
 
-  if (state.source !== "all") {
-    rowsQuery = rowsQuery.eq("source_type", state.source);
-  }
+    if (fallbackResult.error || !fallbackResult.data) {
+      return emptyPaginatedListItems(resolvedPageSize);
+    }
 
-  if (uniqueCandidateIds) {
-    rowsQuery = rowsQuery.in("id", uniqueCandidateIds);
-  }
-
-  const { data: recordRows, error: recordsError } = await applyListSortOrder(
-    rowsQuery,
-    state.sort,
-  ).range(
-    (currentPage - 1) * resolvedPageSize,
-    currentPage * resolvedPageSize - 1,
-  );
-
-  if (recordsError || !recordRows) {
-    return emptyPaginatedListItems(resolvedPageSize);
+    recordRows = fallbackResult.data;
   }
 
   const typedRecordRows = recordRows as unknown as RecordRow[];
-  const tagRows = await fetchTagRowsForRecordIds(
-    typedRecordRows.map((row) => String(row.id)),
-  );
 
   return {
-    documents: await mapRowsToListItems(typedRecordRows, tagRows),
+    documents: mapRowsWithNestedTagsToListItems(typedRecordRows),
     totalCount,
     totalPages,
     page: currentPage,
@@ -1120,23 +1134,45 @@ export async function listPublicDocumentsByTag(tag: string) {
     );
   }
 
-  const candidateIds = await listPublicRecordIdsForSelectedTags([normalizedTag]);
+  const supabase = getPublicSupabaseClient();
 
-  if (candidateIds.length === 0) {
+  if (!supabase) {
     return [] as WikiDocumentListItem[];
   }
 
-  const page = await listPublicRecordListPage(
-    {
-      sort: "newest",
-      source: "all",
-    },
-    1,
-    candidateIds.length,
-    candidateIds,
-  );
+  const { data: topicRows, error: topicError } = await supabase
+    .from("record_tags")
+    .select("record_id, tags!inner(id, slug, name)")
+    .eq("tags.slug", normalizedTag);
 
-  return page.documents;
+  if (topicError || !topicRows) {
+    return [] as WikiDocumentListItem[];
+  }
+
+  const topicRecordIds = [...new Set(
+    (topicRows as TopicFilterRow[])
+      .map((row) => row.record_id)
+      .filter(Boolean),
+  )];
+
+  if (topicRecordIds.length === 0) {
+    return [] as WikiDocumentListItem[];
+  }
+
+  const { data: recordRows, error: recordsError } = await supabase
+    .from("records")
+    .select(RECORD_LIST_WITH_TAGS_SELECT)
+    .eq("visibility", "public")
+    .in("id", topicRecordIds)
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("updated_at", { ascending: false });
+
+  if (recordsError || !recordRows) {
+    return [] as WikiDocumentListItem[];
+  }
+
+  const typedRecordRows = recordRows as unknown as RecordRow[];
+  return mapRowsWithNestedTagsToListItems(typedRecordRows);
 }
 
 export async function getPublicDiscoveryView(
@@ -1200,7 +1236,7 @@ export async function listRelatedDocumentsForDocument(
 
   let candidateQuery = supabase
     .from("records")
-    .select(RECORD_LIST_SELECT)
+    .select(RECORD_LIST_WITH_TAGS_SELECT)
     .in("id", candidateIds);
 
   if (!useServerClient) {
@@ -1213,13 +1249,8 @@ export async function listRelatedDocumentsForDocument(
     return [];
   }
 
-  const candidateTagDetails = await fetchTagRowsForRecordIds(
-    candidateIds,
-    useServerClient,
-  );
-  const candidateDocuments = await mapRowsToListItems(
+  const candidateDocuments = mapRowsWithNestedTagsToListItems(
     candidateRows as unknown as RecordRow[],
-    candidateTagDetails,
   );
 
   return getRelatedDocuments(document, candidateDocuments, limit);
