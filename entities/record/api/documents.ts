@@ -14,6 +14,10 @@ import {
   sortDiscoveryDocuments,
 } from "@/lib/wiki/discovery";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
+import {
+  getRemovedRecordImageTokens,
+  parseRecordImageToken,
+} from "@/lib/wiki/record-images";
 import { decodeRouteSegment } from "@/lib/wiki/routes";
 import { createSlug } from "@/lib/wiki/slugs";
 import type {
@@ -1370,6 +1374,44 @@ async function resolveAuthorNameForUser(
   return fallbackAuthorName(profile?.email ?? user.email);
 }
 
+async function removeUnusedRecordImages(
+  removedTokens: string[],
+  adminSupabase: NonNullable<ReturnType<typeof getAdminSupabaseClient>>,
+  excludingRecordId?: string,
+) {
+  const removablePaths: string[] = [];
+
+  for (const token of removedTokens) {
+    const parsed = parseRecordImageToken(token);
+
+    if (!parsed) {
+      continue;
+    }
+
+    let query = adminSupabase
+      .from("records")
+      .select("id")
+      .ilike("contents", `%${parsed.token}%`)
+      .limit(1);
+
+    if (excludingRecordId) {
+      query = query.neq("id", excludingRecordId);
+    }
+
+    const { data, error } = await query;
+
+    if (!error && !data?.length) {
+      removablePaths.push(parsed.path);
+    }
+  }
+
+  if (removablePaths.length === 0) {
+    return;
+  }
+
+  await adminSupabase.storage.from("record-images").remove(removablePaths);
+}
+
 export async function upsertDocument(input: UpsertDocumentInput) {
   const supabase = await getServerSupabaseClient();
   const adminSupabase = getAdminSupabaseClient();
@@ -1385,6 +1427,17 @@ export async function upsertDocument(input: UpsertDocumentInput) {
   if (!user) {
     throw new Error("You must be signed in to save a document.");
   }
+
+  const previousContents = input.documentId
+    ? (
+        await supabase
+          .from("records")
+          .select("contents")
+          .eq("id", input.documentId)
+          .eq("writer_user_id", user.id)
+          .maybeSingle()
+      ).data?.contents ?? ""
+    : "";
 
   const authorName = await resolveAuthorNameForUser(user, supabase);
   const payload = {
@@ -1448,6 +1501,14 @@ export async function upsertDocument(input: UpsertDocumentInput) {
     }
   }
 
+  if (adminSupabase) {
+    await removeUnusedRecordImages(
+      getRemovedRecordImageTokens(previousContents, input.contents),
+      adminSupabase,
+      documentId,
+    );
+  }
+
   return savedDocument.slug;
 }
 
@@ -1466,6 +1527,13 @@ export async function deleteDocumentById(documentId: string) {
     throw new Error("You must be signed in to delete a document.");
   }
 
+  const existingRecord = await supabase
+    .from("records")
+    .select("slug, contents")
+    .eq("id", documentId)
+    .eq("writer_user_id", user.id)
+    .maybeSingle();
+
   const { data: deletedRecord, error } = await supabase
     .from("records")
     .delete()
@@ -1476,6 +1544,16 @@ export async function deleteDocumentById(documentId: string) {
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  const adminSupabase = getAdminSupabaseClient();
+
+  if (adminSupabase && existingRecord.data?.contents) {
+    await removeUnusedRecordImages(
+      getRemovedRecordImageTokens(existingRecord.data.contents, ""),
+      adminSupabase,
+      documentId,
+    );
   }
 
   return deletedRecord?.slug ? String(deletedRecord.slug) : null;
