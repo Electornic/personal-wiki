@@ -1,15 +1,14 @@
 import { Suspense } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { PaginationNav } from "@/components/pagination-nav";
 import { PublicLibraryBrowser } from "@/components/public-library-browser";
-import { toDocumentPreview } from "@/entities/record/model/content";
 import {
   DISCOVERY_PAGE_SIZE,
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
 import {
-  listAvailableTagsForPublicDocuments,
-  listPublicDiscoveryPage,
+  getPublicDiscoveryView,
 } from "@/entities/record/api/documents";
 
 type PageProps = {
@@ -86,20 +85,18 @@ async function HomeLibrarySection({
 }) {
   const discoveryState = parseDiscoveryState(searchParams);
   const currentPage = getPageNumber(searchParams);
-  const paginated = await listPublicDiscoveryPage(
+
+  const paginated = await getCachedPublicDiscoveryView(
     discoveryState,
     currentPage,
     DISCOVERY_PAGE_SIZE,
   );
-  const publicRecords = paginated.documents;
-  const previews = publicRecords.map((record) => toDocumentPreview(record));
-  const availableTags = await listAvailableTagsForPublicDocuments();
 
   return (
     <>
       <PublicLibraryBrowser
-        records={previews}
-        availableTags={availableTags}
+        records={paginated.documents}
+        availableTags={paginated.availableTags}
         recordCount={paginated.totalCount}
         discoveryState={discoveryState}
       />
@@ -111,6 +108,19 @@ async function HomeLibrarySection({
       />
     </>
   );
+}
+
+async function getCachedPublicDiscoveryView(
+  discoveryState: ReturnType<typeof parseDiscoveryState>,
+  currentPage: number,
+  pageSize: number,
+) {
+  "use cache";
+
+  cacheLife("minutes");
+  cacheTag("public-discovery");
+
+  return getPublicDiscoveryView(discoveryState, currentPage, pageSize);
 }
 
 function HomeLibraryFallback() {

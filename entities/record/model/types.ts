@@ -23,11 +23,16 @@ export type WikiDocument = {
   updatedAt: string;
 };
 
-export type WikiDocumentPreview = Omit<WikiDocument, "contents"> & {
+export type WikiDocumentListItem = Pick<
+  WikiDocument,
+  "id" | "slug" | "title" | "sourceType" | "bookTitle" | "writerName" | "publishedAt" | "tags" | "updatedAt"
+> & {
   excerpt: string;
 };
 
-export type RelatedDocument = WikiDocument & {
+export type WikiDocumentPreview = WikiDocumentListItem;
+
+export type RelatedDocument = WikiDocumentListItem & {
   sharedTagCount: number;
   sharedTags: string[];
 };

@@ -1,23 +1,40 @@
-import type { RelatedDocument, WikiDocument } from "@/entities/record/model/types";
-import { filterReadableDocuments } from "@/lib/wiki/visibility";
+import type { RelatedDocument, WikiDocument, WikiDocumentListItem } from "@/entities/record/model/types";
 
 function normalizeTags(tags: string[]) {
   return tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean);
 }
 
-function getDocumentRecency(document: Pick<WikiDocument, "publishedAt" | "updatedAt">) {
+type RelatedDocumentCandidate = Pick<
+  WikiDocumentListItem,
+  "id" | "slug" | "title" | "sourceType" | "bookTitle" | "writerName" | "publishedAt" | "tags" | "updatedAt"
+>;
+
+type RelatedDocumentCandidateWithExcerpt = RelatedDocumentCandidate & {
+  excerpt?: string;
+  visibility?: WikiDocument["visibility"];
+};
+
+function getDocumentRecency(document: Pick<RelatedDocumentCandidate, "publishedAt" | "updatedAt">) {
   return new Date(document.publishedAt ?? document.updatedAt).getTime();
 }
 
 export function getRelatedDocuments(
-  document: WikiDocument,
-  candidates: WikiDocument[],
+  document: Pick<WikiDocument, "id" | "tags">,
+  candidates: RelatedDocumentCandidateWithExcerpt[],
   limit = 3,
 ) {
   const documentTags = normalizeTags(document.tags);
-  const visibleCandidates = filterReadableDocuments(candidates).filter(
-    (candidate) => candidate.id !== document.id,
-  );
+  const visibleCandidates = candidates.filter((candidate) => {
+    if (candidate.id === document.id) {
+      return false;
+    }
+
+    if (candidate.visibility === "private") {
+      return false;
+    }
+
+    return true;
+  });
 
   return visibleCandidates
     .map((candidate) => {
@@ -27,6 +44,7 @@ export function getRelatedDocuments(
 
       return {
         ...candidate,
+        excerpt: candidate.excerpt ?? "",
         sharedTagCount: sharedTags.length,
         sharedTags,
       } satisfies RelatedDocument;

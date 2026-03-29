@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { ConversationSection } from "@/app/library/[slug]/_components/conversation-section";
 import { RecordReactionsSection } from "@/app/library/[slug]/_components/record-reactions-section";
 import {
-  getReadableDocumentBySlug,
+  getPublicDocumentBySlug,
   listRelatedDocumentsForDocument,
 } from "@/entities/record/api/documents";
-import { formatDisplayDate, formatLongDisplayDate, getExcerpt } from "@/entities/record/model/content";
+import { formatDisplayDate, formatLongDisplayDate } from "@/entities/record/model/content";
 import { MarkdownContent } from "@/entities/record/ui/markdown-content";
 import { TopicPill } from "@/entities/tag/ui/topic-pill";
 import { buildTopicHref } from "@/lib/wiki/routes";
@@ -106,7 +107,7 @@ function buildRelatedReasonText(
 
 export default async function LibraryDocumentPage({ params }: PageProps) {
   const { slug } = await params;
-  const document = await getReadableDocumentBySlug(slug);
+  const document = await getCachedPublicDocument(slug);
 
   if (!document) {
     notFound();
@@ -190,9 +191,9 @@ export default async function LibraryDocumentPage({ params }: PageProps) {
 async function RelatedDocumentsSection({
   document,
 }: {
-  document: NonNullable<Awaited<ReturnType<typeof getReadableDocumentBySlug>>>;
+  document: NonNullable<Awaited<ReturnType<typeof getPublicDocumentBySlug>>>;
 }) {
-  const relatedDocuments = await listRelatedDocumentsForDocument(document, 2);
+  const relatedDocuments = await getCachedRelatedDocuments(document.slug);
 
   return (
     <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:mt-16 md:pt-10">
@@ -243,7 +244,7 @@ async function RelatedDocumentsSection({
                         </p>
                       ) : null}
                       <p className="mt-2 hidden text-[15px] leading-6 text-[rgba(107,99,84,0.9)] md:block">
-                        {getExcerpt(relatedDocument.contents)}
+                        {relatedDocument.excerpt}
                       </p>
                       <p className="mt-2.5 text-[13px] leading-5 text-[#6b6354] md:mt-3 md:text-[14px]">
                         {relatedDocument.writerName} ·{" "}
@@ -306,6 +307,34 @@ async function RelatedDocumentsSection({
       )}
     </section>
   );
+}
+
+async function getCachedPublicDocument(slug: string) {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag("public-discovery");
+  cacheTag(`record:${slug}`);
+
+  return getPublicDocumentBySlug(slug);
+}
+
+async function getCachedRelatedDocuments(
+  slug: string,
+) {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag("public-discovery");
+  cacheTag(`record:${slug}`);
+
+  const document = await getPublicDocumentBySlug(slug);
+
+  if (!document) {
+    return [];
+  }
+
+  return listRelatedDocumentsForDocument(document, 2);
 }
 
 function RecordReactionsFallback() {
