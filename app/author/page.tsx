@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
 import { PaginationNav } from "@/components/pagination-nav";
@@ -217,6 +218,8 @@ function buildAuthorPageHref(
 }
 
 export default async function AuthorPage({ searchParams }: PageProps) {
+  await connection();
+
   const resolvedSearchParams = await searchParams;
   const access = await getAuthorAccess();
   const currentPage = getPageNumber(resolvedSearchParams);

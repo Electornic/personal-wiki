@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 
 import { AuthorDocumentForm } from "@/components/author-document-form";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
@@ -9,6 +10,8 @@ type PageProps = {
 };
 
 export default async function EditAuthorDocumentPage({ params }: PageProps) {
+  await connection();
+
   const access = await requireAuthorAccess();
 
   if (!access.configured) {

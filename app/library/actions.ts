@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createCommentForRecord } from "@/entities/comment/api/comments";
@@ -40,6 +40,7 @@ export async function createCommentAction(
   revalidatePath("/");
   if (recordSlug) {
     revalidatePath(`/library/${recordSlug}`);
+    revalidateTag(`record:${recordSlug}`, "max");
   }
   return {};
 }
@@ -83,6 +84,7 @@ export async function toggleBookmarkAction(formData: FormData) {
   revalidatePath("/me/library");
   if (recordSlug) {
     revalidatePath(`/library/${recordSlug}`);
+    revalidateTag(`record:${recordSlug}`, "max");
   }
 }
 
@@ -109,7 +111,9 @@ export async function toggleLikeAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/me/library");
+  revalidateTag("public-discovery", "max");
   if (recordSlug) {
     revalidatePath(`/library/${recordSlug}`);
+    revalidateTag(`record:${recordSlug}`, "max");
   }
 }

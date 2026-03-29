@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { AnalyticsProvider } from "@/components/analytics-provider";
 import { PwaProvider } from "@/components/pwa-provider";
@@ -41,7 +42,9 @@ export default async function RootLayout({
       <body className="antialiased">
         <PwaProvider />
         <div className="min-h-screen flex flex-col">
-          <SiteHeader />
+          <Suspense fallback={null}>
+            <SiteHeader />
+          </Suspense>
           <main className="flex-1">{children}</main>
           <SiteFooter />
         </div>
