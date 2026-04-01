@@ -1,8 +1,9 @@
 import {
   listAvailableTagsForRecordIds,
-  listDiscoveryDocumentsPageForRecordIds,
+  listDiscoveryListItemsPageForRecordIds,
   listDocumentsByIds,
 } from "@/entities/record/api/documents";
+import { cache } from "react";
 import type { WikiDocument } from "@/entities/record/model/types";
 import type { DiscoveryState } from "@/lib/wiki/discovery";
 import { DISCOVERY_PAGE_SIZE, isDefaultDiscoveryState } from "@/lib/wiki/discovery";
@@ -30,18 +31,23 @@ function sortByRecentDocumentDate(documents: WikiDocument[]) {
   });
 }
 
-export async function listMyLibraryPreview() {
-  const recordIds = await listBookmarkRecordIds();
+const getMyLibraryRecordIds = cache(async function getMyLibraryRecordIds(userId: string) {
+  return [...new Set((await listBookmarkRecordIds(userId)).filter(Boolean))];
+});
+
+export async function listMyLibraryPreview(userId: string) {
+  const recordIds = await getMyLibraryRecordIds(userId);
   const documents = await listDocumentsByIds(recordIds);
 
   return sortByRecentDocumentDate(uniqueById(documents));
 }
 
 export async function listMyLibraryPreviewPage(
+  userId: string,
   page = 1,
   pageSize = DISCOVERY_PAGE_SIZE,
 ) {
-  const documents = await listMyLibraryPreview();
+  const documents = await listMyLibraryPreview(userId);
   const resolvedPage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
   const resolvedPageSize = Math.max(1, Math.floor(pageSize));
   const totalCount = documents.length;
@@ -61,26 +67,32 @@ export async function listMyLibraryPreviewPage(
   };
 }
 
-export async function listAvailableTagsForMyLibrary() {
-  const recordIds = [...new Set((await listBookmarkRecordIds()).filter(Boolean))];
+export async function listAvailableTagsForMyLibrary(userId: string) {
+  const recordIds = await getMyLibraryRecordIds(userId);
   return listAvailableTagsForRecordIds(recordIds, true);
 }
 
 export async function listMyLibraryDiscoveryPage(
+  userId: string,
   state: DiscoveryState,
   page = 1,
   pageSize = DISCOVERY_PAGE_SIZE,
 ) {
+  const recordIds = await getMyLibraryRecordIds(userId);
+
   if (isDefaultDiscoveryState(state)) {
-    return listMyLibraryPreviewPage(page, pageSize);
+    return listDiscoveryListItemsPageForRecordIds(
+      recordIds,
+      state,
+      page,
+      pageSize,
+    );
   }
 
-  const recordIds = [...new Set((await listBookmarkRecordIds()).filter(Boolean))];
-  return listDiscoveryDocumentsPageForRecordIds(
+  return listDiscoveryListItemsPageForRecordIds(
     recordIds,
     state,
     page,
     pageSize,
-    true,
   );
 }

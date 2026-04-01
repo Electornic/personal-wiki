@@ -38,6 +38,8 @@ import { filterReadableDocuments } from "@/lib/wiki/visibility";
 
 export const AUTHOR_WORKSPACE_PAGE_SIZE = 8;
 export const PUBLIC_LIBRARY_PAGE_SIZE = 8;
+const PUBLIC_DISCOVERY_COUNT_MODE = "estimated" as const;
+const AUTHOR_WORKSPACE_COUNT_MODE = "estimated" as const;
 
 const RECORD_DETAIL_SELECT = [
   "id",
@@ -74,6 +76,12 @@ const RECORD_LIST_WITH_TAGS_SELECT = [
   "record_tags(tags(name))",
 ].join(", ");
 
+const AUTHOR_RECORD_LIST_WITH_TAGS_SELECT = [
+  RECORD_LIST_SELECT,
+  "visibility",
+  "record_tags(tags(name))",
+].join(", ");
+
 type RecordRow = {
   id: string;
   slug: string;
@@ -101,6 +109,8 @@ type PaginatedDocuments<T> = {
   page: number;
   pageSize: number;
 };
+
+type AuthorWorkspaceDocumentListItem = WikiDocumentListItem & Pick<WikiDocument, "visibility">;
 
 function getDocumentSortTime(document: Pick<WikiDocument, "publishedAt" | "updatedAt">) {
   return new Date(document.publishedAt ?? document.updatedAt).getTime();
@@ -229,6 +239,17 @@ function mapRecordToListItem(
   } satisfies WikiDocumentListItem;
 }
 
+function mapRecordToAuthorListItem(
+  row: RecordRow,
+  tags: string[],
+  writerName?: string,
+): AuthorWorkspaceDocumentListItem {
+  return {
+    ...mapRecordToListItem(row, tags, writerName),
+    visibility: row.visibility ?? "public",
+  } satisfies AuthorWorkspaceDocumentListItem;
+}
+
 type RecordTagRow = {
   record_id: string;
   tag_id?: string;
@@ -309,6 +330,21 @@ async function mapRowsWithNestedTagsToListItems(
 
   return recordRows.map((row) =>
     mapRecordToListItem(
+      row,
+      getTagNamesFromRecordRow(row),
+      resolveWriterName(row, authorNameMap),
+    )
+  );
+}
+
+async function mapRowsWithNestedTagsToAuthorListItems(
+  recordRows: RecordRow[],
+  useServerClient = false,
+) {
+  const authorNameMap = await resolveAuthorNamesForRows(recordRows, useServerClient);
+
+  return recordRows.map((row) =>
+    mapRecordToAuthorListItem(
       row,
       getTagNamesFromRecordRow(row),
       resolveWriterName(row, authorNameMap),
@@ -512,15 +548,28 @@ function applyListSortOrder<
     .order("updated_at", { ascending: false });
 }
 
-async function listPublicRecordIdsForSelectedTags(selectedTags: string[]) {
-  const supabase = getPublicSupabaseClient();
+async function listRecordIdsForSelectedTags(
+  selectedTags: string[],
+  recordIds: string[] | null = null,
+  useServerClient = false,
+) {
+  const supabase = useServerClient
+    ? await getServerSupabaseClient()
+    : getPublicSupabaseClient();
   const tagSlugs = [...new Set(
     selectedTags
       .map((tag) => createSlug(tag))
       .filter(Boolean),
   )];
+  const uniqueRecordIds = recordIds
+    ? [...new Set(recordIds.filter(Boolean))]
+    : null;
 
   if (!supabase || tagSlugs.length === 0) {
+    return [] as string[];
+  }
+
+  if (uniqueRecordIds && uniqueRecordIds.length === 0) {
     return [] as string[];
   }
 
@@ -538,10 +587,16 @@ async function listPublicRecordIdsForSelectedTags(selectedTags: string[]) {
   }
 
   const tagIds = tagRows.map((row) => String(row.id));
-  const { data, error } = await supabase
+  let recordTagsQuery = supabase
     .from("record_tags")
     .select("record_id, tag_id")
     .in("tag_id", tagIds);
+
+  if (uniqueRecordIds) {
+    recordTagsQuery = recordTagsQuery.in("record_id", uniqueRecordIds);
+  }
+
+  const { data, error } = await recordTagsQuery;
 
   if (error || !data) {
     return [] as string[];
@@ -567,37 +622,40 @@ async function listPublicRecordIdsForSelectedTags(selectedTags: string[]) {
     .map(([recordId]) => recordId);
 }
 
+async function listPublicRecordIdsForSelectedTags(selectedTags: string[]) {
+  return listRecordIdsForSelectedTags(selectedTags);
+}
+
 async function filterRecordIdsBySelectedTags(
   recordIds: string[],
   selectedTags: string[],
   useServerClient = false,
 ) {
   const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];
-  const normalizedTags = selectedTags.map((tag) => normalizeDiscoveryTag(tag)).filter(Boolean);
 
-  if (uniqueRecordIds.length === 0 || normalizedTags.length === 0) {
+  if (uniqueRecordIds.length === 0 || selectedTags.length === 0) {
     return uniqueRecordIds;
   }
 
-  const tagRows = await fetchTagRowsForRecordIds(uniqueRecordIds, useServerClient);
-  const tagMap = buildTagMap(tagRows);
-
-  return uniqueRecordIds.filter((recordId) => {
-    const tags = (tagMap.get(recordId) ?? []).map((tag) => normalizeDiscoveryTag(tag));
-    return normalizedTags.every((tag) => tags.includes(tag));
-  });
+  return listRecordIdsForSelectedTags(selectedTags, uniqueRecordIds, useServerClient);
 }
 
 async function listRecordIdsMatchingDiscoveryQuery(
-  recordIds: string[],
+  recordIds: string[] | null,
   query: string,
   useServerClient = false,
 ) {
-  const uniqueRecordIds = [...new Set(recordIds.filter(Boolean))];
+  const uniqueRecordIds = recordIds
+    ? [...new Set(recordIds.filter(Boolean))]
+    : null;
   const trimmedQuery = query.trim();
 
-  if (uniqueRecordIds.length === 0 || !trimmedQuery) {
-    return uniqueRecordIds;
+  if (!trimmedQuery) {
+    return uniqueRecordIds ?? [];
+  }
+
+  if (uniqueRecordIds && uniqueRecordIds.length === 0) {
+    return [];
   }
 
   const supabase = useServerClient
@@ -614,23 +672,33 @@ async function listRecordIdsMatchingDiscoveryQuery(
     });
 
     if (!rpcResult.error && Array.isArray(rpcResult.data)) {
-      const matchedIds = new Set(
-        rpcResult.data.map((row) => String((row as { id?: string }).id ?? "")).filter(Boolean),
-      );
+      const matchedIds = rpcResult.data
+        .map((row) => String((row as { id?: string }).id ?? ""))
+        .filter(Boolean);
 
-      return uniqueRecordIds.filter((recordId) => matchedIds.has(recordId));
+      if (!uniqueRecordIds) {
+        return matchedIds;
+      }
+
+      const matchedIdSet = new Set(matchedIds);
+      return uniqueRecordIds.filter((recordId) => matchedIdSet.has(recordId));
     }
   }
 
   const pattern = `%${trimmedQuery}%`;
   const matchedIds = new Set<string>();
-  const recordFieldQueries = ["title", "contents", "book_title"].map((field) =>
-    supabase
+  const recordFieldQueries = ["title", "contents", "book_title"].map((field) => {
+    let queryBuilder = supabase
       .from("records")
       .select("id")
-      .in("id", uniqueRecordIds)
-      .ilike(field, pattern),
-  );
+      .ilike(field, pattern);
+
+    if (uniqueRecordIds) {
+      queryBuilder = queryBuilder.in("id", uniqueRecordIds);
+    }
+
+    return queryBuilder;
+  });
 
   const fieldResults = await Promise.all(recordFieldQueries);
 
@@ -651,22 +719,36 @@ async function listRecordIdsMatchingDiscoveryQuery(
   const tagIds = [...new Set((tagMatches ?? []).map((row) => String(row.id)).filter(Boolean))];
 
   if (tagIds.length > 0) {
-    const { data: recordTagMatches } = await tagClient
+    let recordTagMatchesQuery = tagClient
       .from("record_tags")
       .select("record_id")
-      .in("record_id", uniqueRecordIds)
       .in("tag_id", tagIds);
+
+    if (uniqueRecordIds) {
+      recordTagMatchesQuery = recordTagMatchesQuery.in("record_id", uniqueRecordIds);
+    }
+
+    const { data: recordTagMatches } = await recordTagMatchesQuery;
 
     (recordTagMatches ?? []).forEach((row) => matchedIds.add(String(row.record_id)));
   }
 
-  const { data: authorMatches } = await supabase
+  let authorMatchesQuery = supabase
     .from("records")
     .select("id")
-    .in("id", uniqueRecordIds)
     .ilike("author_name", pattern);
 
+  if (uniqueRecordIds) {
+    authorMatchesQuery = authorMatchesQuery.in("id", uniqueRecordIds);
+  }
+
+  const { data: authorMatches } = await authorMatchesQuery;
+
   (authorMatches ?? []).forEach((row) => matchedIds.add(String(row.id)));
+
+  if (!uniqueRecordIds) {
+    return [...matchedIds];
+  }
 
   return uniqueRecordIds.filter((recordId) => matchedIds.has(recordId));
 }
@@ -683,9 +765,8 @@ async function resolvePublicDiscoveryRecordIds(state: DiscoveryState) {
   }
 
   if (state.query) {
-    const querySupersetIds = candidateIds ?? (await listPublicRecordIds());
     const queryMatchedIds = await listRecordIdsMatchingDiscoveryQuery(
-      querySupersetIds,
+      candidateIds,
       state.query,
       false,
     );
@@ -697,26 +778,6 @@ async function resolvePublicDiscoveryRecordIds(state: DiscoveryState) {
 
   return candidateIds;
 }
-
-const listPublicRecordIds = cache(async function listPublicRecordIds() {
-  const supabase = getPublicSupabaseClient();
-
-  if (!supabase) {
-    return [] as string[];
-  }
-
-  const { data, error } = await supabase
-    .from("records")
-    .select("id")
-    .eq("visibility", "public");
-
-  if (error || !data) {
-    return [] as string[];
-  }
-
-  return data.map((row) => String(row.id));
-});
-
 async function listPublicRecordListPage(
   state: Pick<DiscoveryState, "sort" | "source">,
   page: number,
@@ -744,7 +805,7 @@ async function listPublicRecordListPage(
   function createRowsQuery(targetPage: number) {
     let rowsQuery = safeSupabase
       .from("records")
-      .select(RECORD_LIST_WITH_TAGS_SELECT, { count: "exact" })
+      .select(RECORD_LIST_WITH_TAGS_SELECT, { count: PUBLIC_DISCOVERY_COUNT_MODE })
       .eq("visibility", "public");
 
     if (state.source !== "all") {
@@ -976,6 +1037,45 @@ export async function listPublicDiscoveryPage(
   return listPublicRecordListPage(state, page, pageSize, candidateIds);
 }
 
+export async function listDiscoveryListItemsPageForRecordIds(
+  recordIds: string[],
+  state: DiscoveryState,
+  page: number,
+  pageSize: number,
+) {
+  let candidateIds = [...new Set(recordIds.filter(Boolean))];
+
+  if (candidateIds.length === 0) {
+    return emptyPaginatedListItems(pageSize);
+  }
+
+  if (state.tags.length > 0) {
+    candidateIds = await filterRecordIdsBySelectedTags(
+      candidateIds,
+      state.tags,
+      false,
+    );
+  }
+
+  if (candidateIds.length === 0) {
+    return emptyPaginatedListItems(pageSize);
+  }
+
+  if (state.query) {
+    candidateIds = await listRecordIdsMatchingDiscoveryQuery(
+      candidateIds,
+      state.query,
+      false,
+    );
+  }
+
+  if (candidateIds.length === 0) {
+    return emptyPaginatedListItems(pageSize);
+  }
+
+  return listPublicRecordListPage(state, page, pageSize, candidateIds);
+}
+
 export async function listDiscoveryDocumentsPageForRecordIds(
   recordIds: string[],
   state: DiscoveryState,
@@ -1067,6 +1167,7 @@ export const listAuthorDocuments = cache(async function listAuthorDocuments() {
 });
 
 export async function listAuthorDocumentsPage(
+  userId: string,
   page = 1,
   pageSize = AUTHOR_WORKSPACE_PAGE_SIZE,
 ) {
@@ -1079,13 +1180,9 @@ export async function listAuthorDocumentsPage(
     return paginateDocuments(sortByUpdatedAt(demoDocuments), page, pageSize);
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  if (!userId) {
     return {
-      documents: [] as WikiDocument[],
+        documents: [] as AuthorWorkspaceDocumentListItem[],
       totalCount: 0,
       totalPages: 1,
       page: 1,
@@ -1093,14 +1190,20 @@ export async function listAuthorDocumentsPage(
     };
   }
 
-  const { count, error: countError } = await supabase
+  const rowsResult = await supabase
     .from("records")
-    .select("id", { count: "exact", head: true })
-    .eq("writer_user_id", user.id);
+    .select(AUTHOR_RECORD_LIST_WITH_TAGS_SELECT, { count: AUTHOR_WORKSPACE_COUNT_MODE })
+    .eq("writer_user_id", userId)
+    .order("updated_at", { ascending: false })
+    .range(
+      (resolvedPage - 1) * resolvedPageSize,
+      resolvedPage * resolvedPageSize - 1,
+    );
+  const { data: recordRows, error: recordsError, count } = rowsResult;
 
-  if (countError) {
+  if (recordsError || !recordRows) {
     return {
-      documents: [] as WikiDocument[],
+      documents: [] as AuthorWorkspaceDocumentListItem[],
       totalCount: 0,
       totalPages: 1,
       page: 1,
@@ -1111,34 +1214,34 @@ export async function listAuthorDocumentsPage(
   const totalCount = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / resolvedPageSize));
   const currentPage = Math.min(resolvedPage, totalPages);
-  const { data: recordRows, error: recordsError } = await supabase
-    .from("records")
-    .select(RECORD_DETAIL_SELECT)
-    .eq("writer_user_id", user.id)
-    .order("updated_at", { ascending: false })
-    .range(
-      (currentPage - 1) * resolvedPageSize,
-      currentPage * resolvedPageSize - 1,
-    );
+  let pagedRows = recordRows as unknown as RecordRow[];
 
-  if (recordsError || !recordRows) {
-    return {
-      documents: [] as WikiDocument[],
-      totalCount: 0,
-      totalPages: 1,
-      page: 1,
-      pageSize: resolvedPageSize,
-    };
+  if (currentPage !== resolvedPage) {
+    const fallbackRowsResult = await supabase
+      .from("records")
+      .select(AUTHOR_RECORD_LIST_WITH_TAGS_SELECT, { count: AUTHOR_WORKSPACE_COUNT_MODE })
+      .eq("writer_user_id", userId)
+      .order("updated_at", { ascending: false })
+      .range(
+        (currentPage - 1) * resolvedPageSize,
+        currentPage * resolvedPageSize - 1,
+      );
+
+    if (fallbackRowsResult.error || !fallbackRowsResult.data) {
+      return {
+        documents: [] as AuthorWorkspaceDocumentListItem[],
+        totalCount: 0,
+        totalPages: 1,
+        page: 1,
+        pageSize: resolvedPageSize,
+      };
+    }
+
+    pagedRows = fallbackRowsResult.data as unknown as RecordRow[];
   }
 
-  const typedRecordRows = recordRows as unknown as RecordRow[];
-  const tagRows = await fetchTagRowsForRecordIds(
-    typedRecordRows.map((row) => String(row.id)),
-    true,
-  );
-
   return {
-    documents: sortByUpdatedAt(await mapRowsToDocuments(typedRecordRows, tagRows)),
+    documents: await mapRowsWithNestedTagsToAuthorListItems(pagedRows, true),
     totalCount,
     totalPages,
     page: currentPage,

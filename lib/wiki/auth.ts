@@ -1,9 +1,16 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { getProfileForUser } from "@/lib/wiki/profiles";
 import { getServerSupabaseClient } from "@/shared/api/supabase/server";
 import { hasAuthoringEnv } from "@/shared/config/env";
-import { getProfileForUser } from "@/lib/wiki/profiles";
+
+function getUserNameFromMetadata(
+  user: { user_metadata?: { user_name?: unknown; name?: unknown } } | null,
+) {
+  const candidate = user?.user_metadata?.user_name ?? user?.user_metadata?.name;
+  return typeof candidate === "string" && candidate.trim() ? candidate.trim() : null;
+}
 
 const getVerifiedAuthUser = cache(async function getVerifiedAuthUser() {
   if (!hasAuthoringEnv()) {
@@ -65,7 +72,8 @@ export const getAuthorAccess = cache(async function getAuthorAccess() {
   }
 
   const email = user?.email?.toLowerCase() ?? null;
-  const supabase = user ? await getServerSupabaseClient() : null;
+  const metadataUserName = getUserNameFromMetadata(user);
+  const supabase = !metadataUserName && user ? await getServerSupabaseClient() : null;
   const profile = user && supabase ? await getProfileForUser(supabase, user.id) : null;
 
   return {
@@ -73,7 +81,7 @@ export const getAuthorAccess = cache(async function getAuthorAccess() {
     isAuthenticated: Boolean(user),
     userId: user?.id ?? null,
     userEmail: email,
-    userName: profile?.user_name ?? null,
+    userName: metadataUserName ?? profile?.user_name ?? null,
   };
 });
 

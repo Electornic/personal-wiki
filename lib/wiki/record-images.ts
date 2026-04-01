@@ -110,7 +110,18 @@ export function extractLocalImageTokens(contents: string) {
 }
 
 export function buildRecordImageProxyUrl(token: string) {
-  return `/api/record-images?token=${encodeURIComponent(token)}`;
+  const parsed = parseRecordImageToken(token);
+
+  if (!parsed) {
+    return "/api/record-images";
+  }
+
+  const encodedPath = parsed.path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  return `/api/record-images/${encodedPath}`;
 }
 
 export function getRecordImageAltText(fileName: string) {

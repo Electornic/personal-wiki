@@ -25,6 +25,25 @@ function isOptimizableMarkdownImage(src: string) {
   return true;
 }
 
+function resolveMarkdownImageSrc(
+  src: string | Blob | undefined,
+  imageUrlOverrides?: Record<string, string>,
+) {
+  if (typeof src !== "string") {
+    return null;
+  }
+
+  if (imageUrlOverrides?.[src]) {
+    return imageUrlOverrides[src];
+  }
+
+  if (isRecordImageToken(src)) {
+    return buildRecordImageProxyUrl(src);
+  }
+
+  return src;
+}
+
 export function MarkdownContent({
   contents,
   className,
@@ -95,50 +114,41 @@ export function MarkdownContent({
               {children}
             </a>
           ),
-          img: ({ src, alt }) => (
-            (() => {
-              const resolvedSrc =
-                typeof src === "string" && imageUrlOverrides?.[src]
-                  ? imageUrlOverrides[src]
-                  : typeof src === "string" && isRecordImageToken(src)
-                    ? buildRecordImageProxyUrl(src)
-                  : typeof src === "string"
-                    ? src
-                    : null;
+          img: ({ src, alt }) => {
+            const resolvedSrc = resolveMarkdownImageSrc(src, imageUrlOverrides);
 
-              if (!resolvedSrc) {
-                return null;
-              }
+            if (!resolvedSrc) {
+              return null;
+            }
 
-              const imageClassName =
-                "my-8 w-full rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.24)] shadow-[0_12px_36px_rgba(42,36,25,0.08)]";
+            const imageClassName =
+              "my-8 w-full rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.24)] shadow-[0_12px_36px_rgba(42,36,25,0.08)]";
 
-              if (isOptimizableMarkdownImage(resolvedSrc)) {
-                return (
-                  <Image
-                    src={resolvedSrc}
-                    alt={alt ?? ""}
-                    width={1600}
-                    height={900}
-                    sizes="(min-width: 1024px) 768px, 100vw"
-                    className={imageClassName}
-                    style={{ height: "auto" }}
-                  />
-                );
-              }
-
+            if (isOptimizableMarkdownImage(resolvedSrc)) {
               return (
-                // Blob preview URLs and external markdown images stay on plain img to avoid breaking preview flows.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={resolvedSrc}
                   alt={alt ?? ""}
+                  width={1600}
+                  height={900}
+                  sizes="(min-width: 1024px) 768px, 100vw"
                   className={imageClassName}
-                  loading="lazy"
+                  style={{ height: "auto" }}
                 />
               );
-            })()
-          ),
+            }
+
+            return (
+              // Blob preview URLs and external markdown images stay on plain img to avoid breaking preview flows.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={resolvedSrc}
+                alt={alt ?? ""}
+                className={imageClassName}
+                loading="lazy"
+              />
+            );
+          },
           strong: ({ children }) => (
             <strong className="font-semibold text-[#2a2419]">{children}</strong>
           ),
