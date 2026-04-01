@@ -221,11 +221,13 @@ function buildAuthorPageHref(
 export default async function AuthorPage({ searchParams }: PageProps) {
   await connection();
 
-  const resolvedSearchParams = await searchParams;
-  const access = await getAuthorAccess();
+  const [resolvedSearchParams, access] = await Promise.all([
+    searchParams,
+    getAuthorAccess(),
+  ]);
   const currentPage = getPageNumber(resolvedSearchParams);
   const paginatedDocuments = access.isAuthenticated
-    ? await listAuthorDocumentsPage(currentPage)
+    ? await listAuthorDocumentsPage(access.userId ?? "", currentPage)
     : {
         documents: [],
         totalCount: 0,

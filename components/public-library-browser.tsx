@@ -1,22 +1,18 @@
-"use client";
+import type { ReactNode } from "react";
 
-import { DiscoveryControls } from "@/components/discovery-controls";
 import { DocumentCard } from "@/entities/record/ui/document-card";
-import type { DiscoveryState } from "@/lib/wiki/discovery";
 import type { WikiDocumentPreview } from "@/entities/record/model/types";
 
 type PublicLibraryBrowserProps = {
   records: WikiDocumentPreview[];
-  availableTags: string[];
   recordCount?: number;
-  discoveryState: DiscoveryState;
+  controlsSlot?: ReactNode;
 };
 
 export function PublicLibraryBrowser({
   records,
-  availableTags,
   recordCount,
-  discoveryState,
+  controlsSlot,
 }: PublicLibraryBrowserProps) {
   return (
     <>
@@ -30,14 +26,7 @@ export function PublicLibraryBrowser({
         </span>
       </div>
 
-      <DiscoveryControls
-        availableTags={availableTags}
-        query={discoveryState.query}
-        sort={discoveryState.sort}
-        source={discoveryState.source}
-        tags={discoveryState.tags}
-        filtersOpen={discoveryState.filtersOpen}
-      />
+      {controlsSlot}
 
       <div className="mt-8 grid gap-6">
         {records.map((document) => (

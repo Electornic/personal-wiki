@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 
+import { HomeDiscoveryControls } from "@/app/_components/home-discovery-controls";
 import { PaginationNav } from "@/components/pagination-nav";
 import { PublicLibraryBrowser } from "@/components/public-library-browser";
 import {
@@ -8,7 +9,7 @@ import {
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
 import {
-  getPublicDiscoveryView,
+  listPublicDiscoveryPage,
 } from "@/entities/record/api/documents";
 
 type PageProps = {
@@ -86,7 +87,7 @@ async function HomeLibrarySection({
   const discoveryState = parseDiscoveryState(searchParams);
   const currentPage = getPageNumber(searchParams);
 
-  const paginated = await getCachedPublicDiscoveryView(
+  const paginated = await getCachedPublicDiscoveryPage(
     discoveryState,
     currentPage,
     DISCOVERY_PAGE_SIZE,
@@ -96,9 +97,12 @@ async function HomeLibrarySection({
     <>
       <PublicLibraryBrowser
         records={paginated.documents}
-        availableTags={paginated.availableTags}
         recordCount={paginated.totalCount}
-        discoveryState={discoveryState}
+        controlsSlot={(
+          <Suspense fallback={<HomeDiscoveryControlsFallback />}>
+            <HomeDiscoveryControls discoveryState={discoveryState} />
+          </Suspense>
+        )}
       />
 
       <PaginationNav
@@ -110,7 +114,7 @@ async function HomeLibrarySection({
   );
 }
 
-async function getCachedPublicDiscoveryView(
+async function getCachedPublicDiscoveryPage(
   discoveryState: ReturnType<typeof parseDiscoveryState>,
   currentPage: number,
   pageSize: number,
@@ -120,7 +124,13 @@ async function getCachedPublicDiscoveryView(
   cacheLife("minutes");
   cacheTag("public-discovery");
 
-  return getPublicDiscoveryView(discoveryState, currentPage, pageSize);
+  return listPublicDiscoveryPage(discoveryState, currentPage, pageSize);
+}
+
+function HomeDiscoveryControlsFallback() {
+  return (
+    <div className="h-[42px] w-full animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+  );
 }
 
 function HomeLibraryFallback() {

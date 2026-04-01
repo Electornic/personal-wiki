@@ -285,26 +285,27 @@ async function assertPublicRecordForReaction(recordId: string) {
   }
 }
 
-export async function listBookmarkRecordIds() {
+export async function listBookmarkRecordIds(userId?: string | null) {
   const supabase = await getServerSupabaseClient();
 
   if (!supabase) {
     return [];
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id ?? null;
+  const resolvedUserId = userId !== undefined
+    ? userId
+    : (
+        await supabase.auth.getUser()
+      ).data.user?.id ?? null;
 
-  if (!userId) {
+  if (!resolvedUserId) {
     return [];
   }
 
   const result = await supabase
     .from("record_bookmarks")
     .select("record_id, created_at")
-    .eq("user_id", userId)
+    .eq("user_id", resolvedUserId)
     .order("created_at", { ascending: false });
 
   if (result.error || !result.data) {

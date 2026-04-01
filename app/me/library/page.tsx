@@ -1,16 +1,16 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
+import { MyLibraryDiscoveryControls } from "@/app/me/library/_components/my-library-discovery-controls";
 import { MyLibraryBrowser } from "@/components/my-library-browser";
 import { PaginationNav } from "@/components/pagination-nav";
-import { toDocumentPreview } from "@/entities/record/model/content";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import {
   DISCOVERY_PAGE_SIZE,
   parseDiscoveryState,
 } from "@/lib/wiki/discovery";
 import {
-  listAvailableTagsForMyLibrary,
   listMyLibraryDiscoveryPage,
 } from "@/lib/wiki/library";
 
@@ -33,23 +33,24 @@ function MyLibraryIcon({ className = "h-4 w-4" }: { className?: string }) {
 export default async function MyLibraryPage({ searchParams }: PageProps) {
   await connection();
 
-  const access = await requireAuthorAccess();
+  const [access, resolvedSearchParams] = await Promise.all([
+    requireAuthorAccess(),
+    searchParams,
+  ]);
 
   if (!access.configured) {
     redirect("/author");
   }
 
-  const resolvedSearchParams = await searchParams;
   const discoveryState = parseDiscoveryState(resolvedSearchParams);
   const currentPage = getPageNumber(resolvedSearchParams);
+  const userId = access.userId ?? "";
   const paginated = await listMyLibraryDiscoveryPage(
+    userId,
     discoveryState,
     currentPage,
     DISCOVERY_PAGE_SIZE,
   );
-  const records = paginated.documents;
-  const previews = records.map((record) => toDocumentPreview(record));
-  const availableTags = await listAvailableTagsForMyLibrary();
 
   return (
     <main className="site-shell pb-20 pt-12">
@@ -69,9 +70,12 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
         </div>
 
         <MyLibraryBrowser
-          records={previews}
-          availableTags={availableTags}
-          discoveryState={discoveryState}
+          records={paginated.documents}
+          controlsSlot={(
+            <Suspense fallback={<MyLibraryDiscoveryControlsFallback />}>
+              <MyLibraryDiscoveryControls discoveryState={discoveryState} userId={userId} />
+            </Suspense>
+          )}
         />
 
         <PaginationNav
@@ -81,6 +85,12 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
         />
       </section>
     </main>
+  );
+}
+
+function MyLibraryDiscoveryControlsFallback() {
+  return (
+    <div className="mt-10 h-[42px] w-full animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
   );
 }
 

@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 
-import { DiscoveryControls } from "@/components/discovery-controls";
 import { MyLibraryCard } from "@/components/my-library-card";
-import type { DiscoveryState } from "@/lib/wiki/discovery";
 import type { WikiDocumentPreview } from "@/entities/record/model/types";
 
 type MyLibraryBrowserProps = {
   records: WikiDocumentPreview[];
-  availableTags: string[];
-  discoveryState: DiscoveryState;
+  controlsSlot?: ReactNode;
 };
 
 function MyLibraryIcon({ className = "h-12 w-12" }: { className?: string }) {
@@ -27,20 +25,11 @@ function MyLibraryIcon({ className = "h-12 w-12" }: { className?: string }) {
 
 export function MyLibraryBrowser({
   records,
-  availableTags,
-  discoveryState,
+  controlsSlot,
 }: MyLibraryBrowserProps) {
   return (
     <>
-      <DiscoveryControls
-        className="mt-10"
-        availableTags={availableTags}
-        query={discoveryState.query}
-        sort={discoveryState.sort}
-        source={discoveryState.source}
-        tags={discoveryState.tags}
-        filtersOpen={discoveryState.filtersOpen}
-      />
+      {controlsSlot}
 
       {records.length ? (
         <div className="mt-10 grid gap-6 md:grid-cols-2">
