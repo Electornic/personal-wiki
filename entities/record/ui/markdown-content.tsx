@@ -1,3 +1,4 @@
+import Image from "next/image";
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -11,6 +12,18 @@ type MarkdownContentProps = {
   className?: string;
   imageUrlOverrides?: Record<string, string>;
 };
+
+function isOptimizableMarkdownImage(src: string) {
+  if (!src.startsWith("/")) {
+    return false;
+  }
+
+  if (src.startsWith("//")) {
+    return false;
+  }
+
+  return true;
+}
 
 export function MarkdownContent({
   contents,
@@ -97,13 +110,30 @@ export function MarkdownContent({
                 return null;
               }
 
+              const imageClassName =
+                "my-8 w-full rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.24)] shadow-[0_12px_36px_rgba(42,36,25,0.08)]";
+
+              if (isOptimizableMarkdownImage(resolvedSrc)) {
+                return (
+                  <Image
+                    src={resolvedSrc}
+                    alt={alt ?? ""}
+                    width={1600}
+                    height={900}
+                    sizes="(min-width: 1024px) 768px, 100vw"
+                    className={imageClassName}
+                    style={{ height: "auto" }}
+                  />
+                );
+              }
+
               return (
-                // Plain img keeps markdown image support simple across public and preview surfaces.
+                // Blob preview URLs and external markdown images stay on plain img to avoid breaking preview flows.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={resolvedSrc}
                   alt={alt ?? ""}
-                  className="my-8 w-full rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.24)] object-cover shadow-[0_12px_36px_rgba(42,36,25,0.08)]"
+                  className={imageClassName}
                   loading="lazy"
                 />
               );

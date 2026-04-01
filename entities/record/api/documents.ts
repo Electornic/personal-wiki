@@ -13,6 +13,7 @@ import {
   isDefaultDiscoveryState,
   sortDiscoveryDocuments,
 } from "@/lib/wiki/discovery";
+import { getProfilesForUsers } from "@/lib/wiki/profiles";
 import { getRelatedDocuments } from "@/lib/wiki/recommendations";
 import {
   buildRecordImagePath,
@@ -47,6 +48,7 @@ const RECORD_DETAIL_SELECT = [
   "book_title",
   "visibility",
   "author_name",
+  "writer_user_id",
   "published_at",
   "reaction_count",
   "created_at",
@@ -61,6 +63,7 @@ const RECORD_LIST_SELECT = [
   "source_type",
   "book_title",
   "author_name",
+  "writer_user_id",
   "published_at",
   "updated_at",
   "reaction_count",
@@ -210,6 +213,7 @@ function mapRecordToDocument(row: RecordRow, tags: string[]): WikiDocument {
 function mapRecordToListItem(
   row: RecordRow,
   tags: string[],
+  writerName?: string,
 ): WikiDocumentListItem {
   return {
     id: String(row.id),
@@ -218,7 +222,7 @@ function mapRecordToListItem(
     excerpt: getExcerpt(String(row.excerpt ?? row.contents ?? row.title)),
     sourceType: row.source_type,
     bookTitle: row.book_title ?? (row.source_type === "book" ? String(row.title) : null),
-    writerName: String(row.author_name ?? "unknown"),
+    writerName: writerName ?? String(row.author_name ?? "unknown"),
     publishedAt: row.published_at ?? null,
     tags,
     updatedAt: String(row.updated_at),
@@ -270,9 +274,19 @@ function buildTagMap(tagRows: RecordTagRow[]) {
 async function mapRowsToDocuments(
   recordRows: RecordRow[],
   tagRows: RecordTagRow[],
+  useServerClient = false,
 ) {
   const tagMap = buildTagMap(tagRows);
-  return recordRows.map((row) => mapRecordToDocument(row, tagMap.get(String(row.id)) ?? []));
+  const authorNameMap = await resolveAuthorNamesForRows(recordRows, useServerClient);
+
+  return recordRows.map((row) => {
+    const writerName = resolveWriterName(row, authorNameMap);
+
+    return {
+      ...mapRecordToDocument(row, tagMap.get(String(row.id)) ?? []),
+      writerName,
+    };
+  });
 }
 
 function getTagNamesFromRecordRow(row: RecordRow) {
@@ -287,8 +301,93 @@ function getTagNamesFromRecordRow(row: RecordRow) {
   return [...new Set(tagNames)];
 }
 
-function mapRowsWithNestedTagsToListItems(recordRows: RecordRow[]) {
-  return recordRows.map((row) => mapRecordToListItem(row, getTagNamesFromRecordRow(row)));
+async function mapRowsWithNestedTagsToListItems(
+  recordRows: RecordRow[],
+  useServerClient = false,
+) {
+  const authorNameMap = await resolveAuthorNamesForRows(recordRows, useServerClient);
+
+  return recordRows.map((row) =>
+    mapRecordToListItem(
+      row,
+      getTagNamesFromRecordRow(row),
+      resolveWriterName(row, authorNameMap),
+    )
+  );
+}
+
+async function resolveAuthorNamesForRows(
+  recordRows: RecordRow[],
+  useServerClient = false,
+) {
+  const missingWriterRows = recordRows.filter((row) => {
+    return !String(row.author_name ?? "").trim() && Boolean(row.writer_user_id);
+  });
+
+  if (missingWriterRows.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const adminSupabase = getAdminSupabaseClient();
+  const supabase = adminSupabase
+    ?? (useServerClient ? await getServerSupabaseClient() : getPublicSupabaseClient());
+
+  if (!supabase) {
+    return new Map<string, string>();
+  }
+
+  const profileMap = await getProfilesForUsers(
+    supabase,
+    missingWriterRows.map((row) => String(row.writer_user_id)),
+  );
+  const authorNameMap = new Map<string, string>();
+
+  for (const row of missingWriterRows) {
+    const writerUserId = String(row.writer_user_id ?? "").trim();
+
+    if (!writerUserId) {
+      continue;
+    }
+
+    const profile = profileMap.get(writerUserId);
+    const userName = String(profile?.user_name ?? "").trim();
+
+    if (userName) {
+      authorNameMap.set(writerUserId, userName);
+      continue;
+    }
+
+    const fallbackName = fallbackAuthorName(profile?.email ?? null);
+
+    if (fallbackName !== "unknown") {
+      authorNameMap.set(writerUserId, fallbackName);
+    }
+  }
+
+  return authorNameMap;
+}
+
+function resolveWriterName(
+  row: RecordRow,
+  authorNameMap: Map<string, string>,
+) {
+  const savedAuthorName = String(row.author_name ?? "").trim();
+
+  if (savedAuthorName) {
+    return savedAuthorName;
+  }
+
+  const writerUserId = String(row.writer_user_id ?? "").trim();
+
+  if (writerUserId) {
+    const profileAuthorName = authorNameMap.get(writerUserId);
+
+    if (profileAuthorName) {
+      return profileAuthorName;
+    }
+  }
+
+  return "unknown";
 }
 
 async function fetchTagRowsForRecordIds(
@@ -687,7 +786,7 @@ async function listPublicRecordListPage(
   const typedRecordRows = recordRows as unknown as RecordRow[];
 
   return {
-    documents: mapRowsWithNestedTagsToListItems(typedRecordRows),
+    documents: await mapRowsWithNestedTagsToListItems(typedRecordRows),
     totalCount,
     totalPages,
     page: currentPage,
@@ -1196,7 +1295,7 @@ export async function listPublicDocumentsByTag(tag: string) {
   }
 
   const typedRecordRows = recordRows as unknown as RecordRow[];
-  return mapRowsWithNestedTagsToListItems(typedRecordRows);
+  return await mapRowsWithNestedTagsToListItems(typedRecordRows);
 }
 
 export async function getPublicDiscoveryView(
@@ -1273,8 +1372,9 @@ export async function listRelatedDocumentsForDocument(
     return [];
   }
 
-  const candidateDocuments = mapRowsWithNestedTagsToListItems(
+  const candidateDocuments = await mapRowsWithNestedTagsToListItems(
     candidateRows as unknown as RecordRow[],
+    useServerClient,
   );
 
   return getRelatedDocuments(document, candidateDocuments, limit);
@@ -1309,7 +1409,7 @@ export async function listDocumentsByIds(
 
   const typedRecordRows = recordRows as unknown as RecordRow[];
   const tagRows = await fetchTagRowsForRecordIds(uniqueRecordIds, useServerClient);
-  const documents = await mapRowsToDocuments(typedRecordRows, tagRows);
+  const documents = await mapRowsToDocuments(typedRecordRows, tagRows, useServerClient);
 
   const orderedDocuments: WikiDocument[] = [];
 

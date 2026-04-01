@@ -222,11 +222,20 @@ SQL은 아래 순서대로 실행합니다.
 - owner 기준 insert/update/delete/select storage policy 추가
 - author editor 이미지 업로드/preview/cleanup 경로 준비
 
+### Step 20. v0.6.12 author name backfill refresh
+
+실행 파일:
+- [supabase/migrations/20260401T120000Z_v0_6_12_author_name_backfill_refresh.sql](/Users/leejun/Desktop/Projects/personal-wiki/supabase/migrations/20260401T120000Z_v0_6_12_author_name_backfill_refresh.sql)
+
+역할:
+- `author_name`이 비어 있는 기존 `records` row를 다시 한 번 `profiles.user_name` 또는 email prefix 기준으로 보정
+- `v0.6.8` search trigger가 존재하는 환경에서 writer 검색 인덱스까지 함께 최신화
+
 ## 4. Recommended Execution Flow
 
 1. Supabase 프로젝트 생성
 2. `.env.local` 작성
-3. 위 SQL 열아홉 개를 순서대로 SQL Editor에서 실행
+3. 위 SQL 스무 개를 순서대로 SQL Editor에서 실행
 4. 로컬 서버 실행
 
 ```bash
