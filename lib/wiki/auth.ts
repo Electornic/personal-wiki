@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { getProfileForUser } from "@/lib/wiki/profiles";
 import { getServerSupabaseClient } from "@/shared/api/supabase/server";
 import { hasAuthoringEnv } from "@/shared/config/env";
 
@@ -72,13 +73,15 @@ export const getAuthorAccess = cache(async function getAuthorAccess() {
 
   const email = user?.email?.toLowerCase() ?? null;
   const metadataUserName = getUserNameFromMetadata(user);
+  const supabase = !metadataUserName && user ? await getServerSupabaseClient() : null;
+  const profile = user && supabase ? await getProfileForUser(supabase, user.id) : null;
 
   return {
     configured: true,
     isAuthenticated: Boolean(user),
     userId: user?.id ?? null,
     userEmail: email,
-    userName: metadataUserName,
+    userName: metadataUserName ?? profile?.user_name ?? null,
   };
 });
 
