@@ -73,9 +73,6 @@
 
 ## Docs
 
-- 제품 정의 관련 변경 시 기준 문서 먼저 확인:
-  - `.omx/specs/deep-interview-personal-wiki-foundation.md`
-  - `.omx/plans/personal-wiki-mvp-ralplan.md`
 - 아키텍처/환경변수/인증/데이터 모델/사용자 플로우 변경 시 관련 문서 함께 갱신
 - 새 SQL migration 시 `SETUP_GUIDE.md` 갱신
 - `docs/task` → `docs/task/TEMPLATE.md` 기준, 파일명 `v0_[minor]_[patch]_[major-topic].md`
