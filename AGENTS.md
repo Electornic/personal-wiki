@@ -70,9 +70,6 @@
 
 - 새 태스크를 시작할 때는 전용 브랜치를 먼저 만든다.
 - 새 버전 작업을 시작할 때는 `README.md` 업데이트 필요 여부를 먼저 검토한다.
-- 제품 정의와 관련된 변경이면 아래 기준 문서를 먼저 확인한다.
-  - `.omx/specs/deep-interview-personal-wiki-foundation.md`
-  - `.omx/plans/personal-wiki-mvp-ralplan.md`
 - 요청이 모호하고 제품 범위 판단이 필요하면 바로 구현하지 말고 `deep-interview` 또는 `ralplan` 경로를 우선 검토한다.
 
 ### While Implementing
