@@ -687,6 +687,7 @@ async function listRecordIdsMatchingDiscoveryQuery(
 
   const pattern = `%${trimmedQuery}%`;
   const matchedIds = new Set<string>();
+
   const recordFieldQueries = ["title", "contents", "book_title"].map((field) => {
     let queryBuilder = supabase
       .from("records")
@@ -700,7 +701,20 @@ async function listRecordIdsMatchingDiscoveryQuery(
     return queryBuilder;
   });
 
-  const fieldResults = await Promise.all(recordFieldQueries);
+  let authorMatchesQuery = supabase
+    .from("records")
+    .select("id")
+    .ilike("author_name", pattern);
+
+  if (uniqueRecordIds) {
+    authorMatchesQuery = authorMatchesQuery.in("id", uniqueRecordIds);
+  }
+
+  const [fieldResults, tagNameResult, authorResult] = await Promise.all([
+    Promise.all(recordFieldQueries),
+    supabase.from("tags").select("id").ilike("name", pattern),
+    authorMatchesQuery,
+  ]);
 
   for (const result of fieldResults) {
     if (result.error || !result.data) {
@@ -710,16 +724,14 @@ async function listRecordIdsMatchingDiscoveryQuery(
     result.data.forEach((row) => matchedIds.add(String(row.id)));
   }
 
-  const tagClient = supabase;
-  const { data: tagMatches } = await tagClient
-    .from("tags")
-    .select("id")
-    .ilike("name", pattern);
+  (authorResult.data ?? []).forEach((row) => matchedIds.add(String(row.id)));
 
-  const tagIds = [...new Set((tagMatches ?? []).map((row) => String(row.id)).filter(Boolean))];
+  const tagIds = [...new Set(
+    (tagNameResult.data ?? []).map((row) => String(row.id)).filter(Boolean),
+  )];
 
   if (tagIds.length > 0) {
-    let recordTagMatchesQuery = tagClient
+    let recordTagMatchesQuery = supabase
       .from("record_tags")
       .select("record_id")
       .in("tag_id", tagIds);
@@ -733,19 +745,6 @@ async function listRecordIdsMatchingDiscoveryQuery(
     (recordTagMatches ?? []).forEach((row) => matchedIds.add(String(row.record_id)));
   }
 
-  let authorMatchesQuery = supabase
-    .from("records")
-    .select("id")
-    .ilike("author_name", pattern);
-
-  if (uniqueRecordIds) {
-    authorMatchesQuery = authorMatchesQuery.in("id", uniqueRecordIds);
-  }
-
-  const { data: authorMatches } = await authorMatchesQuery;
-
-  (authorMatches ?? []).forEach((row) => matchedIds.add(String(row.id)));
-
   if (!uniqueRecordIds) {
     return [...matchedIds];
   }
@@ -753,30 +752,62 @@ async function listRecordIdsMatchingDiscoveryQuery(
   return uniqueRecordIds.filter((recordId) => matchedIds.has(recordId));
 }
 
+async function resolveFilteredRecordIds(
+  recordIds: string[],
+  state: Pick<DiscoveryState, "tags" | "query">,
+  useServerClient: boolean,
+) {
+  const hasTagFilter = state.tags.length > 0;
+  const hasQueryFilter = Boolean(state.query);
+
+  if (!hasTagFilter && !hasQueryFilter) {
+    return recordIds;
+  }
+
+  if (hasTagFilter && hasQueryFilter) {
+    const [tagFiltered, queryFiltered] = await Promise.all([
+      filterRecordIdsBySelectedTags(recordIds, state.tags, useServerClient),
+      listRecordIdsMatchingDiscoveryQuery(recordIds, state.query, useServerClient),
+    ]);
+
+    const querySet = new Set(queryFiltered);
+    return tagFiltered.filter((id) => querySet.has(id));
+  }
+
+  if (hasTagFilter) {
+    return filterRecordIdsBySelectedTags(recordIds, state.tags, useServerClient);
+  }
+
+  return listRecordIdsMatchingDiscoveryQuery(recordIds, state.query, useServerClient);
+}
+
 async function resolvePublicDiscoveryRecordIds(state: DiscoveryState) {
-  let candidateIds: string[] | null = null;
+  const hasTagFilter = state.tags.length > 0;
+  const hasQueryFilter = Boolean(state.query);
 
-  if (state.tags.length > 0) {
-    candidateIds = await listPublicRecordIdsForSelectedTags(state.tags);
+  if (!hasTagFilter && !hasQueryFilter) {
+    return null;
+  }
 
-    if (candidateIds.length === 0) {
+  if (hasTagFilter && hasQueryFilter) {
+    const [tagIds, queryIds] = await Promise.all([
+      listPublicRecordIdsForSelectedTags(state.tags),
+      listRecordIdsMatchingDiscoveryQuery(null, state.query, false),
+    ]);
+
+    if (tagIds.length === 0 || queryIds.length === 0) {
       return [];
     }
+
+    const queryIdSet = new Set(queryIds);
+    return tagIds.filter((id) => queryIdSet.has(id));
   }
 
-  if (state.query) {
-    const queryMatchedIds = await listRecordIdsMatchingDiscoveryQuery(
-      candidateIds,
-      state.query,
-      false,
-    );
-
-    candidateIds = candidateIds
-      ? candidateIds.filter((recordId) => queryMatchedIds.includes(recordId))
-      : queryMatchedIds;
+  if (hasTagFilter) {
+    return listPublicRecordIdsForSelectedTags(state.tags);
   }
 
-  return candidateIds;
+  return listRecordIdsMatchingDiscoveryQuery(null, state.query, false);
 }
 async function listPublicRecordListPage(
   state: Pick<DiscoveryState, "sort" | "source">,
@@ -1043,37 +1074,19 @@ export async function listDiscoveryListItemsPageForRecordIds(
   page: number,
   pageSize: number,
 ) {
-  let candidateIds = [...new Set(recordIds.filter(Boolean))];
+  const candidateIds = [...new Set(recordIds.filter(Boolean))];
 
   if (candidateIds.length === 0) {
     return emptyPaginatedListItems(pageSize);
   }
 
-  if (state.tags.length > 0) {
-    candidateIds = await filterRecordIdsBySelectedTags(
-      candidateIds,
-      state.tags,
-      false,
-    );
-  }
+  const filteredIds = await resolveFilteredRecordIds(candidateIds, state, false);
 
-  if (candidateIds.length === 0) {
+  if (filteredIds.length === 0) {
     return emptyPaginatedListItems(pageSize);
   }
 
-  if (state.query) {
-    candidateIds = await listRecordIdsMatchingDiscoveryQuery(
-      candidateIds,
-      state.query,
-      false,
-    );
-  }
-
-  if (candidateIds.length === 0) {
-    return emptyPaginatedListItems(pageSize);
-  }
-
-  return listPublicRecordListPage(state, page, pageSize, candidateIds);
+  return listPublicRecordListPage(state, page, pageSize, filteredIds);
 }
 
 export async function listDiscoveryDocumentsPageForRecordIds(
@@ -1107,24 +1120,14 @@ export async function listDiscoveryDocumentsPageForRecordIds(
     candidateIds = data.map((row) => String(row.id));
   }
 
-  if (state.tags.length > 0) {
-    candidateIds = await filterRecordIdsBySelectedTags(
-      candidateIds,
-      state.tags,
-      useServerClient,
-    );
-  }
-
-  if (state.query) {
-    candidateIds = await listRecordIdsMatchingDiscoveryQuery(
-      candidateIds,
-      state.query,
-      useServerClient,
-    );
-  }
+  const filteredIds = await resolveFilteredRecordIds(
+    candidateIds,
+    state,
+    useServerClient,
+  );
 
   return listDiscoveryDocumentsPageFromIds(
-    candidateIds,
+    filteredIds,
     state,
     page,
     pageSize,
@@ -1437,17 +1440,18 @@ export async function listRelatedDocumentsForDocument(
     return [];
   }
 
-  const sourceTagRows = await fetchTagRowsForRecordId(document.id, useServerClient);
-  const sourceTagIds = [...new Set(sourceTagRows.map((row) => row.tag_id).filter(Boolean))];
+  const tagSlugs = [...new Set(
+    document.tags.map((tag) => createSlug(tag)).filter(Boolean),
+  )];
 
-  if (sourceTagIds.length === 0) {
+  if (tagSlugs.length === 0) {
     return [];
   }
 
   const { data: candidateTagRows, error: candidateTagsError } = await supabase
     .from("record_tags")
-    .select("record_id, tag_id, tags(name)")
-    .in("tag_id", sourceTagIds)
+    .select("record_id, tag_id, tags!inner(name, slug)")
+    .in("tags.slug", tagSlugs)
     .neq("record_id", document.id);
 
   if (candidateTagsError || !candidateTagRows) {
