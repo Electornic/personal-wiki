@@ -16,9 +16,7 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function Home({ searchParams }: PageProps) {
-  const resolvedSearchParams = await searchParams;
-
+export default function Home({ searchParams }: PageProps) {
   return (
     <main className="site-shell pb-16 pt-12 md:pb-20 md:pt-16">
       <section className="mx-auto max-w-[768px] text-center">
@@ -33,7 +31,7 @@ export default async function Home({ searchParams }: PageProps) {
 
       <section id="library" className="mt-16 md:mt-20">
         <Suspense fallback={<HomeLibraryFallback />}>
-          <HomeLibrarySection searchParams={resolvedSearchParams} />
+          <HomeLibrarySection searchParams={searchParams} />
         </Suspense>
       </section>
     </main>
@@ -80,10 +78,11 @@ function buildPageHref(
 }
 
 async function HomeLibrarySection({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const searchParams = await searchParamsPromise;
   const discoveryState = parseDiscoveryState(searchParams);
   const currentPage = getPageNumber(searchParams);
 

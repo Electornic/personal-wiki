@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
 import { PaginationNav } from "@/components/pagination-nav";
-import {
-  AUTHOR_WORKSPACE_PAGE_SIZE,
-  listAuthorDocumentsPage,
-} from "@/entities/record/api/documents";
+import { listAuthorDocumentsPage } from "@/entities/record/api/documents";
 import { formatLongDisplayDate } from "@/entities/record/model/content";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 import { buildLibraryHref } from "@/lib/wiki/routes";
@@ -218,33 +216,25 @@ function buildAuthorPageHref(
   return query ? `/author?${query}` : "/author";
 }
 
-export default async function AuthorPage({ searchParams }: PageProps) {
+export default function AuthorPage({ searchParams }: PageProps) {
+  return (
+    <Suspense fallback={<AuthorPageSkeleton />}>
+      <AuthorPageContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function AuthorPageContent({
+  searchParams: searchParamsPromise,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   await connection();
 
   const [resolvedSearchParams, access] = await Promise.all([
-    searchParams,
+    searchParamsPromise,
     getAuthorAccess(),
   ]);
-  const currentPage = getPageNumber(resolvedSearchParams);
-  const paginatedDocuments = access.isAuthenticated
-    ? await listAuthorDocumentsPage(access.userId ?? "", currentPage)
-    : {
-        documents: [],
-        totalCount: 0,
-        totalPages: 1,
-        page: 1,
-        pageSize: AUTHOR_WORKSPACE_PAGE_SIZE,
-      };
-  const documents = paginatedDocuments.documents;
-  const workspaceMessage = getWorkspaceMessage(resolvedSearchParams);
-  const pageStart =
-    paginatedDocuments.totalCount === 0
-      ? 0
-      : (paginatedDocuments.page - 1) * paginatedDocuments.pageSize + 1;
-  const pageEnd =
-    paginatedDocuments.totalCount === 0
-      ? 0
-      : pageStart + documents.length - 1;
 
   if (!hasAuthoringEnv()) {
     return (
@@ -283,6 +273,8 @@ export default async function AuthorPage({ searchParams }: PageProps) {
       </main>
     );
   }
+
+  const workspaceMessage = getWorkspaceMessage(resolvedSearchParams);
 
   return (
     <main className="site-shell pb-20 pt-20">
@@ -337,6 +329,57 @@ export default async function AuthorPage({ searchParams }: PageProps) {
         </section>
       ) : null}
 
+      <Suspense fallback={<DocumentListSkeleton />}>
+        <AuthorDocumentList
+          userId={access.userId ?? ""}
+          searchParams={resolvedSearchParams}
+        />
+      </Suspense>
+    </main>
+  );
+}
+
+function AuthorPageSkeleton() {
+  return (
+    <main className="site-shell pb-20 pt-20">
+      <section className="space-y-8 animate-pulse">
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="h-12 w-48 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="mt-3 h-5 w-64 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+          </div>
+          <div className="flex flex-col gap-3 md:flex-row">
+            <div className="h-12 w-36 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="h-12 w-32 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+          </div>
+        </div>
+        <div className="h-px w-full bg-[rgba(42,36,25,0.08)]" />
+      </section>
+    </main>
+  );
+}
+
+async function AuthorDocumentList({
+  userId,
+  searchParams,
+}: {
+  userId: string;
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  const currentPage = getPageNumber(searchParams);
+  const paginatedDocuments = await listAuthorDocumentsPage(userId, currentPage);
+  const documents = paginatedDocuments.documents;
+  const pageStart =
+    paginatedDocuments.totalCount === 0
+      ? 0
+      : (paginatedDocuments.page - 1) * paginatedDocuments.pageSize + 1;
+  const pageEnd =
+    paginatedDocuments.totalCount === 0
+      ? 0
+      : pageStart + documents.length - 1;
+
+  return (
+    <>
       {documents.length ? (
         <section className="mt-8 flex flex-col gap-2 text-[14px] leading-5 text-[#6b6354] md:flex-row md:items-center md:justify-between">
           <p>
@@ -349,39 +392,39 @@ export default async function AuthorPage({ searchParams }: PageProps) {
       ) : null}
 
       <section className="mt-16 grid gap-6">
-        {documents.map((document) => {
-          const visibleTags = document.tags.slice(0, 3);
-          const remainingTagCount = Math.max(document.tags.length - visibleTags.length, 0);
+        {documents.map((currentDocument) => {
+          const visibleTags = currentDocument.tags.slice(0, 3);
+          const remainingTagCount = Math.max(currentDocument.tags.length - visibleTags.length, 0);
 
           return (
             <article
-              key={document.id}
+              key={currentDocument.id}
               className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[24px] py-[24px]"
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
                     <h2 className="max-w-[560px] text-[24px] leading-[33.6px] font-semibold text-[#2a2419]">
-                      {document.title}
+                      {currentDocument.title}
                     </h2>
                     <span
                       className={`inline-flex h-6 items-center gap-1 rounded-[4px] px-[10px] text-[12px] leading-4 font-medium ${
-                        document.visibility === "public"
+                        currentDocument.visibility === "public"
                           ? "bg-[#e8e3db] text-[#2a2419]"
                           : "bg-[#e8e3db] text-[#6b6354]"
                       }`}
                     >
-                      {document.visibility === "public" ? <PublicIcon /> : <PrivateIcon />}
-                      {document.visibility === "public" ? "Public" : "Private"}
+                      {currentDocument.visibility === "public" ? <PublicIcon /> : <PrivateIcon />}
+                      {currentDocument.visibility === "public" ? "Public" : "Private"}
                     </span>
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-3 text-[14px] leading-5 text-[#6b6354]">
                     <span className="inline-flex items-center gap-1.5 capitalize">
                       <ArticleIcon />
-                      {document.sourceType}
+                      {currentDocument.sourceType}
                     </span>
-                    <span>{formatLongDisplayDate(document.publishedAt)}</span>
+                    <span>{formatLongDisplayDate(currentDocument.publishedAt)}</span>
                     <div className="flex flex-wrap gap-2">
                       {visibleTags.map((tag) => (
                         <span
@@ -403,8 +446,8 @@ export default async function AuthorPage({ searchParams }: PageProps) {
                 <div className="flex flex-wrap gap-2 md:ml-6 md:justify-end">
                   <Link
                     className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
-                    href={buildLibraryHref(document.slug, {
-                      preview: document.visibility === "private",
+                    href={buildLibraryHref(currentDocument.slug, {
+                      preview: currentDocument.visibility === "private",
                     })}
                   >
                     <PreviewIcon />
@@ -412,13 +455,13 @@ export default async function AuthorPage({ searchParams }: PageProps) {
                   </Link>
                   <Link
                     className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
-                    href={`/author/documents/${document.id}`}
+                    href={`/author/documents/${currentDocument.id}`}
                   >
                     <EditIcon />
                     <span className="hidden md:inline">Edit</span>
                   </Link>
                   <form action={deleteDocument}>
-                    <input type="hidden" name="documentId" value={document.id} />
+                    <input type="hidden" name="documentId" value={currentDocument.id} />
                     <button
                       className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white text-[#d45c4f]"
                       type="submit"
@@ -457,9 +500,38 @@ export default async function AuthorPage({ searchParams }: PageProps) {
         className="mt-10"
         currentPage={paginatedDocuments.page}
         totalPages={paginatedDocuments.totalPages}
-        buildHref={(page) => buildAuthorPageHref(resolvedSearchParams, page)}
+        buildHref={(page) => buildAuthorPageHref(searchParams, page)}
       />
+    </>
+  );
+}
 
-    </main>
+function DocumentListSkeleton() {
+  return (
+    <section className="mt-16 grid gap-6 animate-pulse">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div
+          key={index}
+          className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-[24px] py-[24px]"
+        >
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="flex-1">
+              <div className="h-8 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="mt-4 h-5 w-2/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="mt-4 flex flex-wrap gap-2">
+                <div className="h-5 w-16 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+                <div className="h-5 w-20 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+                <div className="h-5 w-14 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="h-[38px] w-[92px] rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="h-[38px] w-[78px] rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="h-[34px] w-[34px] rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </section>
   );
 }

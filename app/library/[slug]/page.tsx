@@ -107,18 +107,7 @@ function buildRelatedReasonText(
     : "A nearby article from the same reading shelf";
 }
 
-export default async function LibraryDocumentPage({ params, searchParams }: PageProps) {
-  const { slug } = await params;
-  const resolvedSearchParams = await searchParams;
-  const previewMode = getSearchParam(resolvedSearchParams, "preview") === "1";
-  const document = previewMode
-    ? await getReadableDocumentBySlug(slug)
-    : await getCachedPublicDocument(slug);
-
-  if (!document) {
-    notFound();
-  }
-
+export default function LibraryDocumentPage({ params, searchParams }: PageProps) {
   return (
     <main className="site-shell pb-20 pt-8">
       <div className="site-shell-content">
@@ -130,79 +119,105 @@ export default async function LibraryDocumentPage({ params, searchParams }: Page
           Library
         </Link>
 
-        <article className="mt-8 w-full">
-          <header>
-            <div className="flex items-center">
-              {document.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
-            </div>
-            <h1 className="mt-4 text-[36px] leading-[45px] font-semibold tracking-[-0.02em] text-[#2a2419] md:text-[48px] md:leading-[60px] md:tracking-[-0.96px]">
-              {document.title}
-            </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[16px] leading-6">
-              <span className="font-medium text-[#2a2419]">{document.writerName}</span>
-              <span className="text-[#6b6354]">·</span>
-              <span className="text-[#6b6354]">
-                {formatLongDisplayDate(document.publishedAt)}
-              </span>
-            </div>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {document.tags.map((tag) => (
-                <TopicPill key={tag} label={tag} />
-              ))}
-            </div>
-          </header>
-
-          <section className="mt-12">
-            <MarkdownContent
-              contents={document.contents}
-              className={[
-                "prose-p:mb-[28px] prose-p:text-[18px] prose-p:leading-[29.25px] prose-p:text-[#2a2419]",
-                "prose-headings:mt-11 prose-headings:mb-3 prose-headings:text-[#2a2419]",
-                "prose-h1:text-[30px] prose-h1:leading-9 prose-h1:tracking-[-0.3px]",
-                "prose-h2:text-[24px] prose-h2:leading-8",
-                "prose-blockquote:my-8 prose-blockquote:border-l-4 prose-blockquote:border-[rgba(42,36,25,0.1)] prose-blockquote:pl-7 prose-blockquote:text-[18px] prose-blockquote:leading-[29.25px] prose-blockquote:italic prose-blockquote:text-[rgba(42,36,25,0.8)]",
-                "prose-ol:my-6 prose-ol:pl-6 prose-li:mb-2 prose-li:text-[18px] prose-li:leading-[29.25px] prose-li:text-[#2a2419]",
-                "prose-strong:text-[#2a2419]",
-              ].join(" ")}
-            />
-          </section>
-
-          {document.visibility === "public" ? (
-            <Suspense fallback={<RecordReactionsFallback />}>
-              <RecordReactionsSection
-                documentId={document.id}
-                recordSlug={document.slug}
-                visibility={document.visibility}
-                initialLikeCount={document.reactionCount ?? 0}
-              />
-            </Suspense>
-          ) : null}
-
-          <Suspense fallback={<RelatedDocumentsFallback />}>
-            <RelatedDocumentsSection document={document} />
-          </Suspense>
-
-          <Suspense fallback={<ConversationSectionFallback />}>
-            <ConversationSection
-              documentId={document.id}
-              recordSlug={document.slug}
-              visibility={document.visibility}
-            />
-          </Suspense>
-        </article>
+        <Suspense fallback={<DocumentContentSkeleton />}>
+          <DocumentContent params={params} searchParams={searchParams} />
+        </Suspense>
       </div>
     </main>
   );
 }
 
-async function RelatedDocumentsSection({
-  document,
+async function DocumentContent({
+  params,
+  searchParams,
 }: {
-  document: NonNullable<Awaited<ReturnType<typeof getReadableDocumentBySlug>>>;
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const relatedDocuments = document.visibility === "public"
-    ? await getCachedRelatedDocuments(document.id, document.slug, document.tags)
-    : await listRelatedDocumentsForDocument(document, 2);
+  const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const previewMode = getSearchParam(resolvedSearchParams, "preview") === "1";
+
+  const fetchedDocument = previewMode
+    ? await getReadableDocumentBySlug(slug)
+    : await getCachedPublicDocument(slug);
+
+  if (!fetchedDocument) {
+    notFound();
+  }
+
+  return (
+    <article className="mt-8 w-full">
+      <header>
+        <div className="flex items-center">
+          {fetchedDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
+        </div>
+        <h1 className="mt-4 text-[36px] leading-[45px] font-semibold tracking-[-0.02em] text-[#2a2419] md:text-[48px] md:leading-[60px] md:tracking-[-0.96px]">
+          {fetchedDocument.title}
+        </h1>
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[16px] leading-6">
+          <span className="font-medium text-[#2a2419]">{fetchedDocument.writerName}</span>
+          <span className="text-[#6b6354]">·</span>
+          <span className="text-[#6b6354]">
+            {formatLongDisplayDate(fetchedDocument.publishedAt)}
+          </span>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {fetchedDocument.tags.map((tag) => (
+            <TopicPill key={tag} label={tag} />
+          ))}
+        </div>
+      </header>
+
+      <section className="mt-12">
+        <MarkdownContent
+          contents={fetchedDocument.contents}
+          className={[
+            "prose-p:mb-[28px] prose-p:text-[18px] prose-p:leading-[29.25px] prose-p:text-[#2a2419]",
+            "prose-headings:mt-11 prose-headings:mb-3 prose-headings:text-[#2a2419]",
+            "prose-h1:text-[30px] prose-h1:leading-9 prose-h1:tracking-[-0.3px]",
+            "prose-h2:text-[24px] prose-h2:leading-8",
+            "prose-blockquote:my-8 prose-blockquote:border-l-4 prose-blockquote:border-[rgba(42,36,25,0.1)] prose-blockquote:pl-7 prose-blockquote:text-[18px] prose-blockquote:leading-[29.25px] prose-blockquote:italic prose-blockquote:text-[rgba(42,36,25,0.8)]",
+            "prose-ol:my-6 prose-ol:pl-6 prose-li:mb-2 prose-li:text-[18px] prose-li:leading-[29.25px] prose-li:text-[#2a2419]",
+            "prose-strong:text-[#2a2419]",
+          ].join(" ")}
+        />
+      </section>
+
+      {fetchedDocument.visibility === "public" ? (
+        <Suspense fallback={<RecordReactionsFallback />}>
+          <RecordReactionsSection
+            documentId={fetchedDocument.id}
+            recordSlug={fetchedDocument.slug}
+            visibility={fetchedDocument.visibility}
+            initialLikeCount={fetchedDocument.reactionCount ?? 0}
+          />
+        </Suspense>
+      ) : null}
+
+      <Suspense fallback={<RelatedDocumentsFallback />}>
+        <RelatedDocumentsSection record={fetchedDocument} />
+      </Suspense>
+
+      <Suspense fallback={<ConversationSectionFallback />}>
+        <ConversationSection
+          documentId={fetchedDocument.id}
+          recordSlug={fetchedDocument.slug}
+          visibility={fetchedDocument.visibility}
+        />
+      </Suspense>
+    </article>
+  );
+}
+
+async function RelatedDocumentsSection({
+  record,
+}: {
+  record: NonNullable<Awaited<ReturnType<typeof getReadableDocumentBySlug>>>;
+}) {
+  const relatedDocuments = record.visibility === "public"
+    ? await getCachedRelatedDocuments(record.id, record.slug, record.tags)
+    : await listRelatedDocumentsForDocument(record, 2);
 
   return (
     <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:mt-16 md:pt-10">
@@ -216,17 +231,17 @@ async function RelatedDocumentsSection({
           </p>
 
           <div className="mt-6 grid gap-4 md:mt-8 md:gap-5">
-            {relatedDocuments.map((relatedDocument, index) => {
+            {relatedDocuments.map((relatedDoc, index) => {
               const reasonLabel = index === 0 ? "Best Match" : "Keep Reading";
               const reasonText = buildRelatedReasonText(
-                relatedDocument.sharedTags,
-                relatedDocument.sourceType,
+                relatedDoc.sharedTags,
+                relatedDoc.sourceType,
               );
 
               return (
                 <Link
-                  key={relatedDocument.id}
-                  href={buildLibraryHref(relatedDocument.slug)}
+                  key={relatedDoc.id}
+                  href={buildLibraryHref(relatedDoc.slug)}
                   className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-5 py-5 transition hover:bg-[rgba(255,255,255,0.72)] md:px-6"
                 >
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] leading-4 text-[#6b6354] md:text-[12px]">
@@ -241,26 +256,26 @@ async function RelatedDocumentsSection({
 
                   <div className="mt-3 flex items-start gap-3 md:mt-4 md:gap-4">
                     <div className="mt-0.5 shrink-0 md:mt-1">
-                      {relatedDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
+                      {relatedDoc.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[18px] leading-6 font-semibold text-[#2a2419] md:text-[20px] md:leading-[25px]">
-                        {relatedDocument.title}
+                        {relatedDoc.title}
                       </p>
-                      {relatedDocument.sourceType === "book" && relatedDocument.bookTitle ? (
+                      {relatedDoc.sourceType === "book" && relatedDoc.bookTitle ? (
                         <p className="mt-1.5 text-[13px] leading-5 italic text-[#6b6354] md:mt-2 md:text-[14px]">
-                          from {relatedDocument.bookTitle}
+                          from {relatedDoc.bookTitle}
                         </p>
                       ) : null}
                       <p className="mt-2 hidden text-[15px] leading-6 text-[rgba(107,99,84,0.9)] md:block">
-                        {relatedDocument.excerpt}
+                        {relatedDoc.excerpt}
                       </p>
                       <p className="mt-2.5 text-[13px] leading-5 text-[#6b6354] md:mt-3 md:text-[14px]">
-                        {relatedDocument.writerName} ·{" "}
-                        {formatDisplayDate(relatedDocument.publishedAt)}
+                        {relatedDoc.writerName} ·{" "}
+                        {formatDisplayDate(relatedDoc.publishedAt)}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {relatedDocument.tags.slice(0, 3).map((tag) => (
+                        {relatedDoc.tags.slice(0, 3).map((tag) => (
                           <TopicPill key={tag} label={tag} interactive={false} />
                         ))}
                       </div>
@@ -290,17 +305,17 @@ async function RelatedDocumentsSection({
             No close follow-up reading found yet.
           </p>
           <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
-            {document.tags[0]
-              ? `Explore ${document.tags[0]} to keep moving through related notes.`
+            {record.tags[0]
+              ? `Explore ${record.tags[0]} to keep moving through related notes.`
               : "Browse the newest records to keep moving through the library."}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            {document.tags[0] ? (
+            {record.tags[0] ? (
               <Link
-                href={buildTopicHref(document.tags[0])}
+                href={buildTopicHref(record.tags[0])}
                 className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
               >
-                Explore {document.tags[0]}
+                Explore {record.tags[0]}
                 <ArrowRightIcon />
               </Link>
             ) : null}
@@ -359,6 +374,47 @@ async function getCachedRelatedDocuments(
       visibility: "public",
     } as const,
     2,
+  );
+}
+
+function DocumentContentSkeleton() {
+  return (
+    <article className="mt-8 w-full animate-pulse">
+      <div className="h-5 w-5 rounded-full bg-[rgba(42,36,25,0.08)]" />
+      <div className="mt-4 h-12 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)] md:h-16" />
+      <div className="mt-4 h-6 w-64 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+      <div className="mt-5 flex gap-2">
+        <div className="h-6 w-20 rounded-[999px] bg-[rgba(42,36,25,0.08)]" />
+        <div className="h-6 w-16 rounded-[999px] bg-[rgba(42,36,25,0.08)]" />
+        <div className="h-6 w-24 rounded-[999px] bg-[rgba(42,36,25,0.08)]" />
+      </div>
+
+      <section className="mt-12 space-y-4">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div
+            key={index}
+            className="h-6 rounded-[6px] bg-[rgba(42,36,25,0.08)]"
+            style={{ width: index === 5 ? "68%" : "100%" }}
+          />
+        ))}
+      </section>
+
+      <section className="mt-16 border-t border-[rgba(42,36,25,0.08)] pt-12">
+        <div className="h-8 w-48 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+        <div className="mt-6 space-y-4">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <div
+              key={index}
+              className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-[21px] py-[21px]"
+            >
+              <div className="h-5 w-20 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="mt-4 h-6 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="mt-3 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            </div>
+          ))}
+        </div>
+      </section>
+    </article>
   );
 }
 

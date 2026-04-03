@@ -30,28 +30,7 @@ function MyLibraryIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-export default async function MyLibraryPage({ searchParams }: PageProps) {
-  await connection();
-
-  const [access, resolvedSearchParams] = await Promise.all([
-    requireAuthorAccess(),
-    searchParams,
-  ]);
-
-  if (!access.configured) {
-    redirect("/author");
-  }
-
-  const discoveryState = parseDiscoveryState(resolvedSearchParams);
-  const currentPage = getPageNumber(resolvedSearchParams);
-  const userId = access.userId ?? "";
-  const paginated = await listMyLibraryDiscoveryPage(
-    userId,
-    discoveryState,
-    currentPage,
-    DISCOVERY_PAGE_SIZE,
-  );
-
+export default function MyLibraryPage({ searchParams }: PageProps) {
   return (
     <main className="site-shell pb-20 pt-12">
       <section className="w-full">
@@ -63,28 +42,83 @@ export default async function MyLibraryPage({ searchParams }: PageProps) {
         </p>
       </section>
 
-      <section className="mt-10 w-full">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 py-2 text-[14px] leading-5 font-medium text-[#2a2419]">
-          <MyLibraryIcon />
-          Bookmarks
-        </div>
-
-        <MyLibraryBrowser
-          records={paginated.documents}
-          controlsSlot={(
-            <Suspense fallback={<MyLibraryDiscoveryControlsFallback />}>
-              <MyLibraryDiscoveryControls discoveryState={discoveryState} userId={userId} />
-            </Suspense>
-          )}
-        />
-
-        <PaginationNav
-          currentPage={paginated.page}
-          totalPages={paginated.totalPages}
-          buildHref={(page) => buildPageHref(resolvedSearchParams, page)}
-        />
-      </section>
+      <Suspense fallback={<MyLibraryContentSkeleton />}>
+        <MyLibraryContent searchParams={searchParams} />
+      </Suspense>
     </main>
+  );
+}
+
+async function MyLibraryContent({
+  searchParams: searchParamsPromise,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const searchParams = await searchParamsPromise;
+  await connection();
+
+  const access = await requireAuthorAccess();
+
+  if (!access.configured) {
+    redirect("/author");
+  }
+
+  const userId = access.userId ?? "";
+  const discoveryState = parseDiscoveryState(searchParams);
+  const currentPage = getPageNumber(searchParams);
+  const paginated = await listMyLibraryDiscoveryPage(
+    userId,
+    discoveryState,
+    currentPage,
+    DISCOVERY_PAGE_SIZE,
+  );
+
+  return (
+    <section className="mt-10 w-full">
+      <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 py-2 text-[14px] leading-5 font-medium text-[#2a2419]">
+        <MyLibraryIcon />
+        Bookmarks
+      </div>
+
+      <MyLibraryBrowser
+        records={paginated.documents}
+        controlsSlot={(
+          <Suspense fallback={<MyLibraryDiscoveryControlsFallback />}>
+            <MyLibraryDiscoveryControls discoveryState={discoveryState} userId={userId} />
+          </Suspense>
+        )}
+      />
+
+      <PaginationNav
+        currentPage={paginated.page}
+        totalPages={paginated.totalPages}
+        buildHref={(page) => buildPageHref(searchParams, page)}
+      />
+    </section>
+  );
+}
+
+function MyLibraryContentSkeleton() {
+  return (
+    <section className="mt-10 w-full animate-pulse">
+      <div className="h-9 w-full max-w-[448px] rounded-[10px] bg-[rgba(42,36,25,0.08)]" />
+      <div className="mt-10 grid gap-6 md:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-6 py-6"
+          >
+            <div className="h-8 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="mt-4 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="mt-3 h-5 w-5/6 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="mt-6 flex gap-2">
+              <div className="h-6 w-16 rounded-[999px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="h-6 w-20 rounded-[999px] bg-[rgba(42,36,25,0.08)]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
