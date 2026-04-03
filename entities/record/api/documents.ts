@@ -1484,8 +1484,7 @@ export async function listRelatedDocumentsForDocument(
   let candidateQuery = supabase
     .from("records")
     .select(RECORD_LIST_WITH_TAGS_SELECT)
-    .in("id", candidateIds)
-    .limit(10);
+    .in("id", candidateIds);
 
   if (!useServerClient) {
     candidateQuery = candidateQuery.eq("visibility", "public");
