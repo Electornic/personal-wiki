@@ -36,8 +36,8 @@ function getAuthErrorMessage(error?: string) {
 
 export default function AuthorSignInPage({ searchParams }: PageProps) {
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#faf8f5] px-4 py-8 md:px-0 md:py-16">
-      <div className="mx-auto flex min-h-full w-full max-w-[1096px] items-center justify-center px-0 md:px-[324px]">
+    <div className="flex min-h-full items-center justify-center px-4 py-8 lg:py-16">
+      <div className="w-full max-w-[448px]">
         <Suspense fallback={<SignInFormSkeleton />}>
           <SignInContent searchParams={searchParams} />
         </Suspense>

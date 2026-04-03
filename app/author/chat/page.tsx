@@ -8,11 +8,11 @@ import { hasOpenAIEnv } from "@/shared/config/env";
 
 export default function ChatPage() {
   return (
-    <main className="site-shell flex min-h-[calc(100dvh-60px)] flex-col pb-4 pt-[72px]">
+    <div className="flex min-h-full flex-col">
       <Suspense fallback={<ChatSkeleton />}>
         <ChatContent />
       </Suspense>
-    </main>
+    </div>
   );
 }
 

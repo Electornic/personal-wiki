@@ -1,159 +1,113 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 
-import { HomeDiscoveryControls } from "@/app/_components/home-discovery-controls";
-import { PaginationNav } from "@/components/pagination-nav";
-import { PublicLibraryBrowser } from "@/components/public-library-browser";
-import {
-  DISCOVERY_PAGE_SIZE,
-  parseDiscoveryState,
-} from "@/lib/wiki/discovery";
-import {
-  listPublicDiscoveryPage,
-} from "@/entities/record/api/documents";
+import { listPublicDiscoveryPage } from "@/entities/record/api/documents";
+import { DocumentCard } from "@/entities/record/ui/document-card";
+import { parseDiscoveryState } from "@/lib/wiki/discovery";
 
-type PageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
-export default function Home({ searchParams }: PageProps) {
+export default function LandingPage() {
   return (
-    <main className="site-shell pb-16 pt-12 md:pb-20 md:pt-16">
-      <section className="mx-auto max-w-[768px] text-center">
-        <h1 className="mx-auto max-w-[604px] text-[48px] leading-[1] font-semibold tracking-[-0.02em] text-[#2a2419] md:text-[60px] md:leading-[60px] md:tracking-[-1.2px]">
-          A Space for Reading &amp; Reflection
+    <main className="site-shell pb-20 pt-16 md:pt-24">
+      <section className="mx-auto max-w-[640px] text-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--surface-warm)]">
+          <svg aria-hidden="true" className="h-8 w-8 text-[var(--accent)]" fill="none" viewBox="0 0 32 32">
+            <path
+              d="M8 4h16a2 2 0 0 1 2 2v20l-10-6-10 6V6a2 2 0 0 1 2-2Z"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+        </div>
+        <h1 className="text-[40px] leading-[1.1] font-semibold tracking-[-0.02em] text-[var(--foreground)] md:text-[56px]">
+          Your Personal Library
         </h1>
-        <p className="mx-auto mt-6 max-w-[748px] text-[20px] leading-[32.5px] text-[rgba(42,36,25,0.7)]">
-          Thoughtful essays, book notes, and explorations on literature, design,
-          philosophy, and the art of attention.
+        <p className="mx-auto mt-5 max-w-[480px] text-[18px] leading-[28px] text-[var(--muted)]">
+          Read, reflect, and record. A quiet space to collect your thoughts on books and articles.
         </p>
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <Link
+            href="/library"
+            className="inline-flex h-11 items-center justify-center rounded-[6px] bg-[var(--accent)] px-6 text-[15px] font-medium text-[var(--accent-text)] transition hover:bg-[var(--accent-hover)]"
+          >
+            Browse Library
+          </Link>
+          <Link
+            href="/author/sign-in"
+            className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+          >
+            Sign In
+          </Link>
+        </div>
       </section>
 
-      <section id="library" className="mt-16 md:mt-20">
-        <Suspense fallback={<HomeLibraryFallback />}>
-          <HomeLibrarySection searchParams={searchParams} />
+      <section className="mt-20 md:mt-28">
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-[20px] font-semibold text-[var(--foreground)]">
+            Recent Publications
+          </h2>
+          <Link
+            href="/library"
+            className="text-[14px] font-medium text-[var(--muted)] transition hover:text-[var(--foreground)]"
+          >
+            View all &rarr;
+          </Link>
+        </div>
+
+        <Suspense fallback={<RecentDocsFallback />}>
+          <RecentDocs />
         </Suspense>
       </section>
     </main>
   );
 }
 
-function getPageNumber(searchParams: Record<string, string | string[] | undefined>) {
-  const page = Number(
-    Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page ?? "1",
-  );
+async function RecentDocs() {
+  const paginated = await getCachedRecentDocs();
 
-  if (!Number.isFinite(page) || page < 1) {
-    return 1;
+  if (paginated.documents.length === 0) {
+    return (
+      <div className="rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-6 py-12 text-center">
+        <p className="text-[15px] text-[var(--muted)]">No public documents yet.</p>
+      </div>
+    );
   }
-
-  return Math.floor(page);
-}
-
-function buildPageHref(
-  searchParams: Record<string, string | string[] | undefined>,
-  page: number,
-) {
-  const params = new URLSearchParams();
-
-  for (const [key, value] of Object.entries(searchParams)) {
-    if (key === "page" || value === undefined) {
-      continue;
-    }
-
-    if (Array.isArray(value)) {
-      value.forEach((entry) => params.append(key, entry));
-      continue;
-    }
-
-    params.set(key, value);
-  }
-
-  if (page > 1) {
-    params.set("page", String(page));
-  }
-
-  const query = params.toString();
-  return query ? `/?${query}#library` : "/#library";
-}
-
-async function HomeLibrarySection({
-  searchParams: searchParamsPromise,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const searchParams = await searchParamsPromise;
-  const discoveryState = parseDiscoveryState(searchParams);
-  const currentPage = getPageNumber(searchParams);
-
-  const paginated = await getCachedPublicDiscoveryPage(
-    discoveryState,
-    currentPage,
-    DISCOVERY_PAGE_SIZE,
-  );
 
   return (
-    <>
-      <PublicLibraryBrowser
-        records={paginated.documents}
-        recordCount={paginated.totalCount}
-        controlsSlot={(
-          <Suspense fallback={<HomeDiscoveryControlsFallback />}>
-            <HomeDiscoveryControls discoveryState={discoveryState} />
-          </Suspense>
-        )}
-      />
-
-      <PaginationNav
-        currentPage={paginated.page}
-        totalPages={paginated.totalPages}
-        buildHref={(page) => buildPageHref(searchParams, page)}
-      />
-    </>
+    <div className="grid gap-5">
+      {paginated.documents.slice(0, 3).map((doc) => (
+        <DocumentCard key={doc.id} document={doc} />
+      ))}
+    </div>
   );
 }
 
-async function getCachedPublicDiscoveryPage(
-  discoveryState: ReturnType<typeof parseDiscoveryState>,
-  currentPage: number,
-  pageSize: number,
-) {
+async function getCachedRecentDocs() {
   "use cache";
 
   cacheLife("minutes");
   cacheTag("public-discovery");
 
-  return listPublicDiscoveryPage(discoveryState, currentPage, pageSize);
-}
-
-function HomeDiscoveryControlsFallback() {
-  return (
-    <div className="h-[42px] w-full animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+  return listPublicDiscoveryPage(
+    parseDiscoveryState({}),
+    1,
+    3,
   );
 }
 
-function HomeLibraryFallback() {
+function RecentDocsFallback() {
   return (
-    <>
-      <div className="mb-6 flex items-center justify-between">
-        <div className="h-9 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-        <div className="h-5 w-20 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-      </div>
-
-      <div className="h-[42px] w-full animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-
-      <div className="mt-8 grid gap-6">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div
-            key={index}
-            className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-6 py-6"
-          >
-            <div className="h-8 w-2/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-            <div className="mt-4 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-            <div className="mt-3 h-5 w-4/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-          </div>
-        ))}
-      </div>
-    </>
+    <div className="grid gap-5">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="animate-pulse rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-6 py-6"
+        >
+          <div className="h-7 w-2/5 rounded bg-[var(--surface-warm)]" />
+          <div className="mt-4 h-4 w-full rounded bg-[var(--surface-warm)]" />
+          <div className="mt-3 h-4 w-3/4 rounded bg-[var(--surface-warm)]" />
+        </div>
+      ))}
+    </div>
   );
 }

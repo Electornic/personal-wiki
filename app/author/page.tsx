@@ -238,7 +238,7 @@ async function AuthorPageContent({
 
   if (!hasAuthoringEnv()) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-8 px-6 py-12 md:px-10">
+      <div className="flex flex-col gap-8 px-6 py-8 lg:px-10">
         <p className="section-kicker">Author workspace</p>
         <div className="rounded-[2rem] border border-amber-300 bg-amber-50 p-8">
           <h1 className="text-3xl text-stone-900">Supabase setup required</h1>
@@ -253,13 +253,13 @@ async function AuthorPageContent({
             <li>`SUPABASE_SERVICE_ROLE_KEY`</li>
           </ul>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (!access.isAuthenticated) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 px-6 py-12 md:px-10">
+      <div className="flex flex-col gap-6 px-6 py-8 lg:px-10">
         <p className="section-kicker">Author workspace</p>
         <div className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_28px_80px_rgba(51,39,18,0.08)]">
           <h1 className="text-4xl text-stone-900">Account sign-in required</h1>
@@ -270,14 +270,14 @@ async function AuthorPageContent({
             sign in
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   const workspaceMessage = getWorkspaceMessage(resolvedSearchParams);
 
   return (
-    <main className="site-shell pb-20 pt-20">
+    <div className="px-6 py-8 lg:px-10">
       <section className="space-y-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
@@ -335,13 +335,13 @@ async function AuthorPageContent({
           searchParams={resolvedSearchParams}
         />
       </Suspense>
-    </main>
+    </div>
   );
 }
 
 function AuthorPageSkeleton() {
   return (
-    <main className="site-shell pb-20 pt-20">
+    <div className="px-6 py-8 lg:px-10">
       <section className="space-y-8 animate-pulse">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
@@ -355,7 +355,7 @@ function AuthorPageSkeleton() {
         </div>
         <div className="h-px w-full bg-[rgba(42,36,25,0.08)]" />
       </section>
-    </main>
+    </div>
   );
 }
 
