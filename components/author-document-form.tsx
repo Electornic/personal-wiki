@@ -32,7 +32,7 @@ function SubmitButton({ visibility }: { visibility: "public" | "private" }) {
 
   return (
     <button
-      className="inline-flex h-9 items-center justify-center rounded-[4px] bg-[#2a2419] px-4 text-[14px] leading-5 font-medium text-[#faf8f5] disabled:opacity-50"
+      className="inline-flex h-9 items-center justify-center rounded-[4px] bg-[var(--foreground)] px-4 text-[14px] leading-5 font-medium text-[var(--accent-text)] disabled:opacity-50"
       type="submit"
       disabled={pending}
     >
@@ -108,7 +108,7 @@ function ChevronDownIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-4 w-4 text-[#6b6354]"
+      className="h-4 w-4 text-[var(--muted)]"
       fill="none"
       viewBox="0 0 16 16"
     >
@@ -490,14 +490,14 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
         <div className="mx-auto flex w-full items-center justify-between">
           <Link
             href="/author"
-            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)]"
+            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[rgba(232,227,219,0.45)]"
           >
             <CancelIcon />
             Cancel
           </Link>
 
           <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-2 text-[14px] leading-[14px] font-medium text-[#2a2419]">
+            <label className="inline-flex items-center gap-2 text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
               <button
                 type="button"
                 aria-pressed={visibility === "public"}
@@ -507,7 +507,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   )
                 }
                 className={`relative inline-flex h-[18px] w-8 items-center rounded-full border border-transparent ${
-                  visibility === "public" ? "bg-[#2a2419]" : "bg-[#d9d2c8]"
+                  visibility === "public" ? "bg-[var(--foreground)]" : "bg-[#d9d2c8]"
                 }`}
               >
                 <span
@@ -518,7 +518,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
               </button>
               {visibility === "public" ? "Public" : "Private"}
             </label>
-            <div className="inline-flex items-center gap-2 rounded-[4px] bg-[#2a2419] px-3 text-[#faf8f5]">
+            <div className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--foreground)] px-3 text-[var(--accent-text)]">
               <PublishIcon />
               <SubmitButton visibility={visibility} />
             </div>
@@ -529,7 +529,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
       <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[24px] py-[24px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] md:px-[25px] md:py-[25px]">
         <div className="space-y-5">
           <label className="block">
-            <span className="block text-[16px] leading-6 font-medium text-[#2a2419]">
+            <span className="block text-[16px] leading-6 font-medium text-[var(--foreground)]">
               Title
             </span>
             <input
@@ -537,18 +537,18 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Give your entry a title..."
-              className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[14px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] md:text-[20px]"
+              className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[14px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)] md:text-[20px]"
               required
             />
           </label>
 
           <div className={`grid gap-4 ${sourceType === "book" ? "md:grid-cols-2" : ""}`}>
             <label className="block">
-              <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+              <span className="block text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
                 Source Type
               </span>
               <div className="relative mt-2">
-                <span className="pointer-events-none absolute inset-y-0 left-[13px] flex items-center text-[14px] leading-5 font-medium text-[#2a2419]">
+                <span className="pointer-events-none absolute inset-y-0 left-[13px] flex items-center text-[14px] leading-5 font-medium text-[var(--foreground)]">
                   {sourceType === "article" ? "Article" : "Book"}
                 </span>
                 <select
@@ -570,7 +570,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
 
             {sourceType === "book" ? (
               <label className="block">
-                <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                <span className="block text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
                   Book Title
                 </span>
                 <input
@@ -578,14 +578,14 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   value={bookTitle}
                   onChange={(event) => setBookTitle(event.target.value)}
                   placeholder="The book this entry comes from..."
-                  className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[14px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+                  className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[14px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)]"
                 />
               </label>
             ) : null}
           </div>
 
           <label className="block">
-            <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+            <span className="block text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
               Tags
             </span>
             <input
@@ -593,10 +593,10 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
               value={tags}
               onChange={(event) => setTags(event.target.value)}
               placeholder="philosophy, design, writing (comma-separated)"
-              className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354]"
+              className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)]"
               required
             />
-            <p className="mt-2 text-[12px] leading-4 text-[#6b6354]">
+            <p className="mt-2 text-[12px] leading-4 text-[var(--muted)]">
               Separate tags with commas to help readers discover related entries
             </p>
           </label>
@@ -609,7 +609,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
             <button
               type="button"
               className={`inline-flex h-[29px] items-center justify-center gap-1.5 rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
-                activeTab === "write" ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
+                activeTab === "write" ? "bg-white text-[var(--foreground)]" : "text-[var(--foreground)]"
               }`}
               onClick={() => setActiveTab("write")}
             >
@@ -626,7 +626,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
             <button
               type="button"
               className={`inline-flex h-[29px] items-center justify-center gap-1.5 rounded-[10px] px-[9px] text-[14px] leading-5 font-medium ${
-                activeTab === "preview" ? "bg-white text-[#2a2419]" : "text-[#2a2419]"
+                activeTab === "preview" ? "bg-white text-[var(--foreground)]" : "text-[var(--foreground)]"
               }`}
               onClick={() => setActiveTab("preview")}
             >
@@ -641,10 +641,10 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
             <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.96)] px-4 py-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <p className="text-[14px] leading-5 font-medium text-[#2a2419]">
+                  <p className="text-[14px] leading-5 font-medium text-[var(--foreground)]">
                     Writing support
                   </p>
-                  <p className="mt-1 text-[13px] leading-5 text-[#6b6354]">
+                  <p className="mt-1 text-[13px] leading-5 text-[var(--muted)]">
                     Use a starter when you want structure without leaving the writing flow.
                   </p>
                 </div>
@@ -652,20 +652,20 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   <button
                     type="button"
                     onClick={() => insertTemplate(starterTemplates[sourceType])}
-                    className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-[rgba(232,227,219,0.35)]"
+                    className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-[rgba(232,227,219,0.35)]"
                   >
                     Insert starter outline
                   </button>
                   <button
                     type="button"
                     onClick={() => insertTemplate(reflectionTemplate)}
-                    className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-[rgba(232,227,219,0.35)]"
+                    className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-[rgba(232,227,219,0.35)]"
                   >
                     Insert reflection prompts
                   </button>
                 </div>
               </div>
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[12px] leading-4 text-[#6b6354]">
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[12px] leading-4 text-[var(--muted)]">
                 {markdownTips.map((tip) => (
                   <span key={tip}>{tip}</span>
                 ))}
@@ -676,21 +676,21 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 <button
                   type="button"
                   onClick={() => insertBlock((selected) => `# ${selected}`, "Heading")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-white"
                 >
                   H1
                 </button>
                 <button
                   type="button"
                   onClick={() => insertBlock((selected) => `## ${selected}`, "Heading")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-white"
                 >
                   H2
                 </button>
                 <button
                   type="button"
                   onClick={() => insertBlock((selected) => `### ${selected}`, "Heading")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-white"
                 >
                   H3
                 </button>
@@ -698,21 +698,21 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 <button
                   type="button"
                   onClick={() => wrapSelection("**")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-semibold text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-semibold text-[var(--foreground)] hover:bg-white"
                 >
                   B
                 </button>
                 <button
                   type="button"
                   onClick={() => wrapSelection("*")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 italic text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 italic text-[var(--foreground)] hover:bg-white"
                 >
                   I
                 </button>
                 <button
                   type="button"
                   onClick={() => insertBlock((selected) => `> ${selected}`, "Quote")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
                 >
                   “”
                 </button>
@@ -720,14 +720,14 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 <button
                   type="button"
                   onClick={() => insertList("- ", "List item")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
                 >
                   • List
                 </button>
                 <button
                   type="button"
                   onClick={() => insertList("1. ", "List item")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
                 >
                   1. List
                 </button>
@@ -735,21 +735,21 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 <button
                   type="button"
                   onClick={insertLink}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
                 >
                   Link
                 </button>
                 <button
                   type="button"
                   onClick={insertImage}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
                 >
                   Image
                 </button>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[#2a2419] hover:bg-white"
+                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
                 >
                   Upload
                 </button>
@@ -762,7 +762,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 />
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] leading-4 text-[#6b6354]">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] leading-4 text-[var(--muted)]">
               <span>{wordCount} words</span>
               <span>{lineCount} lines</span>
               <span>{stagedImages.length} staged image{stagedImages.length === 1 ? "" : "s"}</span>
@@ -784,9 +784,9 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
               onDrop={handleDrop}
               rows={18}
               placeholder="Begin writing your thoughts..."
-              className={`min-h-[600px] rounded-[4px] border px-3 py-2 text-[18px] leading-[29.25px] text-[#2a2419] placeholder:text-[#6b6354] ${
+              className={`min-h-[600px] rounded-[4px] border px-3 py-2 text-[18px] leading-[29.25px] text-[var(--foreground)] placeholder:text-[var(--muted)] ${
                 isDraggingImage
-                  ? "border-dashed border-[#2a2419] bg-[rgba(232,227,219,0.28)]"
+                  ? "border-dashed border-[var(--foreground)] bg-[rgba(232,227,219,0.28)]"
                   : "border-transparent bg-white"
               }`}
               required
@@ -808,7 +808,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   )}
                 />
               ) : (
-                <p className="text-[18px] leading-[29.25px] text-[#6b6354]">
+                <p className="text-[18px] leading-[29.25px] text-[var(--muted)]">
                   Nothing to preview yet.
                 </p>
               )}

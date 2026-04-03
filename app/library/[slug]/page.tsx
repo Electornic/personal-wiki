@@ -42,7 +42,7 @@ function ArticleIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[#6b6354]"
+      className="h-5 w-5 text-[var(--muted)]"
       fill="none"
       viewBox="0 0 20 20"
     >
@@ -62,7 +62,7 @@ function BookIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[#6b6354]"
+      className="h-5 w-5 text-[var(--muted)]"
       fill="none"
       viewBox="0 0 20 20"
     >
@@ -113,7 +113,7 @@ export default function LibraryDocumentPage({ params, searchParams }: PageProps)
       <div className="site-shell-content">
         <Link
           href="/"
-          className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)]"
+          className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[rgba(232,227,219,0.45)]"
         >
           <BackIcon />
           Library
@@ -152,13 +152,13 @@ async function DocumentContent({
         <div className="flex items-center">
           {fetchedDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
         </div>
-        <h1 className="mt-4 text-[36px] leading-[45px] font-semibold tracking-[-0.02em] text-[#2a2419] md:text-[48px] md:leading-[60px] md:tracking-[-0.96px]">
+        <h1 className="mt-4 text-[36px] leading-[45px] font-semibold tracking-[-0.02em] text-[var(--foreground)] md:text-[48px] md:leading-[60px] md:tracking-[-0.96px]">
           {fetchedDocument.title}
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[16px] leading-6">
-          <span className="font-medium text-[#2a2419]">{fetchedDocument.writerName}</span>
-          <span className="text-[#6b6354]">·</span>
-          <span className="text-[#6b6354]">
+          <span className="font-medium text-[var(--foreground)]">{fetchedDocument.writerName}</span>
+          <span className="text-[var(--muted)]">·</span>
+          <span className="text-[var(--muted)]">
             {formatLongDisplayDate(fetchedDocument.publishedAt)}
           </span>
         </div>
@@ -173,13 +173,13 @@ async function DocumentContent({
         <MarkdownContent
           contents={fetchedDocument.contents}
           className={[
-            "prose-p:mb-[28px] prose-p:text-[18px] prose-p:leading-[29.25px] prose-p:text-[#2a2419]",
-            "prose-headings:mt-11 prose-headings:mb-3 prose-headings:text-[#2a2419]",
+            "prose-p:mb-[28px] prose-p:text-[18px] prose-p:leading-[29.25px] prose-p:text-[var(--foreground)]",
+            "prose-headings:mt-11 prose-headings:mb-3 prose-headings:text-[var(--foreground)]",
             "prose-h1:text-[30px] prose-h1:leading-9 prose-h1:tracking-[-0.3px]",
             "prose-h2:text-[24px] prose-h2:leading-8",
-            "prose-blockquote:my-8 prose-blockquote:border-l-4 prose-blockquote:border-[rgba(42,36,25,0.1)] prose-blockquote:pl-7 prose-blockquote:text-[18px] prose-blockquote:leading-[29.25px] prose-blockquote:italic prose-blockquote:text-[rgba(42,36,25,0.8)]",
-            "prose-ol:my-6 prose-ol:pl-6 prose-li:mb-2 prose-li:text-[18px] prose-li:leading-[29.25px] prose-li:text-[#2a2419]",
-            "prose-strong:text-[#2a2419]",
+            "prose-blockquote:my-8 prose-blockquote:border-l-4 prose-blockquote:border-[var(--border)] prose-blockquote:pl-7 prose-blockquote:text-[18px] prose-blockquote:leading-[29.25px] prose-blockquote:italic prose-blockquote:text-[rgba(42,36,25,0.8)]",
+            "prose-ol:my-6 prose-ol:pl-6 prose-li:mb-2 prose-li:text-[18px] prose-li:leading-[29.25px] prose-li:text-[var(--foreground)]",
+            "prose-strong:text-[var(--foreground)]",
           ].join(" ")}
         />
       </section>
@@ -220,13 +220,13 @@ async function RelatedDocumentsSection({
     : await listRelatedDocumentsForDocument(record, 2);
 
   return (
-    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:mt-16 md:pt-10">
-      <h2 className="text-[22px] leading-8 font-semibold text-[#2a2419] md:text-[24px]">
+    <section className="mt-12 border-t border-[var(--border)] pt-8 md:mt-16 md:pt-10">
+      <h2 className="text-[22px] leading-8 font-semibold text-[var(--foreground)] md:text-[24px]">
         Continue Reading
       </h2>
       {relatedDocuments.length ? (
         <>
-          <p className="mt-2 text-[14px] leading-5 text-[#6b6354] md:text-[16px] md:leading-6">
+          <p className="mt-2 text-[14px] leading-5 text-[var(--muted)] md:text-[16px] md:leading-6">
             Recommendations based on shared topics and recent reading
           </p>
 
@@ -243,14 +243,14 @@ async function RelatedDocumentsSection({
                   key={relatedDoc.id}
                   href={buildLibraryHref(relatedDoc.slug)}
                   prefetch={false}
-                  className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-5 py-5 transition hover:bg-[rgba(255,255,255,0.72)] md:px-6"
+                  className="block rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-5 py-5 transition hover:bg-[rgba(255,255,255,0.72)] md:px-6"
                 >
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] leading-4 text-[#6b6354] md:text-[12px]">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] leading-4 text-[var(--muted)] md:text-[12px]">
                     <span className="font-medium tracking-[0.3px] uppercase">
                       {reasonLabel}
                     </span>
                     <span className="text-[rgba(107,99,84,0.5)]">·</span>
-                    <span className="text-[12px] leading-4 text-[#6b6354]">
+                    <span className="text-[12px] leading-4 text-[var(--muted)]">
                       {reasonText}
                     </span>
                   </div>
@@ -260,18 +260,18 @@ async function RelatedDocumentsSection({
                       {relatedDoc.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[18px] leading-6 font-semibold text-[#2a2419] md:text-[20px] md:leading-[25px]">
+                      <p className="text-[18px] leading-6 font-semibold text-[var(--foreground)] md:text-[20px] md:leading-[25px]">
                         {relatedDoc.title}
                       </p>
                       {relatedDoc.sourceType === "book" && relatedDoc.bookTitle ? (
-                        <p className="mt-1.5 text-[13px] leading-5 italic text-[#6b6354] md:mt-2 md:text-[14px]">
+                        <p className="mt-1.5 text-[13px] leading-5 italic text-[var(--muted)] md:mt-2 md:text-[14px]">
                           from {relatedDoc.bookTitle}
                         </p>
                       ) : null}
                       <p className="mt-2 hidden text-[15px] leading-6 text-[rgba(107,99,84,0.9)] md:block">
                         {relatedDoc.excerpt}
                       </p>
-                      <p className="mt-2.5 text-[13px] leading-5 text-[#6b6354] md:mt-3 md:text-[14px]">
+                      <p className="mt-2.5 text-[13px] leading-5 text-[var(--muted)] md:mt-3 md:text-[14px]">
                         {relatedDoc.writerName} ·{" "}
                         {formatDisplayDate(relatedDoc.publishedAt)}
                       </p>
@@ -281,7 +281,7 @@ async function RelatedDocumentsSection({
                         ))}
                       </div>
                     </div>
-                    <div className="mt-0.5 shrink-0 text-[#6b6354] md:mt-1">
+                    <div className="mt-0.5 shrink-0 text-[var(--muted)] md:mt-1">
                       <ArrowRightIcon />
                     </div>
                   </div>
@@ -293,7 +293,7 @@ async function RelatedDocumentsSection({
           <div className="mt-6 flex justify-center md:mt-8">
             <Link
               href="/#library"
-              className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#6b6354] transition hover:text-[#2a2419]"
+              className="inline-flex items-center gap-2 text-[14px] leading-5 text-[var(--muted)] transition hover:text-[var(--foreground)]"
             >
               Browse all records
               <ArrowRightIcon />
@@ -301,11 +301,11 @@ async function RelatedDocumentsSection({
           </div>
         </>
       ) : (
-        <div className="mt-6 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-6 py-10 text-center md:py-12">
-          <p className="text-[16px] leading-6 text-[#6b6354]">
+        <div className="mt-6 rounded-[6px] border border-[var(--border)] bg-[rgba(232,227,219,0.2)] px-6 py-10 text-center md:py-12">
+          <p className="text-[16px] leading-6 text-[var(--muted)]">
             No close follow-up reading found yet.
           </p>
-          <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+          <p className="mt-2 text-[14px] leading-5 text-[var(--muted)]">
             {record.tags[0]
               ? `Explore ${record.tags[0]} to keep moving through related notes.`
               : "Browse the newest records to keep moving through the library."}
@@ -314,7 +314,7 @@ async function RelatedDocumentsSection({
             {record.tags[0] ? (
               <Link
                 href={buildTopicHref(record.tags[0])}
-                className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
+                className="inline-flex items-center gap-2 text-[14px] leading-5 text-[var(--foreground)] transition hover:opacity-70"
               >
                 Explore {record.tags[0]}
                 <ArrowRightIcon />
@@ -322,7 +322,7 @@ async function RelatedDocumentsSection({
             ) : null}
             <Link
               href="/#library"
-              className="inline-flex items-center gap-2 text-[14px] leading-5 text-[#2a2419] transition hover:opacity-70"
+              className="inline-flex items-center gap-2 text-[14px] leading-5 text-[var(--foreground)] transition hover:opacity-70"
             >
               Browse all records
               <ArrowRightIcon />
@@ -381,36 +381,36 @@ async function getCachedRelatedDocuments(
 function DocumentContentSkeleton() {
   return (
     <article className="mt-8 w-full animate-pulse">
-      <div className="h-5 w-5 rounded-full bg-[rgba(42,36,25,0.08)]" />
-      <div className="mt-4 h-12 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)] md:h-16" />
-      <div className="mt-4 h-6 w-64 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+      <div className="h-5 w-5 rounded-full bg-[var(--surface-warm)]" />
+      <div className="mt-4 h-12 w-full rounded-[6px] bg-[var(--surface-warm)] md:h-16" />
+      <div className="mt-4 h-6 w-64 rounded-[6px] bg-[var(--surface-warm)]" />
       <div className="mt-5 flex gap-2">
-        <div className="h-6 w-20 rounded-[999px] bg-[rgba(42,36,25,0.08)]" />
-        <div className="h-6 w-16 rounded-[999px] bg-[rgba(42,36,25,0.08)]" />
-        <div className="h-6 w-24 rounded-[999px] bg-[rgba(42,36,25,0.08)]" />
+        <div className="h-6 w-20 rounded-[999px] bg-[var(--surface-warm)]" />
+        <div className="h-6 w-16 rounded-[999px] bg-[var(--surface-warm)]" />
+        <div className="h-6 w-24 rounded-[999px] bg-[var(--surface-warm)]" />
       </div>
 
       <section className="mt-12 space-y-4">
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}
-            className="h-6 rounded-[6px] bg-[rgba(42,36,25,0.08)]"
+            className="h-6 rounded-[6px] bg-[var(--surface-warm)]"
             style={{ width: index === 5 ? "68%" : "100%" }}
           />
         ))}
       </section>
 
-      <section className="mt-16 border-t border-[rgba(42,36,25,0.08)] pt-12">
-        <div className="h-8 w-48 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+      <section className="mt-16 border-t border-[var(--surface-warm)] pt-12">
+        <div className="h-8 w-48 rounded-[6px] bg-[var(--surface-warm)]" />
         <div className="mt-6 space-y-4">
           {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={index}
-              className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-[21px] py-[21px]"
+              className="rounded-[6px] border border-[var(--surface-warm)] bg-[var(--card)] px-[21px] py-[21px]"
             >
-              <div className="h-5 w-20 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-              <div className="mt-4 h-6 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-              <div className="mt-3 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="h-5 w-20 rounded-[6px] bg-[var(--surface-warm)]" />
+              <div className="mt-4 h-6 w-3/5 rounded-[6px] bg-[var(--surface-warm)]" />
+              <div className="mt-3 h-5 w-full rounded-[6px] bg-[var(--surface-warm)]" />
             </div>
           ))}
         </div>
@@ -421,25 +421,25 @@ function DocumentContentSkeleton() {
 
 function RecordReactionsFallback() {
   return (
-    <section className="mt-12 border-b border-t border-[rgba(42,36,25,0.1)] py-6">
-      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+    <section className="mt-12 border-b border-t border-[var(--border)] py-6">
+      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[var(--surface-warm)]" />
     </section>
   );
 }
 
 function RelatedDocumentsFallback() {
   return (
-    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
-      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+    <section className="mt-12 border-t border-[var(--border)] pt-10 md:mt-16 md:pt-12">
+      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[var(--surface-warm)]" />
       <div className="mt-8 grid gap-6">
         {Array.from({ length: 2 }).map((_, index) => (
           <div
             key={index}
-            className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-6 py-6"
+            className="rounded-[6px] border border-[var(--surface-warm)] bg-[var(--card)] px-6 py-6"
           >
-            <div className="h-5 w-20 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-            <div className="mt-4 h-6 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-            <div className="mt-3 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="h-5 w-20 rounded-[6px] bg-[var(--surface-warm)]" />
+            <div className="mt-4 h-6 w-3/5 rounded-[6px] bg-[var(--surface-warm)]" />
+            <div className="mt-3 h-5 w-full rounded-[6px] bg-[var(--surface-warm)]" />
           </div>
         ))}
       </div>
@@ -449,9 +449,9 @@ function RelatedDocumentsFallback() {
 
 function ConversationSectionFallback() {
   return (
-    <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
-      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-      <div className="mt-8 h-24 animate-pulse rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+    <section className="mt-12 border-t border-[var(--border)] pt-10 md:mt-16 md:pt-12">
+      <div className="h-8 w-48 animate-pulse rounded-[6px] bg-[var(--surface-warm)]" />
+      <div className="mt-8 h-24 animate-pulse rounded-[6px] bg-[var(--surface-warm)]" />
     </section>
   );
 }

@@ -27,8 +27,8 @@ function ShellAction({ action }: { action: ErrorStateAction }) {
   const tone = action.tone ?? "secondary";
   const className =
     tone === "primary"
-      ? "inline-flex h-[44px] items-center justify-center rounded-[4px] bg-[#2a2419] px-5 text-[14px] leading-5 font-medium !text-[#faf8f5] visited:!text-[#faf8f5]"
-      : "inline-flex h-[44px] items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-5 text-[14px] leading-5 font-medium text-[#2a2419]";
+      ? "inline-flex h-[44px] items-center justify-center rounded-[4px] bg-[var(--foreground)] px-5 text-[14px] leading-5 font-medium !text-[#faf8f5] visited:!text-[#faf8f5]"
+      : "inline-flex h-[44px] items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-5 text-[14px] leading-5 font-medium text-[var(--foreground)]";
 
   if (action.type === "link") {
     return (
@@ -70,11 +70,11 @@ export function ErrorStateShell({
         />
 
         <div className="relative">
-          <h1 className="mx-auto max-w-[620px] text-[34px] leading-[40px] font-semibold tracking-[-0.03em] text-[#2a2419] md:text-[42px] md:leading-[48px]">
+          <h1 className="mx-auto max-w-[620px] text-[34px] leading-[40px] font-semibold tracking-[-0.03em] text-[var(--foreground)] md:text-[42px] md:leading-[48px]">
             {title}
           </h1>
 
-          <p className="mx-auto mt-4 max-w-[560px] text-[16px] leading-7 text-[#6b6354] md:text-[18px] md:leading-8">
+          <p className="mx-auto mt-4 max-w-[560px] text-[16px] leading-7 text-[var(--muted)] md:text-[18px] md:leading-8">
             {description}
           </p>
 

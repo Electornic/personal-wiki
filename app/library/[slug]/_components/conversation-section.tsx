@@ -35,13 +35,13 @@ export async function ConversationSection({
 
   return (
     <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-10 md:mt-16 md:pt-12">
-      <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+      <h2 className="text-[24px] leading-8 font-semibold text-[var(--foreground)]">
         Conversation
-        <span className="ml-1 text-[18px] leading-7 font-normal text-[#6b6354]">
+        <span className="ml-1 text-[18px] leading-7 font-normal text-[var(--muted)]">
           {commentCount}
         </span>
       </h2>
-      <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+      <p className="mt-2 text-[14px] leading-5 text-[var(--muted)]">
         Share your reflections on this piece
       </p>
 
@@ -51,18 +51,18 @@ export async function ConversationSection({
         </div>
       ) : showPrivateCommentNotice ? (
         <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
-          <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
+          <p className="text-[18px] leading-[32.4px] text-[var(--muted)]">
             Comments are available on public records only.
           </p>
         </div>
       ) : (
         <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-6 py-6 text-center">
-          <p className="text-[18px] leading-[32.4px] text-[#6b6354]">
+          <p className="text-[18px] leading-[32.4px] text-[var(--muted)]">
             Sign in to join the conversation
           </p>
           <Link
             href="/author/sign-in"
-            className="mt-4 inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[#2a2419]"
+            className="mt-4 inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[var(--foreground)]"
           >
             Sign In
           </Link>
@@ -79,7 +79,7 @@ export async function ConversationSection({
           />
         </div>
       ) : (
-        <p className="mt-10 text-[16px] leading-6 text-[#6b6354]">
+        <p className="mt-10 text-[16px] leading-6 text-[var(--muted)]">
           No comments yet. Start the conversation.
         </p>
       )}

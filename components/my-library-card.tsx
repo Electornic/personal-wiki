@@ -12,7 +12,7 @@ function ArticleIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[#6b6354]"
+      className="h-5 w-5 text-[var(--muted)]"
       fill="none"
       viewBox="0 0 20 20"
     >
@@ -32,7 +32,7 @@ function BookIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[#6b6354]"
+      className="h-5 w-5 text-[var(--muted)]"
       fill="none"
       viewBox="0 0 20 20"
     >
@@ -56,11 +56,11 @@ export function MyLibraryCard({ document }: MyLibraryCardProps) {
               {document.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="max-w-[284px] text-[24px] leading-8 font-semibold tracking-[-0.01em] text-[#2a2419] md:max-w-none">
+              <h2 className="max-w-[284px] text-[24px] leading-8 font-semibold tracking-[-0.01em] text-[var(--foreground)] md:max-w-none">
                 {document.title}
               </h2>
               {document.sourceType === "book" && document.bookTitle ? (
-                <p className="mt-1 text-[14px] leading-5 italic text-[#6b6354]">
+                <p className="mt-1 text-[14px] leading-5 italic text-[var(--muted)]">
                   from {document.bookTitle}
                 </p>
               ) : null}
@@ -77,7 +77,7 @@ export function MyLibraryCard({ document }: MyLibraryCardProps) {
             ))}
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-[14px] leading-5 text-[#6b6354]">
+          <div className="mt-4 flex items-center justify-between text-[14px] leading-5 text-[var(--muted)]">
             <span className="font-medium">{document.writerName}</span>
             <span>{formatDisplayDate(document.publishedAt)}</span>
           </div>

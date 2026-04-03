@@ -20,7 +20,7 @@ function SubmitButton() {
 
   return (
     <button
-      className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[#2a2419]"
+      className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[var(--foreground)]"
       type="submit"
       disabled={pending}
     >
@@ -59,7 +59,7 @@ export function CommentForm({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="flex h-[48px] w-full items-center rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 text-left text-[15px] leading-[22.5px] font-medium text-[#6b6354] transition hover:bg-[rgba(232,227,219,0.32)]"
+          className="flex h-[48px] w-full items-center rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 text-left text-[15px] leading-[22.5px] font-medium text-[var(--muted)] transition hover:bg-[rgba(232,227,219,0.32)]"
         >
           {isReply ? "Write a reply..." : "Share your thoughts..."}
         </button>
@@ -75,7 +75,7 @@ export function CommentForm({
               rows={isReply ? 3 : 4}
               required
               placeholder={isReply ? "Write a reply..." : "Share your thoughts..."}
-              className={`rounded-[4px] border border-[rgba(0,0,0,0)] bg-white px-3 py-2 text-[#2a2419] placeholder:text-[#6b6354] transition-all ${
+              className={`rounded-[4px] border border-[rgba(0,0,0,0)] bg-white px-3 py-2 text-[var(--foreground)] placeholder:text-[var(--muted)] transition-all ${
                 isReply
                   ? "min-h-[80px] text-[14px] leading-5"
                   : "min-h-[120px] text-[16px] leading-6"
@@ -99,7 +99,7 @@ export function CommentForm({
                 setExpanded(false);
                 onCancel?.();
               }}
-              className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[14px] leading-5 font-medium text-[#2a2419]"
+              className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[14px] leading-5 font-medium text-[var(--foreground)]"
             >
               Cancel
             </button>
