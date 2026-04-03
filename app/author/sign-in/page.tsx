@@ -69,7 +69,7 @@ async function SignInContent({
         <div className="w-full max-w-[448px]">
           <Link
             href="/"
-            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[#2a2419] transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(232,227,219,0.45)]"
+            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--surface-hover)]"
           >
             <span aria-hidden="true" className="text-[18px] leading-none">
               ←
@@ -77,24 +77,24 @@ async function SignInContent({
             Back to Library
           </Link>
 
-          <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[32px] py-[32px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] transition-shadow duration-200 md:px-[33px] md:py-[33px] hover:shadow-[0px_18px_40px_rgba(42,36,25,0.08)]">
+          <div className="mt-8 rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-[32px] py-[32px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] transition-shadow duration-200 md:px-[33px] md:py-[33px] hover:shadow-[0px_18px_40px_var(--surface-warm)]">
             <div className="text-center">
-              <h1 className="text-[30px] leading-9 font-semibold tracking-[-0.6px] text-[#2a2419]">
+              <h1 className="text-[30px] leading-9 font-semibold tracking-[-0.6px] text-[var(--foreground)]">
                 Welcome
               </h1>
-              <p className="mt-3 text-[16px] leading-6 text-[#6b6354]">
+              <p className="mt-3 text-[16px] leading-6 text-[var(--muted)]">
                 Sign in to write and share your thoughts
               </p>
             </div>
 
-            <div className="mt-8 rounded-[10px] bg-[#e8e3db] p-[3px]">
+            <div className="mt-8 rounded-[10px] bg-[var(--surface-warm)] p-[3px]">
               <div className="grid grid-cols-2 gap-0.5">
                 <Link
                   href="/author/sign-in?tab=signin"
                   className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium transition-all duration-200 ${
                     !isSignUp
-                      ? "bg-white text-[#2a2419] shadow-[0_4px_12px_rgba(42,36,25,0.08)]"
-                      : "text-[#2a2419] hover:bg-[rgba(255,255,255,0.45)]"
+                      ? "bg-[var(--card)] text-[var(--foreground)] shadow-[0_4px_12px_var(--surface-warm)]"
+                      : "text-[var(--foreground)] hover:bg-[rgba(255,255,255,0.45)]"
                   }`}
                 >
                   Sign In
@@ -103,8 +103,8 @@ async function SignInContent({
                   href="/author/sign-in?tab=signup"
                   className={`inline-flex h-[29px] items-center justify-center rounded-[10px] px-[9px] text-[14px] leading-5 font-medium transition-all duration-200 ${
                     isSignUp
-                      ? "bg-white text-[#2a2419] shadow-[0_4px_12px_rgba(42,36,25,0.08)]"
-                      : "text-[#2a2419] hover:bg-[rgba(255,255,255,0.45)]"
+                      ? "bg-[var(--card)] text-[var(--foreground)] shadow-[0_4px_12px_var(--surface-warm)]"
+                      : "text-[var(--foreground)] hover:bg-[rgba(255,255,255,0.45)]"
                   }`}
                 >
                   Sign Up
@@ -129,18 +129,18 @@ async function SignInContent({
               <form action={signUpWithPassword} className="mt-8 space-y-4">
                 <input type="hidden" name="tab" value="signup" />
                 <label className="block">
-                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
                     Name
                   </span>
                   <input
                     name="userName"
                     required
                     placeholder="Your name"
-                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-[16px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)] transition-all duration-200 outline-none focus:border-[var(--foreground)] focus:bg-[var(--card)] focus:shadow-[0_0_0_3px_var(--surface-warm)]"
                   />
                 </label>
                 <label className="block">
-                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
                     Email
                   </span>
                   <input
@@ -148,11 +148,11 @@ async function SignInContent({
                     type="email"
                     required
                     placeholder="your@email.com"
-                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-[16px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)] transition-all duration-200 outline-none focus:border-[var(--foreground)] focus:bg-[var(--card)] focus:shadow-[0_0_0_3px_var(--surface-warm)]"
                   />
                 </label>
                 <label className="block">
-                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
                     Password
                   </span>
                   <input
@@ -161,7 +161,7 @@ async function SignInContent({
                     minLength={8}
                     required
                     placeholder="••••••••"
-                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-[16px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)] transition-all duration-200 outline-none focus:border-[var(--foreground)] focus:bg-[var(--card)] focus:shadow-[0_0_0_3px_var(--surface-warm)]"
                   />
                 </label>
                 <AuthSubmitButton
@@ -173,7 +173,7 @@ async function SignInContent({
               <form action={signInWithPassword} className="mt-8 space-y-4">
                 <input type="hidden" name="tab" value="signin" />
                 <label className="block">
-                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
                     Email
                   </span>
                   <input
@@ -181,11 +181,11 @@ async function SignInContent({
                     type="email"
                     required
                     placeholder="your@email.com"
-                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-[16px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)] transition-all duration-200 outline-none focus:border-[var(--foreground)] focus:bg-[var(--card)] focus:shadow-[0_0_0_3px_var(--surface-warm)]"
                   />
                 </label>
                 <label className="block">
-                  <span className="block text-[14px] leading-[14px] font-medium text-[#2a2419]">
+                  <span className="block text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
                     Password
                   </span>
                   <input
@@ -193,7 +193,7 @@ async function SignInContent({
                     type="password"
                     required
                     placeholder="••••••••"
-                    className="mt-2 h-10 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-1 text-[16px] leading-normal text-[#2a2419] placeholder:text-[#6b6354] transition-all duration-200 outline-none focus:border-[#2a2419] focus:bg-white focus:shadow-[0_0_0_3px_rgba(42,36,25,0.08)]"
+                    className="mt-2 h-10 w-full rounded-[4px] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-[16px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)] transition-all duration-200 outline-none focus:border-[var(--foreground)] focus:bg-[var(--card)] focus:shadow-[0_0_0_3px_var(--surface-warm)]"
                   />
                 </label>
                 <AuthSubmitButton idleLabel="Sign In" pendingLabel="Signing In..." />
@@ -201,7 +201,7 @@ async function SignInContent({
             )}
           </div>
 
-          <p className="mx-auto mt-6 max-w-[344px] text-center text-[14px] leading-5 text-[#6b6354] md:max-w-none">
+          <p className="mx-auto mt-6 max-w-[344px] text-center text-[14px] leading-5 text-[var(--muted)] md:max-w-none">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
@@ -219,15 +219,15 @@ async function SignInContent({
 function SignInFormSkeleton() {
   return (
     <div className="w-full max-w-[448px] animate-pulse">
-      <div className="h-8 w-32 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
-      <div className="mt-8 rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-[32px] py-[32px]">
-        <div className="mx-auto h-9 w-32 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-        <div className="mx-auto mt-3 h-5 w-56 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-        <div className="mt-8 h-9 w-full rounded-[10px] bg-[rgba(42,36,25,0.08)]" />
+      <div className="h-8 w-32 rounded-[4px] bg-[var(--surface-warm)]" />
+      <div className="mt-8 rounded-[6px] border border-[var(--surface-warm)] bg-[var(--card)] px-[32px] py-[32px]">
+        <div className="mx-auto h-9 w-32 rounded-[6px] bg-[var(--surface-warm)]" />
+        <div className="mx-auto mt-3 h-5 w-56 rounded-[6px] bg-[var(--surface-warm)]" />
+        <div className="mt-8 h-9 w-full rounded-[10px] bg-[var(--surface-warm)]" />
         <div className="mt-8 space-y-4">
-          <div className="h-[54px] w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-          <div className="h-[54px] w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-          <div className="h-9 w-full rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+          <div className="h-[54px] w-full rounded-[6px] bg-[var(--surface-warm)]" />
+          <div className="h-[54px] w-full rounded-[6px] bg-[var(--surface-warm)]" />
+          <div className="h-9 w-full rounded-[4px] bg-[var(--surface-warm)]" />
         </div>
       </div>
     </div>
