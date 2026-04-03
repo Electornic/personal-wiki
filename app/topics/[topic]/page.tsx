@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { formatTopicTitle, normalizeTopic } from "@/app/topics/[topic]/_lib/topic";
@@ -49,23 +50,7 @@ function BookIcon() {
   );
 }
 
-export default async function TopicHubPage({ params }: PageProps) {
-  const { topic } = await params;
-  const decodedTopic = decodeRouteSegment(topic);
-  const normalizedTopic = normalizeTopic(decodedTopic);
-
-  const records = await getCachedTopicDocuments(normalizedTopic);
-
-  if (records.length === 0) {
-    notFound();
-  }
-
-  const relatedTopics = [...new Set(
-    records
-      .flatMap((document) => document.tags)
-      .filter((tag) => normalizeTopic(tag) !== normalizedTopic),
-  )].slice(0, 6);
-
+export default function TopicHubPage({ params }: PageProps) {
   return (
     <main className="site-shell pb-20 pt-12 md:pt-16">
       <div className="w-full">
@@ -77,82 +62,109 @@ export default async function TopicHubPage({ params }: PageProps) {
           Back to library
         </Link>
 
-        <section className="border-b border-[rgba(42,36,25,0.1)] pb-8 pt-8 md:pb-10">
-          <h1 className="text-[36px] leading-[40px] font-semibold tracking-[-0.72px] text-[#2a2419] md:text-[48px] md:leading-[48px] md:tracking-[-0.96px]">
-            {formatTopicTitle(decodedTopic)}
-          </h1>
-          <p className="mt-4 max-w-[672px] text-[18px] leading-[29.25px] text-[#6b6354]">
-            Exploring {normalizeTopic(decodedTopic)} across multiple perspectives and
-            contexts.
-          </p>
-          <p className="mt-6 text-[14px] leading-5 text-[#6b6354]">
-            {records.length} {records.length === 1 ? "record" : "records"}
-          </p>
-        </section>
+        <Suspense fallback={<TopicContentSkeleton />}>
+          <TopicContent params={params} />
+        </Suspense>
+      </div>
+    </main>
+  );
+}
 
-        <section className="pt-12">
-          <h2 className="text-[24px] leading-8 font-semibold tracking-[-0.24px] text-[#2a2419]">
-            Records
-          </h2>
+async function TopicContent({ params }: { params: Promise<{ topic: string }> }) {
+  const { topic } = await params;
+  const decodedTopic = decodeRouteSegment(topic);
+  const normalizedTopic = normalizeTopic(decodedTopic);
+  const records = await getCachedTopicDocuments(normalizedTopic);
 
-          <div className="mt-6 grid gap-6">
-            {records.map((record) => (
-              <Link
-                key={record.id}
-                href={`/library/${record.slug}`}
-                className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[21px] py-[21px] transition hover:bg-[rgba(255,255,255,0.72)]"
-              >
-                <div className="flex gap-4">
-                  <div className="mt-1 shrink-0">
-                    {record.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
+  if (records.length === 0) {
+    notFound();
+  }
+
+  const relatedTopics = [...new Set(
+    records
+      .flatMap((record) => record.tags)
+      .filter((tag) => normalizeTopic(tag) !== normalizedTopic),
+  )].slice(0, 6);
+
+  return (
+    <>
+      <section className="border-b border-[rgba(42,36,25,0.1)] pb-8 pt-8 md:pb-10">
+        <h1 className="text-[36px] leading-[40px] font-semibold tracking-[-0.72px] text-[#2a2419] md:text-[48px] md:leading-[48px] md:tracking-[-0.96px]">
+          {formatTopicTitle(decodedTopic)}
+        </h1>
+        <p className="mt-4 max-w-[672px] text-[18px] leading-[29.25px] text-[#6b6354]">
+          Exploring {normalizedTopic} across multiple perspectives and
+          contexts.
+        </p>
+        <p className="mt-6 text-[14px] leading-5 text-[#6b6354]">
+          {records.length} {records.length === 1 ? "record" : "records"}
+        </p>
+      </section>
+
+      <section className="pt-12">
+        <h2 className="text-[24px] leading-8 font-semibold tracking-[-0.24px] text-[#2a2419]">
+          Records
+        </h2>
+
+        <div className="mt-6 grid gap-6">
+          {records.map((record) => (
+            <Link
+              key={record.id}
+              href={`/library/${record.slug}`}
+              prefetch={false}
+              className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[21px] py-[21px] transition hover:bg-[rgba(255,255,255,0.72)]"
+            >
+              <div className="flex gap-4">
+                <div className="mt-1 shrink-0">
+                  {record.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-[20px] leading-[25px] font-semibold text-[#2a2419]">
+                    {record.title}
+                  </h3>
+                  <p className="mt-3 text-[14px] leading-[22.75px] text-[rgba(107,99,84,0.9)] md:max-w-[761px]">
+                    {record.excerpt}
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-4 text-[#6b6354]">
+                    <span className="font-medium">{record.writerName}</span>
+                    <span>·</span>
+                    <span>{formatDisplayDate(record.publishedAt)}</span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-[20px] leading-[25px] font-semibold text-[#2a2419]">
-                      {record.title}
-                    </h3>
-                    <p className="mt-3 text-[14px] leading-[22.75px] text-[rgba(107,99,84,0.9)] md:max-w-[761px]">
-                      {record.excerpt}
-                    </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-4 text-[#6b6354]">
-                      <span className="font-medium">{record.writerName}</span>
-                      <span>·</span>
-                      <span>{formatDisplayDate(record.publishedAt)}</span>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {record.tags
-                        .filter((tag) => normalizeTopic(tag) !== normalizedTopic)
-                        .slice(0, 3)
-                        .map((tag) => (
-                          <TopicPill key={tag} label={tag} interactive={false} />
-                        ))}
-                    </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {record.tags
+                      .filter((tag) => normalizeTopic(tag) !== normalizedTopic)
+                      .slice(0, 3)
+                      .map((tag) => (
+                        <TopicPill key={tag} label={tag} interactive={false} />
+                      ))}
                   </div>
                 </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {relatedTopics.length ? (
+        <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:pt-[33px]">
+          <h2 className="text-[20px] leading-7 font-semibold tracking-[-0.2px] text-[#6b6354]">
+            Explore related topics
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {relatedTopics.map((tag) => (
+              <Link
+                key={tag}
+                href={buildTopicHref(tag)}
+                prefetch={false}
+                className="inline-flex h-[38px] items-center rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.4)] px-4 text-[14px] leading-5 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.6)]"
+              >
+                {tag}
               </Link>
             ))}
           </div>
         </section>
-
-        {relatedTopics.length ? (
-          <section className="mt-12 border-t border-[rgba(42,36,25,0.1)] pt-8 md:pt-[33px]">
-            <h2 className="text-[20px] leading-7 font-semibold tracking-[-0.2px] text-[#6b6354]">
-              Explore related topics
-            </h2>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {relatedTopics.map((tag) => (
-                <Link
-                  key={tag}
-                  href={buildTopicHref(tag)}
-                  className="inline-flex h-[38px] items-center rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.4)] px-4 text-[14px] leading-5 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.6)]"
-                >
-                  {tag}
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
-      </div>
-    </main>
+      ) : null}
+    </>
   );
 }
 
@@ -164,4 +176,25 @@ async function getCachedTopicDocuments(topic: string) {
   cacheTag(`topic:${topic}`);
 
   return listPublicDocumentsByTag(topic);
+}
+
+function TopicContentSkeleton() {
+  return (
+    <>
+      <section className="animate-pulse border-b border-[rgba(42,36,25,0.08)] pb-8 pt-8 md:pb-10">
+        <div className="h-12 w-64 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+        <div className="mt-4 h-8 w-full max-w-[560px] rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+        <div className="mt-6 h-5 w-20 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+      </section>
+
+      <section className="animate-pulse pt-12">
+        <div className="h-8 w-28 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+        <div className="mt-6 rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-6 py-6">
+          <div className="h-7 w-2/3 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+          <div className="mt-4 h-5 w-full rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+          <div className="mt-3 h-5 w-4/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+        </div>
+      </section>
+    </>
+  );
 }

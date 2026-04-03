@@ -48,7 +48,7 @@ function BookIcon() {
 
 export function MyLibraryCard({ document }: MyLibraryCardProps) {
   return (
-    <Link href={`/library/${document.slug}`} className="block group">
+    <Link href={`/library/${document.slug}`} prefetch={false} className="block group">
       <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition group-hover:bg-[rgba(255,255,255,0.72)]">
         <div className="flex min-h-full flex-col">
           <div className="flex items-start gap-3">

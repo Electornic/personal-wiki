@@ -29,7 +29,7 @@ export function TopicPill({
   }
 
   return (
-    <Link href={href} className="inline-flex">
+    <Link href={href} prefetch={false} className="inline-flex">
       <TopicPillInner label={label} interactive />
     </Link>
   );
