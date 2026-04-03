@@ -197,6 +197,54 @@ export async function signOut() {
   redirect("/");
 }
 
+interface ValidatedDocumentPayload {
+  documentId?: string;
+  title: string;
+  contents: string;
+  sourceType: SourceType;
+  bookTitle?: string | null;
+  visibility: "public" | "private";
+  tags: string[];
+  stagedImages?: { ids: string[]; files: File[] };
+}
+
+function validateDocumentPayload(
+  payload: ValidatedDocumentPayload,
+): string | null {
+  if (!payload.title.trim()) return "Title is required.";
+  if (!payload.contents.trim()) return "Contents are required.";
+  if (payload.sourceType === "book" && !payload.bookTitle?.toString().trim())
+    return "Book records require a book title.";
+  if (payload.tags.length === 0)
+    return "At least one tag is required for recommendations.";
+  return null;
+}
+
+function revalidateDocumentCaches(slug: string) {
+  revalidatePath("/");
+  revalidatePath("/author");
+  revalidatePath(buildLibraryHref(slug));
+  revalidateTag("public-discovery", "max");
+  revalidateTag(buildRecordCacheTag(slug), "max");
+}
+
+export async function saveDocumentCore(
+  payload: ValidatedDocumentPayload,
+): Promise<{ slug?: string; error?: string }> {
+  const validationError = validateDocumentPayload(payload);
+  if (validationError) return { error: validationError };
+
+  try {
+    const slug = await upsertDocument(payload);
+    revalidateDocumentCaches(slug);
+    return { slug };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "문서를 저장하지 못했습니다.",
+    };
+  }
+}
+
 export async function saveDocument(
   _previousState: DocumentFormState,
   formData: FormData,
@@ -212,45 +260,11 @@ export async function saveDocument(
   const payload = parseDocumentPayload(formData);
   const stagedImages = parseStagedImagePayload(formData);
 
-  if (!payload.title || !payload.contents) {
-    return {
-      error: "title and contents are required.",
-    } satisfies DocumentFormState;
+  const result = await saveDocumentCore({ ...payload, stagedImages });
+
+  if (result.error) {
+    return { error: result.error } satisfies DocumentFormState;
   }
-
-  if (payload.sourceType === "book" && !payload.bookTitle) {
-    return {
-      error: "book records require a book title.",
-    } satisfies DocumentFormState;
-  }
-
-  if (payload.tags.length === 0) {
-    return {
-      error: "At least one tag is required for recommendations.",
-    } satisfies DocumentFormState;
-  }
-
-  let slug: string;
-
-  try {
-    slug = await upsertDocument({
-      ...payload,
-      stagedImages,
-    });
-  } catch (error) {
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : "문서를 저장하지 못했습니다.",
-    } satisfies DocumentFormState;
-  }
-
-  revalidatePath("/");
-  revalidatePath("/author");
-  revalidatePath(buildLibraryHref(slug));
-  revalidateTag("public-discovery", "max");
-  revalidateTag(buildRecordCacheTag(slug), "max");
 
   redirect("/author?saved=1");
 }
