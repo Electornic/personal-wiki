@@ -48,6 +48,19 @@ function WriteIcon() {
   );
 }
 
+function ChatIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+      <path
+        d="M2.667 3.333A1.333 1.333 0 0 1 4 2h8a1.333 1.333 0 0 1 1.333 1.333v6.667A1.333 1.333 0 0 1 12 11.333H5.333L2.667 14V3.333Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
   const [authStatus, setAuthStatus] = useState<AuthStatus>(initialAuthStatus);
 
@@ -125,6 +138,15 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
                 <WorkspaceIcon />
                 <span className="hidden text-[14px] leading-5 font-medium md:inline">
                   Workspace
+                </span>
+              </Link>
+              <Link
+                href="/author/chat"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)] md:gap-2 md:px-[10px]"
+              >
+                <ChatIcon />
+                <span className="hidden text-[14px] leading-5 font-medium md:inline">
+                  Chat
                 </span>
               </Link>
               <Link
