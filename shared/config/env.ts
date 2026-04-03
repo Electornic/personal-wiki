@@ -4,6 +4,7 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const authRedirectUrl =
   process.env.SUPABASE_AUTH_REDIRECT_URL ?? "http://localhost:3000/auth/callback";
 const supabaseDebugLog = process.env.SUPABASE_DEBUG_LOG;
+const openaiApiKey = process.env.OPENAI_API_KEY;
 
 export function hasSupabaseEnv() {
   return Boolean(publicSupabaseUrl && publicSupabaseAnonKey);
@@ -37,4 +38,12 @@ export function getAuthRedirectUrl() {
 
 export function shouldLogSupabaseQueries() {
   return process.env.NODE_ENV === "development" && supabaseDebugLog === "1";
+}
+
+export function hasOpenAIEnv() {
+  return Boolean(openaiApiKey);
+}
+
+export function getOpenAIApiKey() {
+  return openaiApiKey;
 }
