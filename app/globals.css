@@ -2,14 +2,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #faf8f5;
-  --foreground: #2a2419;
-  --muted: #6b6354;
-  --panel: #fffdf8;
-  --line: rgba(42, 36, 25, 0.1);
-  --card: #ffffff;
-  --border: rgba(42, 36, 25, 0.1);
-  --input-background: #ffffff;
+  /* Walnut library palette */
+  --background: #f7f3ed;
+  --foreground: #2c1e0e;
+  --muted: #7a6b56;
+  --panel: #faf6f0;
+  --line: rgba(44, 30, 14, 0.1);
+  --card: #fffdf9;
+  --border: rgba(44, 30, 14, 0.1);
+  --input-background: #fffdf9;
+
+  /* Accent & surface tokens */
+  --accent: #5c3d1e;
+  --accent-hover: #4a3118;
+  --accent-text: #f7f3ed;
+  --surface-warm: #f0e8dc;
+  --surface-hover: rgba(92, 61, 30, 0.06);
+  --tag-bg: #ece4d6;
+  --tag-text: #5c3d1e;
+  --danger: #9e2b2b;
+  --danger-hover: #832323;
+
+  /* Sidebar */
+  --sidebar-bg: #2c1e0e;
+  --sidebar-text: #e8dfd2;
+  --sidebar-text-muted: #a09080;
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-active: rgba(255, 255, 255, 0.12);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-width: 240px;
 }
 
 @theme inline {
@@ -18,6 +39,21 @@
   --color-card: var(--card);
   --color-border: var(--border);
   --color-muted-foreground: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+  --color-surface-warm: var(--surface-warm);
+  --color-surface-hover: var(--surface-hover);
+  --color-tag-bg: var(--tag-bg);
+  --color-tag-text: var(--tag-text);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-text-muted: var(--sidebar-text-muted);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-border: var(--sidebar-border);
   --font-sans: "Crimson Pro", "Iowan Old Style", "Palatino Linotype",
     "Book Antiqua", "Baskerville", Georgia, serif;
   --font-mono: "SFMono-Regular", "SF Mono", "IBM Plex Mono", "Fira Code",
@@ -77,8 +113,8 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: 2px solid transparent;
-  border-color: rgba(64, 47, 23, 0.4);
-  box-shadow: 0 0 0 4px rgba(102, 77, 38, 0.08);
+  border-color: rgba(92, 61, 30, 0.4);
+  box-shadow: 0 0 0 4px rgba(92, 61, 30, 0.08);
 }
 
 textarea {
@@ -97,13 +133,13 @@ textarea {
 }
 
 .button-primary {
-  background: #2a2419;
-  color: #faf8f5;
+  background: var(--accent);
+  color: var(--accent-text);
   box-shadow: none;
 }
 
 .button-primary:hover {
-  background: rgba(42, 36, 25, 0.92);
+  background: var(--accent-hover);
 }
 
 .button-secondary {
@@ -113,8 +149,8 @@ textarea {
 }
 
 .button-secondary:hover {
-  border-color: rgba(42, 36, 25, 0.22);
-  background: rgba(232, 227, 219, 0.55);
+  border-color: rgba(44, 30, 14, 0.22);
+  background: var(--surface-hover);
 }
 
 .section-kicker {
