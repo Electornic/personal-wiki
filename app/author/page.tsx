@@ -446,6 +446,7 @@ async function AuthorDocumentList({
                 <div className="flex flex-wrap gap-2 md:ml-6 md:justify-end">
                   <Link
                     className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
+                    prefetch={false}
                     href={buildLibraryHref(currentDocument.slug, {
                       preview: currentDocument.visibility === "private",
                     })}
@@ -455,6 +456,7 @@ async function AuthorDocumentList({
                   </Link>
                   <Link
                     className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
+                    prefetch={false}
                     href={`/author/documents/${currentDocument.id}`}
                   >
                     <EditIcon />

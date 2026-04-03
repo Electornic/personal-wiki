@@ -111,6 +111,7 @@ async function TopicContent({ params }: { params: Promise<{ topic: string }> }) 
             <Link
               key={record.id}
               href={`/library/${record.slug}`}
+              prefetch={false}
               className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[21px] py-[21px] transition hover:bg-[rgba(255,255,255,0.72)]"
             >
               <div className="flex gap-4">
@@ -154,6 +155,7 @@ async function TopicContent({ params }: { params: Promise<{ topic: string }> }) 
               <Link
                 key={tag}
                 href={buildTopicHref(tag)}
+                prefetch={false}
                 className="inline-flex h-[38px] items-center rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.4)] px-4 text-[14px] leading-5 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.6)]"
               >
                 {tag}

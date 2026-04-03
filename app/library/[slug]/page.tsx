@@ -242,6 +242,7 @@ async function RelatedDocumentsSection({
                 <Link
                   key={relatedDoc.id}
                   href={buildLibraryHref(relatedDoc.slug)}
+                  prefetch={false}
                   className="block rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-5 py-5 transition hover:bg-[rgba(255,255,255,0.72)] md:px-6"
                 >
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] leading-4 text-[#6b6354] md:text-[12px]">

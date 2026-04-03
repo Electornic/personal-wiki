@@ -57,6 +57,11 @@ const RECORD_DETAIL_SELECT = [
   "updated_at",
 ].join(", ");
 
+const RECORD_DETAIL_WITH_TAGS_SELECT = [
+  RECORD_DETAIL_SELECT,
+  "record_tags(tags(name))",
+].join(", ");
+
 const RECORD_LIST_SELECT = [
   "id",
   "slug",
@@ -1270,7 +1275,7 @@ export const getPublicDocumentBySlug = cache(async function getPublicDocumentByS
 
   const { data: row, error } = await supabase
     .from("records")
-    .select(RECORD_DETAIL_SELECT)
+    .select(RECORD_DETAIL_WITH_TAGS_SELECT)
     .eq("slug", normalizedSlug)
     .eq("visibility", "public")
     .maybeSingle();
@@ -1280,8 +1285,14 @@ export const getPublicDocumentBySlug = cache(async function getPublicDocumentByS
   }
 
   const typedRow = row as unknown as RecordRow;
-  const tagRows = await fetchTagRowsForRecordId(String(typedRow.id));
-  return (await mapRowsToDocuments([typedRow], tagRows))[0] ?? null;
+  const tags = getTagNamesFromRecordRow(typedRow);
+  const authorNameMap = await resolveAuthorNamesForRows([typedRow]);
+  const writerName = resolveWriterName(typedRow, authorNameMap);
+
+  return {
+    ...mapRecordToDocument(typedRow, tags),
+    writerName,
+  };
 });
 
 export const getReadableDocumentBySlug = cache(async function getReadableDocumentBySlug(
@@ -1302,7 +1313,7 @@ export const getReadableDocumentBySlug = cache(async function getReadableDocumen
 
   const { data: row, error } = await supabase
     .from("records")
-    .select(RECORD_DETAIL_SELECT)
+    .select(RECORD_DETAIL_WITH_TAGS_SELECT)
     .eq("slug", normalizedSlug)
     .maybeSingle();
 
@@ -1311,8 +1322,14 @@ export const getReadableDocumentBySlug = cache(async function getReadableDocumen
   }
 
   const typedRow = row as unknown as RecordRow;
-  const tagRows = await fetchTagRowsForRecordId(String(typedRow.id), true);
-  return (await mapRowsToDocuments([typedRow], tagRows))[0] ?? null;
+  const tags = getTagNamesFromRecordRow(typedRow);
+  const authorNameMap = await resolveAuthorNamesForRows([typedRow], true);
+  const writerName = resolveWriterName(typedRow, authorNameMap);
+
+  return {
+    ...mapRecordToDocument(typedRow, tags),
+    writerName,
+  };
 });
 
 export const getAuthorDocumentById = cache(async function getAuthorDocumentById(
@@ -1467,7 +1484,8 @@ export async function listRelatedDocumentsForDocument(
   let candidateQuery = supabase
     .from("records")
     .select(RECORD_LIST_WITH_TAGS_SELECT)
-    .in("id", candidateIds);
+    .in("id", candidateIds)
+    .limit(10);
 
   if (!useServerClient) {
     candidateQuery = candidateQuery.eq("visibility", "public");
