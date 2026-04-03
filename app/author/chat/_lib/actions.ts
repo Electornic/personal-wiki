@@ -14,6 +14,22 @@ interface SaveChatDocumentInput {
 export async function saveChatDocument(
   input: SaveChatDocumentInput,
 ): Promise<{ slug?: string; error?: string }> {
+  if (!input.title.trim()) {
+    return { error: "Title is required." };
+  }
+
+  if (!input.contents.trim()) {
+    return { error: "Contents are required." };
+  }
+
+  if (input.source_type === "book" && !input.book_title?.trim()) {
+    return { error: "Book records require a book title." };
+  }
+
+  if (input.tags.length === 0) {
+    return { error: "At least one tag is required for recommendations." };
+  }
+
   try {
     const slug = await upsertDocument({
       title: input.title,

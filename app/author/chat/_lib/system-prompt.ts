@@ -38,5 +38,4 @@ Format:
 
 - Always respond in the same language the user uses.
 - If the user wants to revise the proposal, adjust and output a new JSON block.
-- If the user wants to add a note to an existing document, include \`"action": "append"\` and \`"existing_title": "..."\` in the JSON.
 - A single strong thought is enough for a document. Don't wait for a full essay.`;
