@@ -7,6 +7,7 @@ import { DeleteDocumentButton } from "@/app/author/_components/delete-document-b
 import { PaginationNav } from "@/components/pagination-nav";
 import { listAuthorDocumentsPage } from "@/entities/record/api/documents";
 import { formatLongDisplayDate } from "@/entities/record/model/content";
+import { ArticleIcon, BookIcon } from "@/entities/record/ui/source-type-icon";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 
 import { hasAuthoringEnv } from "@/shared/config/env";
@@ -37,34 +38,6 @@ function SignOutIcon() {
         stroke="currentColor"
         strokeWidth="1.2"
       />
-    </svg>
-  );
-}
-
-function ArticleIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M5.333 2.667h4l2.667 2.666v8A1.333 1.333 0 0 1 10.667 14H5.333A1.333 1.333 0 0 1 4 12.667V4A1.333 1.333 0 0 1 5.333 2.667Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path d="M9.333 2.667v2.666H12" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M6 7.333h4M6 10h4" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
-function BookIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4 text-[#8B6914]" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M8 4C6.667 2.933 5 2.667 3.333 2.667v9.066C5 11.733 6.667 12 8 13.067c1.333-1.067 3-1.334 4.667-1.334V2.667C11 2.667 9.333 2.933 8 4Z"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        strokeLinejoin="round"
-      />
-      <path d="M8 4v9.067" stroke="currentColor" strokeWidth="1.1" />
     </svg>
   );
 }
@@ -382,7 +355,7 @@ async function AuthorDocumentList({
                 prefetch={false}
                 className="absolute inset-0 z-0"
               >
-                <span className="sr-only">Edit {currentDocument.title}</span>
+                <span className="sr-only">View {currentDocument.title}</span>
               </Link>
 
               <div className="pointer-events-none relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -400,7 +373,7 @@ async function AuthorDocumentList({
 
                   <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-3 text-[14px] leading-5 text-[var(--muted)]">
                     <span className="inline-flex items-center gap-1.5 capitalize">
-                      {currentDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
+                      {currentDocument.sourceType === "book" ? <BookIcon className="h-4 w-4" /> : <ArticleIcon className="h-4 w-4" />}
                       {currentDocument.sourceType}
                     </span>
                     <span>{formatLongDisplayDate(currentDocument.publishedAt)}</span>
