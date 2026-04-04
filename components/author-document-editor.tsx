@@ -306,6 +306,27 @@ export function AuthorDocumentEditor({
     stageImages(files);
   }
 
+  type ToolbarItem =
+    | { type: "divider" }
+    | { type: "button"; label: string; onClick: () => void; style?: string };
+
+  const toolbarItems: ToolbarItem[] = [
+    { type: "button", label: "H1", onClick: () => insertBlock((s) => `# ${s}`, "Heading"), style: "font-medium" },
+    { type: "button", label: "H2", onClick: () => insertBlock((s) => `## ${s}`, "Heading"), style: "font-medium" },
+    { type: "button", label: "H3", onClick: () => insertBlock((s) => `### ${s}`, "Heading"), style: "font-medium" },
+    { type: "divider" },
+    { type: "button", label: "B", onClick: () => wrapSelection("**"), style: "font-semibold" },
+    { type: "button", label: "I", onClick: () => wrapSelection("*"), style: "italic" },
+    { type: "button", label: "\u201c\u201d", onClick: () => insertBlock((s) => `> ${s}`, "Quote") },
+    { type: "divider" },
+    { type: "button", label: "\u2022 List", onClick: () => insertList("- ", "List item") },
+    { type: "button", label: "1. List", onClick: () => insertList("1. ", "List item") },
+    { type: "divider" },
+    { type: "button", label: "Link", onClick: insertLink },
+    { type: "button", label: "Image", onClick: insertImage },
+    { type: "button", label: "Upload", onClick: () => fileInputRef.current?.click() },
+  ];
+
   return (
     <div className="space-y-3">
       <div className="rounded-[10px] bg-[var(--surface-warm)] p-[3px] w-fit">
@@ -344,86 +365,20 @@ export function AuthorDocumentEditor({
         <div className="space-y-3">
           <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-2 py-2">
             <div className="flex flex-wrap items-center gap-1">
-              <button
-                type="button"
-                onClick={() => insertBlock((selected) => `# ${selected}`, "Heading")}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 font-medium text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                H1
-              </button>
-              <button
-                type="button"
-                onClick={() => insertBlock((selected) => `## ${selected}`, "Heading")}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 font-medium text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                H2
-              </button>
-              <button
-                type="button"
-                onClick={() => insertBlock((selected) => `### ${selected}`, "Heading")}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 font-medium text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                H3
-              </button>
-              <div className="mx-1 h-6 w-px bg-[rgba(42,36,25,0.1)]" />
-              <button
-                type="button"
-                onClick={() => wrapSelection("**")}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 font-semibold text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                B
-              </button>
-              <button
-                type="button"
-                onClick={() => wrapSelection("*")}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 italic text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                I
-              </button>
-              <button
-                type="button"
-                onClick={() => insertBlock((selected) => `> ${selected}`, "Quote")}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                {"\u201c\u201d"}
-              </button>
-              <div className="mx-1 h-6 w-px bg-[rgba(42,36,25,0.1)]" />
-              <button
-                type="button"
-                onClick={() => insertList("- ", "List item")}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                • List
-              </button>
-              <button
-                type="button"
-                onClick={() => insertList("1. ", "List item")}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                1. List
-              </button>
-              <div className="mx-1 h-6 w-px bg-[rgba(42,36,25,0.1)]" />
-              <button
-                type="button"
-                onClick={insertLink}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                Link
-              </button>
-              <button
-                type="button"
-                onClick={insertImage}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                Image
-              </button>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
-              >
-                Upload
-              </button>
+              {toolbarItems.map((item, index) =>
+                item.type === "divider" ? (
+                  <div key={index} className="mx-1 h-6 w-px bg-[rgba(42,36,25,0.1)]" />
+                ) : (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={item.onClick}
+                    className={`inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4 ${item.style ?? ""}`}
+                  >
+                    {item.label}
+                  </button>
+                ),
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
