@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ChatMessage } from "@/app/author/chat/_components/chat-message";
+import { ChatMessage } from "@/app/author/(workspace)/chat/_components/chat-message";
 import {
   DocumentPreviewCard,
   type DocumentProposal,
-} from "@/app/author/chat/_components/document-preview-card";
+} from "@/app/author/(workspace)/chat/_components/document-preview-card";
 
 interface Message {
   id: string;

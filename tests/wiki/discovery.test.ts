@@ -28,7 +28,6 @@ describe("applyDiscoveryState", () => {
         sort: "newest",
         source: "all",
         tags: [],
-        filtersOpen: false,
       },
     );
 
@@ -49,7 +48,6 @@ describe("applyDiscoveryState", () => {
         sort: "most-reacted",
         source: "all",
         tags: [],
-        filtersOpen: true,
       },
       totals,
     );
@@ -90,7 +88,6 @@ describe("applyDiscoveryState", () => {
         sort: "newest",
         source: "article",
         tags: ["design"],
-        filtersOpen: true,
       },
     );
 
@@ -108,7 +105,6 @@ describe("applyDiscoveryState", () => {
       sort: "newest",
       source: "all",
       tags: [],
-      filtersOpen: false,
     });
 
     expect(filtered).toHaveLength(1);
@@ -122,7 +118,6 @@ describe("applyDiscoveryState", () => {
         sort: "newest",
         source: "all",
         tags: [],
-        filtersOpen: false,
       }),
     ).toBe(true);
 
@@ -132,7 +127,6 @@ describe("applyDiscoveryState", () => {
         sort: "newest",
         source: "all",
         tags: [],
-        filtersOpen: false,
       }),
     ).toBe(false);
   });

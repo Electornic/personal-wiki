@@ -32,11 +32,12 @@ function SubmitButton({ visibility }: { visibility: "public" | "private" }) {
 
   return (
     <button
-      className="inline-flex h-9 items-center justify-center rounded-[4px] bg-[var(--foreground)] px-4 text-[14px] leading-5 font-medium text-[var(--accent-text)] disabled:opacity-50"
+      className="inline-flex h-[44px] min-w-[140px] items-center justify-center gap-2 rounded-[6px] bg-[var(--accent)] px-5 text-[14px] leading-5 font-medium text-[var(--accent-text)] transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
       type="submit"
       disabled={pending}
     >
-      {pending ? "Saving..." : visibility === "public" ? "Publish Record" : "Save Draft"}
+      <PublishIcon />
+      {pending ? "Saving..." : visibility === "public" ? "Publish" : "Save Draft"}
     </button>
   );
 }
@@ -91,12 +92,12 @@ function PublishIcon() {
         strokeWidth="1.2"
       />
       <path
-        d="M8 2.667v7.666"
+        d="M8 10V2.333"
         stroke="currentColor"
         strokeWidth="1.2"
       />
       <path
-        d="M5.333 7.667 8 10.333l2.667-2.666"
+        d="M5.333 5 8 2.333 10.667 5"
         stroke="currentColor"
         strokeWidth="1.2"
       />
@@ -419,7 +420,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
 
 
   return (
-    <form action={formAction} className="grid gap-8">
+    <form action={formAction} className="grid gap-5">
       <input type="hidden" name="documentId" defaultValue={document?.id ?? ""} />
       <input type="hidden" name="visibility" value={visibility} />
       <input
@@ -439,7 +440,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
         />
       ) : null}
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between">
           <Link
             href="/author"
             className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
@@ -451,7 +452,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
 
       {/* visibility + submit moved to bottom */}
 
-      <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[24px] py-[24px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] md:px-[25px] md:py-[25px]">
+      <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-4 py-4 shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] md:px-[24px] md:py-[24px]">
         <div className="space-y-5">
           <label className="block">
             <span className="block text-[16px] leading-6 font-medium text-[var(--foreground)]">
@@ -462,7 +463,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Give your entry a title..."
-              className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[14px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)] md:text-[20px]"
+              className="mt-2 h-9 rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-white px-3 py-1 text-[14px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)] md:text-[20px]"
               required
             />
           </label>
@@ -482,7 +483,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   onChange={(event) =>
                     setSourceType(event.target.value as "book" | "article")
                   }
-                  className="h-9 appearance-none rounded-[4px] border border-transparent bg-white px-[13px] pr-10 py-px text-[14px] leading-5 font-medium text-transparent"
+                  className="h-9 appearance-none rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-white px-[13px] pr-10 py-px text-[14px] leading-5 font-medium text-transparent"
                 >
                   <option value="article">Article</option>
                   <option value="book">Book</option>
@@ -503,7 +504,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   value={bookTitle}
                   onChange={(event) => setBookTitle(event.target.value)}
                   placeholder="The book this entry comes from..."
-                  className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[14px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)]"
+                  className="mt-2 h-9 rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-white px-3 py-1 text-[14px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)]"
                 />
               </label>
             ) : null}
@@ -518,7 +519,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
               value={tags}
               onChange={(event) => setTags(event.target.value)}
               placeholder="philosophy, design, writing (comma-separated)"
-              className="mt-2 h-9 rounded-[4px] border border-transparent bg-white px-3 py-1 text-[16px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)]"
+              className="mt-2 h-9 rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-white px-3 py-1 text-[16px] leading-normal text-[var(--foreground)] placeholder:text-[var(--muted)]"
               required
             />
             <p className="mt-2 text-[12px] leading-4 text-[var(--muted)]">
@@ -568,21 +569,21 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 <button
                   type="button"
                   onClick={() => insertBlock((selected) => `# ${selected}`, "Heading")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 font-medium text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   H1
                 </button>
                 <button
                   type="button"
                   onClick={() => insertBlock((selected) => `## ${selected}`, "Heading")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 font-medium text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   H2
                 </button>
                 <button
                   type="button"
                   onClick={() => insertBlock((selected) => `### ${selected}`, "Heading")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 font-medium text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   H3
                 </button>
@@ -590,36 +591,36 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 <button
                   type="button"
                   onClick={() => wrapSelection("**")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 font-semibold text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 font-semibold text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   B
                 </button>
                 <button
                   type="button"
                   onClick={() => wrapSelection("*")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 italic text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 italic text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   I
                 </button>
                 <button
                   type="button"
                   onClick={() => insertBlock((selected) => `> ${selected}`, "Quote")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
-                  “”
+                  {"\u201c\u201d"}
                 </button>
                 <div className="mx-1 h-6 w-px bg-[rgba(42,36,25,0.1)]" />
                 <button
                   type="button"
                   onClick={() => insertList("- ", "List item")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   • List
                 </button>
                 <button
                   type="button"
                   onClick={() => insertList("1. ", "List item")}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   1. List
                 </button>
@@ -627,21 +628,21 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 <button
                   type="button"
                   onClick={insertLink}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   Link
                 </button>
                 <button
                   type="button"
                   onClick={insertImage}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   Image
                 </button>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex h-8 items-center justify-center rounded-[4px] px-3 text-[12px] leading-4 text-[var(--foreground)] hover:bg-white"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] px-3 text-[13px] leading-5 text-[var(--foreground)] hover:bg-white md:h-8 md:text-[12px] md:leading-4"
                 >
                   Upload
                 </button>
@@ -691,7 +692,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="min-h-[600px] rounded-[4px] border border-transparent bg-white px-6 py-6">
+            <div className="min-h-[600px] rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-white px-6 py-6">
               {contents ? (
                 <MarkdownContent
                   contents={contents}
@@ -709,8 +710,8 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-3">
-        <label className="inline-flex items-center gap-2 text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
+      <div className="flex items-center justify-end gap-4">
+        <label className="inline-flex items-center gap-3 text-[14px] leading-5 font-medium text-[var(--foreground)]">
           <button
             type="button"
             aria-pressed={visibility === "public"}
@@ -719,22 +720,19 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                 current === "public" ? "private" : "public",
               )
             }
-            className={`relative inline-flex h-[18px] w-8 items-center rounded-full border border-transparent ${
-              visibility === "public" ? "bg-[var(--accent)]" : "bg-[var(--surface-warm)]"
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+              visibility === "public" ? "bg-[var(--accent)]" : "bg-[rgba(42,36,25,0.2)]"
             }`}
           >
             <span
-              className={`h-4 w-4 rounded-full bg-white transition-transform ${
-                visibility === "public" ? "translate-x-[14px]" : "translate-x-[1px]"
+              className={`inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                visibility === "public" ? "translate-x-[22px]" : "translate-x-[2px]"
               }`}
             />
           </button>
-          {visibility === "public" ? "Public" : "Private"}
+          <span className="w-[52px]">{visibility === "public" ? "Public" : "Private"}</span>
         </label>
-        <div className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--accent)] px-3 text-[var(--accent-text)]">
-          <PublishIcon />
-          <SubmitButton visibility={visibility} />
-        </div>
+        <SubmitButton visibility={visibility} />
       </div>
 
       {state.error ? (

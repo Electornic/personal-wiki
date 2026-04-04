@@ -7,6 +7,7 @@ import { DeleteDocumentButton } from "@/app/author/_components/delete-document-b
 import { PaginationNav } from "@/components/pagination-nav";
 import { listAuthorDocumentsPage } from "@/entities/record/api/documents";
 import { formatLongDisplayDate } from "@/entities/record/model/content";
+import { ArticleIcon, BookIcon } from "@/entities/record/ui/source-type-icon";
 import { getAuthorAccess } from "@/lib/wiki/auth";
 
 import { hasAuthoringEnv } from "@/shared/config/env";
@@ -37,20 +38,6 @@ function SignOutIcon() {
         stroke="currentColor"
         strokeWidth="1.2"
       />
-    </svg>
-  );
-}
-
-function ArticleIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M5.333 2.667h4l2.667 2.666v8A1.333 1.333 0 0 1 10.667 14H5.333A1.333 1.333 0 0 1 4 12.667V4A1.333 1.333 0 0 1 5.333 2.667Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path d="M9.333 2.667v2.666H12" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M6 7.333h4M6 10h4" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -241,33 +228,31 @@ async function AuthorPageContent({
   const workspaceMessage = getWorkspaceMessage(resolvedSearchParams);
 
   return (
-    <div className="px-6 py-8 lg:px-10">
-      <section className="space-y-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+    <div className="px-4 py-5 lg:px-10 lg:py-8">
+      <section className="space-y-5 md:space-y-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-[40px] leading-[48px] font-semibold tracking-[-0.8px] text-[var(--foreground)]">
+            <h1 className="text-[32px] leading-[40px] font-semibold tracking-[-0.8px] text-[var(--foreground)] md:text-[40px] md:leading-[48px]">
               Workspace
             </h1>
-            <p className="mt-2 text-[14px] leading-5 text-[var(--muted)]">
+            <p className="mt-1 text-[14px] leading-5 text-[var(--muted)]">
               Signed in as{" "}
               <span className="text-[var(--foreground)]">
                 {access.userName ?? access.userEmail}
               </span>
             </p>
           </div>
-          <div className="flex flex-col gap-3 md:flex-row">
+          <div className="flex gap-2 md:gap-3">
             <Link
-              className="inline-flex h-[48px] items-center justify-center gap-2 rounded-[4px] bg-[var(--accent)] px-6 text-[15px] leading-[22.5px] font-medium text-[var(--accent-text)]"
+              className="inline-flex h-[40px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[var(--foreground)] px-4 text-[14px] leading-5 font-medium !text-white md:h-[48px] md:flex-none md:px-6 md:text-[15px]"
               href="/author/documents/new"
             >
               <NewRecordIcon />
-              <span className="text-[15px] leading-[22.5px] font-medium text-[var(--accent-text)]">
-                New Record
-              </span>
+              New Record
             </Link>
-            <form action={signOut}>
+            <form action={signOut} className="flex-1 md:flex-none">
               <button
-                className="inline-flex h-[48px] w-full items-center justify-center gap-2 rounded-[4px] border border-[var(--border)] bg-[var(--card)] px-6 text-[15px] leading-[22.5px] font-medium text-[var(--foreground)] md:w-auto"
+                className="inline-flex h-[40px] w-full items-center justify-center gap-2 rounded-[4px] border border-[var(--border)] bg-[var(--card)] px-4 text-[14px] leading-5 font-medium text-[var(--foreground)] md:h-[48px] md:w-auto md:px-6 md:text-[15px]"
                 type="submit"
               >
                 <SignOutIcon />
@@ -363,17 +348,17 @@ async function AuthorDocumentList({
           return (
             <article
               key={currentDocument.id}
-              className="group relative rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-[24px] py-[24px] transition hover:bg-[var(--surface-hover)]"
+              className="group relative rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-4 py-4 transition hover:bg-[var(--surface-hover)] md:px-[24px] md:py-[24px]"
             >
               <Link
                 href={`/author/documents/${currentDocument.id}`}
                 prefetch={false}
                 className="absolute inset-0 z-0"
               >
-                <span className="sr-only">Edit {currentDocument.title}</span>
+                <span className="sr-only">View {currentDocument.title}</span>
               </Link>
 
-              <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="pointer-events-none relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
                     <h2 className="max-w-[560px] text-[24px] leading-[33.6px] font-semibold text-[var(--foreground)]">
@@ -388,7 +373,7 @@ async function AuthorDocumentList({
 
                   <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-3 text-[14px] leading-5 text-[var(--muted)]">
                     <span className="inline-flex items-center gap-1.5 capitalize">
-                      <ArticleIcon />
+                      {currentDocument.sourceType === "book" ? <BookIcon className="h-4 w-4" /> : <ArticleIcon className="h-4 w-4" />}
                       {currentDocument.sourceType}
                     </span>
                     <span>{formatLongDisplayDate(currentDocument.publishedAt)}</span>
@@ -410,7 +395,7 @@ async function AuthorDocumentList({
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 md:ml-6 md:justify-end">
+                <div className="pointer-events-auto flex flex-wrap gap-2 md:ml-6 md:justify-end">
                   <Link
                     className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[var(--border)] bg-[var(--card)] px-[17px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-warm)] max-md:w-[38px] max-md:px-0"
                     prefetch={false}

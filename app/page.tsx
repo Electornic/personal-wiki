@@ -9,7 +9,7 @@ import { getAuthStatus } from "@/lib/wiki/auth";
 
 export default function LandingPage() {
   return (
-    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-16 backdrop-blur-sm md:pt-24">
+    <main className="surface-light site-shell mx-auto my-0 max-w-[1096px] rounded-none bg-[var(--content-bg)] pb-12 pt-10 backdrop-blur-sm md:my-4 md:rounded-[12px] md:border md:border-[var(--content-border)] md:pb-20 md:pt-24">
       <section className="mx-auto max-w-[640px] text-center">
         <h1 className="text-[40px] leading-[1.1] font-semibold tracking-[-0.02em] text-[var(--foreground)] md:text-[56px]">
           Your Personal Library
@@ -17,9 +17,7 @@ export default function LandingPage() {
         <p className="mx-auto mt-5 max-w-[480px] text-[18px] leading-[28px] text-[var(--muted)]">
           Read, reflect, and record. A quiet space to collect your thoughts on books and articles.
         </p>
-        <Suspense fallback={<HeroButtonsFallback />}>
-          <HeroButtons />
-        </Suspense>
+        <HeroButtons />
       </section>
 
       <section className="mt-20 md:mt-28">
@@ -76,9 +74,7 @@ async function getCachedRecentDocs() {
   );
 }
 
-async function HeroButtons() {
-  const { isAuthenticated } = await getAuthStatus();
-
+function HeroButtons() {
   return (
     <div className="mt-8 flex items-center justify-center gap-3">
       <Link
@@ -87,31 +83,41 @@ async function HeroButtons() {
       >
         Browse Library
       </Link>
-      {isAuthenticated ? (
-        <Link
-          href="/author"
-          className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
-        >
-          Workspace
-        </Link>
-      ) : (
-        <Link
-          href="/author/sign-in"
-          className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
-        >
-          Sign In
-        </Link>
-      )}
+      <Suspense fallback={<AuthButtonFallback />}>
+        <AuthButton />
+      </Suspense>
     </div>
   );
 }
 
-function HeroButtonsFallback() {
+async function AuthButton() {
+  const { isAuthenticated } = await getAuthStatus();
+
+  return isAuthenticated ? (
+    <Link
+      href="/author"
+      className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+    >
+      Workspace
+    </Link>
+  ) : (
+    <Link
+      href="/author/sign-in"
+      className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+    >
+      Sign In
+    </Link>
+  );
+}
+
+function AuthButtonFallback() {
   return (
-    <div className="mt-8 flex items-center justify-center gap-3">
-      <div className="h-11 w-36 animate-pulse rounded-[6px] bg-[var(--surface-warm)]" />
-      <div className="h-11 w-24 animate-pulse rounded-[6px] bg-[var(--surface-warm)]" />
-    </div>
+    <Link
+      href="/author/sign-in"
+      className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+    >
+      Sign In
+    </Link>
   );
 }
 

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOpenAIClient } from "@/shared/api/openai/client";
 import { getServerSupabaseClient } from "@/shared/api/supabase/server";
 
-import { CHAT_SYSTEM_PROMPT } from "@/app/author/chat/_lib/system-prompt";
+import { CHAT_SYSTEM_PROMPT } from "@/app/author/(workspace)/chat/_lib/system-prompt";
 
 interface ChatMessage {
   role: "user" | "assistant";

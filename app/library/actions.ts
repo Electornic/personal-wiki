@@ -82,7 +82,7 @@ export async function toggleBookmarkAction(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath("/me/library");
+  revalidatePath("/author/library");
   if (recordSlug) {
     revalidatePath(buildLibraryHref(recordSlug));
     revalidateTag(buildRecordCacheTag(recordSlug), "max");
@@ -111,7 +111,7 @@ export async function toggleLikeAction(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath("/me/library");
+  revalidatePath("/author/library");
   revalidateTag("public-discovery", "max");
   if (recordSlug) {
     revalidatePath(buildLibraryHref(recordSlug));

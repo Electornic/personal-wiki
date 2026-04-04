@@ -103,7 +103,7 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--glass-border)] bg-[rgba(44,30,14,0.85)] backdrop-blur-[16px]">
+    <header className="sticky top-0 z-50 border-b border-[var(--glass-border)] bg-[rgba(44,30,14,0.95)] backdrop-blur-[16px] md:bg-[rgba(44,30,14,0.85)]">
       <div className="site-shell flex h-16 items-center justify-between">
         <Link
           href="/"

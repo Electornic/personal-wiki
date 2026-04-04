@@ -216,7 +216,7 @@ function mapRecordToDocument(row: RecordRow, tags: string[]): WikiDocument {
     sourceType: row.source_type,
     bookTitle: row.book_title ?? (row.source_type === "book" ? String(row.title) : null),
     visibility: row.visibility ?? "public",
-    writerName: String(row.author_name ?? "unknown"),
+    writerName: String(row.author_name ?? "Anonymous"),
     publishedAt: row.published_at ?? null,
     tags,
     reactionCount: row.reaction_count ?? 0,
@@ -237,7 +237,7 @@ function mapRecordToListItem(
     excerpt: getExcerpt(String(row.excerpt ?? row.contents ?? row.title)),
     sourceType: row.source_type,
     bookTitle: row.book_title ?? (row.source_type === "book" ? String(row.title) : null),
-    writerName: writerName ?? String(row.author_name ?? "unknown"),
+    writerName: writerName ?? String(row.author_name ?? "Anonymous"),
     publishedAt: row.published_at ?? null,
     tags,
     updatedAt: String(row.updated_at),
@@ -1021,6 +1021,41 @@ export const listAvailableTagsForPublicDocuments = cache(async function listAvai
       .map((row) => String(row.name ?? "").trim())
       .filter(Boolean),
   )].sort((left, right) => left.localeCompare(right));
+});
+
+export const listPublicTagsByPopularity = cache(async function listPublicTagsByPopularity() {
+  if (!hasSupabaseEnv()) {
+    const tagCounts = new Map<string, number>();
+    for (const doc of filterReadableDocuments(demoDocuments)) {
+      for (const tag of doc.tags) {
+        if (tag) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+      }
+    }
+    return [...tagCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name);
+  }
+
+  const supabase = getPublicSupabaseClient();
+  if (!supabase) return [];
+
+  const { data: rows, error } = await supabase
+    .from("record_tags")
+    .select("tags!inner(name), records!inner(visibility)")
+    .eq("records.visibility", "public");
+
+  if (error || !rows) return [];
+
+  const tagCounts = new Map<string, number>();
+  for (const row of rows) {
+    const tagObj = row.tags as unknown as { name: string } | null;
+    const name = tagObj?.name?.trim();
+    if (name) tagCounts.set(name, (tagCounts.get(name) ?? 0) + 1);
+  }
+
+  return [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name);
 });
 
 export async function listPublicDocumentsPage(

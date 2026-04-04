@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { saveChatDocument } from "@/app/author/chat/_lib/actions";
+import { saveChatDocument } from "@/app/author/(workspace)/chat/_lib/actions";
 
 export interface DocumentProposal {
   type: "document_proposal";

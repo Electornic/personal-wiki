@@ -11,8 +11,9 @@ import {
   getReadableDocumentBySlug,
   listRelatedDocumentsForDocument,
 } from "@/entities/record/api/documents";
-import { formatDisplayDate, formatLongDisplayDate } from "@/entities/record/model/content";
-import { MarkdownContent } from "@/entities/record/ui/markdown-content";
+import { formatDisplayDate } from "@/entities/record/model/content";
+import { ArticleIcon, BookIcon } from "@/entities/record/ui/source-type-icon";
+import { DocumentRenderer } from "@/entities/record/ui/document-renderer";
 import { TopicPill } from "@/entities/tag/ui/topic-pill";
 import { buildLibraryHref, buildRecordCacheTag, buildTopicHref } from "@/lib/wiki/routes";
 
@@ -20,44 +21,6 @@ type PageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-function ArticleIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5 text-[var(--muted)]"
-      fill="none"
-      viewBox="0 0 20 20"
-    >
-      <path
-        d="M6.667 2.5h5l3.333 3.333v10A1.667 1.667 0 0 1 13.333 17.5H6.667A1.667 1.667 0 0 1 5 15.833V4.167A1.667 1.667 0 0 1 6.667 2.5Z"
-        stroke="currentColor"
-        strokeWidth="1.25"
-      />
-      <path d="M11.667 2.5v3.333H15" stroke="currentColor" strokeWidth="1.25" />
-      <path d="M7.5 9.167h5" stroke="currentColor" strokeWidth="1.25" />
-      <path d="M7.5 12.5h5" stroke="currentColor" strokeWidth="1.25" />
-    </svg>
-  );
-}
-
-function BookIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5 text-[var(--muted)]"
-      fill="none"
-      viewBox="0 0 20 20"
-    >
-      <path
-        d="M5.833 3.333h6.25A2.083 2.083 0 0 1 14.167 5.417v10.416a1.667 1.667 0 0 0-1.667-1.666h-6.25A1.667 1.667 0 0 0 4.583 15.833V4.583a1.25 1.25 0 0 1 1.25-1.25Z"
-        stroke="currentColor"
-        strokeWidth="1.25"
-      />
-      <path d="M14.167 5v10.833" stroke="currentColor" strokeWidth="1.25" />
-    </svg>
-  );
-}
 
 function ArrowRightIcon() {
   return (
@@ -92,7 +55,7 @@ function buildRelatedReasonText(
 
 export default function LibraryDocumentPage({ params, searchParams }: PageProps) {
   return (
-    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-8 backdrop-blur-sm">
+    <main className="surface-light site-shell mx-auto my-0 max-w-[1096px] rounded-none bg-[var(--content-bg)] pb-20 pt-8 backdrop-blur-sm md:my-4 md:rounded-[12px] md:border md:border-[var(--content-border)]">
       <div className="site-shell-content">
         <BackButton />
 
@@ -124,42 +87,8 @@ async function DocumentContent({
   }
 
   return (
-    <article className="mt-8 w-full">
-      <header>
-        <div className="flex items-center">
-          {fetchedDocument.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
-        </div>
-        <h1 className="mt-4 text-[36px] leading-[45px] font-semibold tracking-[-0.02em] text-[var(--foreground)] md:text-[48px] md:leading-[60px] md:tracking-[-0.96px]">
-          {fetchedDocument.title}
-        </h1>
-        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[16px] leading-6">
-          <span className="font-medium text-[var(--foreground)]">{fetchedDocument.writerName}</span>
-          <span className="text-[var(--muted)]">·</span>
-          <span className="text-[var(--muted)]">
-            {formatLongDisplayDate(fetchedDocument.publishedAt)}
-          </span>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2">
-          {fetchedDocument.tags.map((tag) => (
-            <TopicPill key={tag} label={tag} />
-          ))}
-        </div>
-      </header>
-
-      <section className="mt-12">
-        <MarkdownContent
-          contents={fetchedDocument.contents}
-          className={[
-            "prose-p:mb-[28px] prose-p:text-[18px] prose-p:leading-[29.25px] prose-p:text-[var(--foreground)]",
-            "prose-headings:mt-11 prose-headings:mb-3 prose-headings:text-[var(--foreground)]",
-            "prose-h1:text-[30px] prose-h1:leading-9 prose-h1:tracking-[-0.3px]",
-            "prose-h2:text-[24px] prose-h2:leading-8",
-            "prose-blockquote:my-8 prose-blockquote:border-l-4 prose-blockquote:border-[var(--border)] prose-blockquote:pl-7 prose-blockquote:text-[18px] prose-blockquote:leading-[29.25px] prose-blockquote:italic prose-blockquote:text-[rgba(42,36,25,0.8)]",
-            "prose-ol:my-6 prose-ol:pl-6 prose-li:mb-2 prose-li:text-[18px] prose-li:leading-[29.25px] prose-li:text-[var(--foreground)]",
-            "prose-strong:text-[var(--foreground)]",
-          ].join(" ")}
-        />
-      </section>
+    <>
+      <DocumentRenderer document={fetchedDocument} />
 
       {fetchedDocument.visibility === "public" ? (
         <Suspense fallback={<RecordReactionsFallback />}>
@@ -183,7 +112,7 @@ async function DocumentContent({
           visibility={fetchedDocument.visibility}
         />
       </Suspense>
-    </article>
+    </>
   );
 }
 

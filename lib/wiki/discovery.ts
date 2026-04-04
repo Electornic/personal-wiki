@@ -19,7 +19,6 @@ export type DiscoveryState = {
   sort: DiscoverySort;
   source: DiscoverySource;
   tags: string[];
-  filtersOpen: boolean;
 };
 
 type DiscoveryDocument = Pick<
@@ -81,7 +80,6 @@ function parseTags(value?: string) {
 export function parseDiscoveryState(searchParams?: SearchParamInput): DiscoveryState {
   const sortParam = getValue(searchParams, "sort");
   const sourceParam = getValue(searchParams, "source");
-  const filtersParam = getValue(searchParams, "filters");
   const query = getValue(searchParams, "q")?.trim() ?? "";
   const tags = parseTags(getValue(searchParams, "tags"));
 
@@ -101,7 +99,6 @@ export function parseDiscoveryState(searchParams?: SearchParamInput): DiscoveryS
     sort,
     source,
     tags,
-    filtersOpen: filtersParam === "open",
   };
 }
 

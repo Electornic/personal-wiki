@@ -2,54 +2,17 @@ import Link from "next/link";
 
 import { formatDisplayDate } from "@/entities/record/model/content";
 import type { WikiDocumentPreview } from "@/entities/record/model/types";
+import { ArticleIcon, BookIcon } from "@/entities/record/ui/source-type-icon";
 import { TopicPill } from "@/entities/tag/ui/topic-pill";
 
 type MyLibraryCardProps = {
   document: WikiDocumentPreview;
 };
 
-function ArticleIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5 text-[var(--muted)]"
-      fill="none"
-      viewBox="0 0 20 20"
-    >
-      <path
-        d="M6.667 2.5h5l3.333 3.333v10A1.667 1.667 0 0 1 13.333 17.5H6.667A1.667 1.667 0 0 1 5 15.833V4.167A1.667 1.667 0 0 1 6.667 2.5Z"
-        stroke="currentColor"
-        strokeWidth="1.25"
-      />
-      <path d="M11.667 2.5v3.333H15" stroke="currentColor" strokeWidth="1.25" />
-      <path d="M7.5 9.167h5" stroke="currentColor" strokeWidth="1.25" />
-      <path d="M7.5 12.5h5" stroke="currentColor" strokeWidth="1.25" />
-    </svg>
-  );
-}
-
-function BookIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5 text-[var(--muted)]"
-      fill="none"
-      viewBox="0 0 20 20"
-    >
-      <path
-        d="M5.833 3.333h6.25A2.083 2.083 0 0 1 14.167 5.417v10.416a1.667 1.667 0 0 0-1.667-1.666h-6.25A1.667 1.667 0 0 0 4.583 15.833V4.583a1.25 1.25 0 0 1 1.25-1.25Z"
-        stroke="currentColor"
-        strokeWidth="1.25"
-      />
-      <path d="M14.167 5v10.833" stroke="currentColor" strokeWidth="1.25" />
-    </svg>
-  );
-}
-
 export function MyLibraryCard({ document }: MyLibraryCardProps) {
   return (
     <Link href={`/library/${document.slug}`} prefetch={false} className="block group">
-      <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition group-hover:bg-[rgba(255,255,255,0.72)]">
+      <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-4 py-4 transition group-hover:bg-[rgba(255,255,255,0.72)] md:px-6 md:py-6">
         <div className="flex min-h-full flex-col">
           <div className="flex items-start gap-3">
             <div className="mt-1 shrink-0">
@@ -67,7 +30,7 @@ export function MyLibraryCard({ document }: MyLibraryCardProps) {
             </div>
           </div>
 
-          <p className="mt-4 text-[16px] leading-[26px] text-[rgba(42,36,25,0.8)]">
+          <p className="mt-4 line-clamp-3 text-[16px] leading-[26px] text-[rgba(42,36,25,0.8)] md:line-clamp-none">
             {document.excerpt}
           </p>
 
