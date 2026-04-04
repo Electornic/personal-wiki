@@ -117,6 +117,7 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
             <>
               <Link
                 href="/"
+                prefetch={false}
                 className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
                 <HomeIcon />
@@ -126,6 +127,7 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
               </Link>
               <Link
                 href="/library"
+                prefetch={false}
                 className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
                 <LibraryIcon />
@@ -135,6 +137,7 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
               </Link>
               <Link
                 href="/author"
+                prefetch={false}
                 className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
                 <WorkspaceIcon />
@@ -147,6 +150,7 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
             <>
               <Link
                 href="/library"
+                prefetch={false}
                 className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
                 <LibraryIcon />
@@ -156,6 +160,7 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
               </Link>
               <Link
                 href="/author/sign-in"
+                prefetch={false}
                 className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
                 <SignInIcon />

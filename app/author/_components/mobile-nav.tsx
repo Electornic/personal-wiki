@@ -104,6 +104,7 @@ function MobileNavLink({
   return (
     <Link
       href={href}
+      prefetch={false}
       onClick={onClick}
       className={`rounded-md px-3 py-2.5 text-[15px] font-medium transition ${
         active

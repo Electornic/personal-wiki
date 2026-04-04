@@ -994,35 +994,6 @@ export async function listAvailableTagsForRecordIds(
   return [...new Set(tagNames)].sort((left, right) => left.localeCompare(right));
 }
 
-export const listAvailableTagsForPublicDocuments = cache(async function listAvailableTagsForPublicDocuments() {
-  if (!hasSupabaseEnv()) {
-    return [...new Set(filterReadableDocuments(demoDocuments).flatMap((document) => document.tags))]
-      .filter(Boolean)
-      .sort((left, right) => left.localeCompare(right));
-  }
-
-  const supabase = getPublicSupabaseClient();
-
-  if (!supabase) {
-    return [];
-  }
-
-  const { data: tagRows, error } = await supabase
-    .from("tags")
-    .select("name")
-    .order("name", { ascending: true });
-
-  if (error || !tagRows) {
-    return [];
-  }
-
-  return [...new Set(
-    tagRows
-      .map((row) => String(row.name ?? "").trim())
-      .filter(Boolean),
-  )].sort((left, right) => left.localeCompare(right));
-});
-
 export const listPublicTagsByPopularity = cache(async function listPublicTagsByPopularity() {
   if (!hasSupabaseEnv()) {
     const tagCounts = new Map<string, number>();
@@ -1039,23 +1010,18 @@ export const listPublicTagsByPopularity = cache(async function listPublicTagsByP
   const supabase = getPublicSupabaseClient();
   if (!supabase) return [];
 
-  const { data: rows, error } = await supabase
-    .from("record_tags")
-    .select("tags!inner(name), records!inner(visibility)")
-    .eq("records.visibility", "public");
+  const { data, error } = await supabase.rpc("get_public_tags_by_popularity");
 
-  if (error || !rows) return [];
-
-  const tagCounts = new Map<string, number>();
-  for (const row of rows) {
-    const tagObj = row.tags as unknown as { name: string } | null;
-    const name = tagObj?.name?.trim();
-    if (name) tagCounts.set(name, (tagCounts.get(name) ?? 0) + 1);
+  if (error) {
+    console.error("[listPublicTagsByPopularity] RPC failed — is the get_public_tags_by_popularity migration applied?", error.message);
+    return [];
   }
 
-  return [...tagCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([name]) => name);
+  if (!data) return [];
+
+  return (data as Array<{ name: string; doc_count: number }>)
+    .map((row) => row.name?.trim())
+    .filter(Boolean);
 });
 
 export async function listPublicDocumentsPage(
@@ -1454,22 +1420,6 @@ export async function listPublicDocumentsByTag(tag: string) {
 
   const typedRecordRows = recordRows as unknown as RecordRow[];
   return await mapRowsWithNestedTagsToListItems(typedRecordRows);
-}
-
-export async function getPublicDiscoveryView(
-  state: DiscoveryState,
-  page = 1,
-  pageSize = PUBLIC_LIBRARY_PAGE_SIZE,
-) {
-  const [paginated, availableTags] = await Promise.all([
-    listPublicDiscoveryPage(state, page, pageSize),
-    listAvailableTagsForPublicDocuments(),
-  ]);
-
-  return {
-    ...paginated,
-    availableTags,
-  };
 }
 
 export async function listRelatedDocumentsForDocument(

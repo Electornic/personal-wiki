@@ -79,8 +79,6 @@ const ICON_MAP = {
 export function AuthorSidebar() {
   const pathname = usePathname();
 
-  if (pathname === "/author/sign-in") return null;
-
   return (
     <aside className="sticky top-16 hidden h-[calc(100dvh-64px-2rem)] w-[var(--sidebar-width)] shrink-0 flex-col overflow-y-auto rounded-l-[12px] border border-r-0 border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-[var(--glass-blur)] lg:flex">
       <nav className="flex flex-1 flex-col px-3 py-4">
@@ -101,6 +99,7 @@ export function AuthorSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={`flex items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium transition ${
                   active
                     ? "bg-[var(--sidebar-active)] !text-[var(--sidebar-text)]"
