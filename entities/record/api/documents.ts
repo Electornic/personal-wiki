@@ -1012,7 +1012,12 @@ export const listPublicTagsByPopularity = cache(async function listPublicTagsByP
 
   const { data, error } = await supabase.rpc("get_public_tags_by_popularity");
 
-  if (error || !data) return [];
+  if (error) {
+    console.error("[listPublicTagsByPopularity] RPC failed — is the get_public_tags_by_popularity migration applied?", error.message);
+    return [];
+  }
+
+  if (!data) return [];
 
   return (data as Array<{ name: string; doc_count: number }>)
     .map((row) => row.name?.trim())
