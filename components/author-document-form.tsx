@@ -117,40 +117,6 @@ function ChevronDownIcon() {
   );
 }
 
-const starterTemplates = {
-  article: `## What it argues
-
-## Points worth keeping
-
-## Connected thoughts
-
-- `,
-  book: `## Why this book matters
-
-## Ideas to keep
-
-## Memorable passages
-
-> Quote
-
-## Connected thoughts
-
-- `,
-} as const;
-
-const reflectionTemplate = `## Questions to push further
-
-- What stayed with me?
-- What do I want to revisit?
-- What would I connect this to next?`;
-
-const markdownTips = [
-  "Headings shape the reading flow.",
-  "Preview uses the same markdown renderer as the public page.",
-  "Images stay local until save, then upload into private storage.",
-  "Short, explicit tags keep recommendation quality stable.",
-];
-
 export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
   const [state, formAction] = useActionState<DocumentFormState, FormData>(saveDocument, {});
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
@@ -451,19 +417,6 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
     stageImages(files);
   }
 
-  function insertTemplate(template: string) {
-    updateContentsFromTextarea((currentValue) => {
-      const trimmedValue = currentValue.trimEnd();
-      const nextValue = trimmedValue ? `${trimmedValue}\n\n${template}` : template;
-      const caret = nextValue.length;
-
-      return {
-        nextValue,
-        nextSelectionStart: caret,
-        nextSelectionEnd: caret,
-      };
-    });
-  }
 
   return (
     <form action={formAction} className="grid gap-8">
@@ -486,45 +439,17 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
         />
       ) : null}
 
-      <div className="-mt-8 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.95)] py-3 backdrop-blur-sm">
-        <div className="mx-auto flex w-full items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
           <Link
             href="/author"
-            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[rgba(232,227,219,0.45)]"
+            className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
           >
             <CancelIcon />
             Cancel
           </Link>
-
-          <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-2 text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
-              <button
-                type="button"
-                aria-pressed={visibility === "public"}
-                onClick={() =>
-                  setVisibility((current) =>
-                    current === "public" ? "private" : "public",
-                  )
-                }
-                className={`relative inline-flex h-[18px] w-8 items-center rounded-full border border-transparent ${
-                  visibility === "public" ? "bg-[var(--foreground)]" : "bg-[var(--surface-warm)]"
-                }`}
-              >
-                <span
-                  className={`h-4 w-4 rounded-full bg-white transition-transform ${
-                    visibility === "public" ? "translate-x-[14px]" : "translate-x-[1px]"
-                  }`}
-                />
-              </button>
-              {visibility === "public" ? "Public" : "Private"}
-            </label>
-            <div className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--foreground)] px-3 text-[var(--accent-text)]">
-              <PublishIcon />
-              <SubmitButton visibility={visibility} />
-            </div>
-          </div>
-        </div>
       </div>
+
+      {/* visibility + submit moved to bottom */}
 
       <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[24px] py-[24px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] md:px-[25px] md:py-[25px]">
         <div className="space-y-5">
@@ -638,39 +563,6 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
 
         {activeTab === "write" ? (
           <div className="space-y-3">
-            <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(250,248,245,0.96)] px-4 py-4">
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <p className="text-[14px] leading-5 font-medium text-[var(--foreground)]">
-                    Writing support
-                  </p>
-                  <p className="mt-1 text-[13px] leading-5 text-[var(--muted)]">
-                    Use a starter when you want structure without leaving the writing flow.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => insertTemplate(starterTemplates[sourceType])}
-                    className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-[rgba(232,227,219,0.35)]"
-                  >
-                    Insert starter outline
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => insertTemplate(reflectionTemplate)}
-                    className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-3 text-[12px] leading-4 font-medium text-[var(--foreground)] hover:bg-[rgba(232,227,219,0.35)]"
-                  >
-                    Insert reflection prompts
-                  </button>
-                </div>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[12px] leading-4 text-[var(--muted)]">
-                {markdownTips.map((tip) => (
-                  <span key={tip}>{tip}</span>
-                ))}
-              </div>
-            </div>
             <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.3)] px-2 py-2">
               <div className="flex flex-wrap items-center gap-1">
                 <button
@@ -815,6 +707,34 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="flex items-center justify-end gap-3">
+        <label className="inline-flex items-center gap-2 text-[14px] leading-[14px] font-medium text-[var(--foreground)]">
+          <button
+            type="button"
+            aria-pressed={visibility === "public"}
+            onClick={() =>
+              setVisibility((current) =>
+                current === "public" ? "private" : "public",
+              )
+            }
+            className={`relative inline-flex h-[18px] w-8 items-center rounded-full border border-transparent ${
+              visibility === "public" ? "bg-[var(--accent)]" : "bg-[var(--surface-warm)]"
+            }`}
+          >
+            <span
+              className={`h-4 w-4 rounded-full bg-white transition-transform ${
+                visibility === "public" ? "translate-x-[14px]" : "translate-x-[1px]"
+              }`}
+            />
+          </button>
+          {visibility === "public" ? "Public" : "Private"}
+        </label>
+        <div className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--accent)] px-3 text-[var(--accent-text)]">
+          <PublishIcon />
+          <SubmitButton visibility={visibility} />
+        </div>
       </div>
 
       {state.error ? (

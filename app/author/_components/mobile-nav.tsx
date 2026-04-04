@@ -24,8 +24,7 @@ export function MobileNavToggle() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const close = useCallback(() => setOpen(false), []);
-
-  if (pathname === "/author/sign-in") return null;
+  const isSignIn = pathname === "/author/sign-in";
 
   useEffect(() => {
     if (open) {
@@ -37,6 +36,8 @@ export function MobileNavToggle() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  if (isSignIn) return null;
 
   return (
     <>

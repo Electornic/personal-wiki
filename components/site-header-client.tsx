@@ -14,11 +14,17 @@ type SiteHeaderClientProps = {
 function LibraryIcon() {
   return (
     <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M4.667 2.667h6.666A1.333 1.333 0 0 1 12.667 4v9.333L8 10.667l-4.667 2.666V4a1.333 1.333 0 0 1 1.334-1.333Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
+      <path d="M2 3h12M2 7h12M2 11h8" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M13 9l1 1-1 1" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+function SignInIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+      <circle cx="8" cy="5.333" r="2.667" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M3.333 14c0-2.577 2.09-4.667 4.667-4.667s4.667 2.09 4.667 4.667" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -97,7 +103,7 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-[var(--glass-blur)]">
+    <header className="sticky top-0 z-50 border-b border-[var(--glass-border)] bg-[rgba(44,30,14,0.85)] backdrop-blur-[16px]">
       <div className="site-shell flex h-16 items-center justify-between">
         <Link
           href="/"
@@ -152,7 +158,8 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
                 href="/author/sign-in"
                 className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
-                <span className="text-[14px] leading-5 font-medium">
+                <SignInIcon />
+                <span className="hidden text-[14px] leading-5 font-medium md:inline">
                   Sign In
                 </span>
               </Link>

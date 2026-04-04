@@ -56,7 +56,7 @@ export function ErrorStateShell({
     <main
       className={[
         fullScreen ? "min-h-screen" : "min-h-[calc(100vh-4rem)]",
-        "site-shell flex items-center py-16",
+        "surface-light site-shell flex items-center py-16",
       ].join(" ")}
     >
       <div className="relative w-full overflow-hidden rounded-[14px] border border-[rgba(42,36,25,0.1)] bg-[linear-gradient(180deg,#ffffff_0%,var(--card)_100%)] px-8 py-10 text-center shadow-[0_24px_70px_rgba(42,36,25,0.08)] md:px-12 md:py-12">
@@ -70,7 +70,7 @@ export function ErrorStateShell({
         />
 
         <div className="relative">
-          <h1 className="mx-auto max-w-[620px] text-[34px] leading-[40px] font-semibold tracking-[-0.03em] text-[var(--foreground)] md:text-[42px] md:leading-[48px]">
+          <h1 className="mx-auto max-w-[620px] text-[34px] leading-[40px] font-semibold tracking-[-0.03em] text-[#2c1e0e] md:text-[42px] md:leading-[48px]">
             {title}
           </h1>
 
