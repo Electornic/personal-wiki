@@ -109,28 +109,37 @@ button {
   cursor: pointer;
 }
 
-input,
-textarea,
-select {
-  width: 100%;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
-  background: var(--input-background);
-  padding: 0.9rem 1rem;
-  font: inherit;
-  color: var(--foreground);
-}
+@layer base {
+  select,
+  input,
+  textarea {
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+  }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: 2px solid transparent;
-  border-color: rgba(92, 61, 30, 0.4);
-  box-shadow: 0 0 0 4px rgba(92, 61, 30, 0.08);
-}
+  input,
+  textarea,
+  select {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--input-background);
+    padding: 0.5rem 0.75rem;
+    font-size: inherit;
+    font-weight: inherit;
+    color: var(--foreground);
+  }
 
-textarea {
-  resize: vertical;
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: 2px solid transparent;
+    border-color: rgba(92, 61, 30, 0.4);
+    box-shadow: 0 0 0 4px rgba(92, 61, 30, 0.08);
+  }
+
+  textarea {
+    resize: vertical;
+  }
 }
 
 .button-primary,
@@ -187,7 +196,9 @@ textarea {
 
 /* Light surface — overrides dark-bg tokens for cream/white content areas */
 .surface-light {
+  --background: #faf6f0;
   --foreground: #2c1e0e;
+  --foreground-strong: #1a1208;
   --muted: #7a6b56;
   --border: rgba(44, 30, 14, 0.1);
   --surface-warm: #f0e8dc;

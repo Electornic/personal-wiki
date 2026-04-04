@@ -11,10 +11,12 @@ type DiscoveryControlsProps = {
   sort: DiscoverySort;
   source: DiscoverySource;
   tags: string[];
-  filtersOpen: boolean;
+  popularTagLimit?: number;
   preserveParams?: Record<string, string>;
   className?: string;
 };
+
+const DEFAULT_POPULAR_LIMIT = 8;
 
 function SearchIcon() {
   return (
@@ -25,37 +27,19 @@ function SearchIcon() {
   );
 }
 
-function FilterIcon() {
+function CloseIcon() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path d="M2.667 4h10.666" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M4.667 8h6.666" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M6.667 12h2.666" stroke="currentColor" strokeWidth="1.2" />
+    <svg aria-hidden="true" className="h-3 w-3" fill="none" viewBox="0 0 12 12">
+      <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   );
 }
 
-function FilterChip({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
+function ChevronDownIcon() {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`inline-flex h-[34px] items-center justify-center rounded-full border px-[13px] text-[14px] leading-5 font-medium ${
-        active
-          ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-          : "border-[rgba(42,36,25,0.1)] bg-[var(--background)] text-[var(--foreground)]"
-      }`}
-    >
-      {label}
-    </button>
+    <svg aria-hidden="true" className="h-3 w-3 text-[var(--muted)]" fill="none" viewBox="0 0 12 12">
+      <path d="m3 4.5 3 3 3-3" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
   );
 }
 
@@ -65,7 +49,7 @@ export function DiscoveryControls({
   sort,
   source,
   tags,
-  filtersOpen,
+  popularTagLimit = DEFAULT_POPULAR_LIMIT,
   preserveParams,
   className,
 }: DiscoveryControlsProps) {
@@ -85,7 +69,6 @@ export function DiscoveryControls({
       sort: string;
       source: string;
       tags: string[];
-      filters: string | null;
     }>,
   ) {
     const params = new URLSearchParams(searchParams.toString());
@@ -94,11 +77,12 @@ export function DiscoveryControls({
       updates.q !== undefined ||
       updates.sort !== undefined ||
       updates.source !== undefined ||
-      updates.tags !== undefined ||
-      updates.filters !== undefined
+      updates.tags !== undefined
     ) {
       params.delete("page");
     }
+
+    params.delete("filters");
 
     if (preserveParams) {
       for (const [key, value] of Object.entries(preserveParams)) {
@@ -139,14 +123,6 @@ export function DiscoveryControls({
       }
     }
 
-    if (updates.filters !== undefined) {
-      if (updates.filters) {
-        params.set("filters", updates.filters);
-      } else {
-        params.delete("filters");
-      }
-    }
-
     return params.toString() ? `${pathname}?${params.toString()}` : pathname;
   }
 
@@ -160,9 +136,6 @@ export function DiscoveryControls({
       router.push(url, { scroll: false });
     });
   }
-
-  const showPanel =
-    filtersOpen || sort !== "newest" || source !== "all" || tags.length > 0;
 
   const commitQuery = useEffectEvent((nextQuery: string) => {
     navigate(buildParams({ q: nextQuery }), "replace");
@@ -191,12 +164,20 @@ export function DiscoveryControls({
       ? tags.filter((value) => value !== normalized)
       : [...tags, normalized];
 
-    navigate(buildParams({ tags: nextTags, filters: "open" }));
+    navigate(buildParams({ tags: nextTags }));
   }
+
+  function removeTag(tag: string) {
+    const nextTags = tags.filter((value) => value !== tag);
+    navigate(buildParams({ tags: nextTags }));
+  }
+
+  const popularTags = availableTags.slice(0, popularTagLimit);
 
   return (
     <section className={className}>
-      <div className="flex items-stretch gap-3">
+      {/* Row 1: Search + Sort + Source */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-stretch">
         <form
           className="relative flex-1"
           onSubmit={(event) => {
@@ -213,111 +194,88 @@ export function DiscoveryControls({
             onChange={(event) => setQueryValue(event.currentTarget.value)}
             placeholder="Search records..."
             aria-busy={isPending}
-            className="h-[42px] w-full rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[var(--background)] pl-4 pr-[42px] text-[14px] leading-5 text-[var(--foreground)] placeholder:text-[rgba(42,36,25,0.5)]"
+            className="h-[42px] w-full rounded-[6px] border border-[var(--border)] bg-[var(--background)] pl-4 pr-[42px] text-[14px] leading-5 text-[var(--foreground)] placeholder:text-[var(--muted)]"
           />
         </form>
 
-        <button
-          type="button"
-          onClick={() =>
-            navigate(buildParams({ filters: showPanel ? null : "open" }))
-          }
-          className={`inline-flex h-[42px] shrink-0 items-center justify-center gap-2 rounded-[6px] px-3 text-[14px] leading-5 font-medium ${
-            showPanel
-              ? "border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-              : "border border-[rgba(42,36,25,0.1)] bg-[var(--background)] text-[var(--foreground)]"
-          }`}
-        >
-          <FilterIcon />
-          <span className="hidden md:inline">Filters</span>
-        </button>
+        <div className="flex flex-1 gap-2 md:flex-none">
+          <div className="relative">
+            <select
+              value={sort}
+              onChange={(event) =>
+                navigate(buildParams({ sort: event.target.value }))
+              }
+              className="h-[44px] min-w-0 flex-1 appearance-none rounded-[6px] border border-[var(--border)] bg-[var(--background)] pl-3 pr-8 font-[Inter,system-ui,sans-serif] text-[16px] leading-5 font-medium text-[var(--foreground)] md:h-[42px] md:min-w-[120px] md:flex-none md:text-[14px]"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="title-asc">Title A-Z</option>
+              <option value="title-desc">Title Z-A</option>
+              <option value="most-reacted">Most liked</option>
+            </select>
+            <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
+              <ChevronDownIcon />
+            </span>
+          </div>
+
+          <div className="relative">
+            <select
+              value={source}
+              onChange={(event) =>
+                navigate(buildParams({ source: event.target.value }))
+              }
+              className="h-[44px] min-w-0 flex-1 appearance-none rounded-[6px] border border-[var(--border)] bg-[var(--background)] pl-3 pr-8 font-[Inter,system-ui,sans-serif] text-[16px] leading-5 font-medium text-[var(--foreground)] md:h-[42px] md:min-w-[110px] md:flex-none md:text-[14px]"
+            >
+              <option value="all">All types</option>
+              <option value="article">Articles</option>
+              <option value="book">Books</option>
+            </select>
+            <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
+              <ChevronDownIcon />
+            </span>
+          </div>
+        </div>
       </div>
 
-      {showPanel ? (
-        <div className="mt-4 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 py-[17px] md:px-[17px]">
-          <div className="space-y-4">
-            <div>
-              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[var(--foreground)]">
-                Sort by
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <FilterChip
-                  active={sort === "newest"}
-                  label="Newest first"
-                  onClick={() => navigate(buildParams({ sort: "newest", filters: "open" }))}
-                />
-                <FilterChip
-                  active={sort === "oldest"}
-                  label="Oldest first"
-                  onClick={() => navigate(buildParams({ sort: "oldest", filters: "open" }))}
-                />
-                <FilterChip
-                  active={sort === "title-asc"}
-                  label="Title A-Z"
-                  onClick={() =>
-                    navigate(buildParams({ sort: "title-asc", filters: "open" }))
-                  }
-                />
-                <FilterChip
-                  active={sort === "title-desc"}
-                  label="Title Z-A"
-                  onClick={() =>
-                    navigate(buildParams({ sort: "title-desc", filters: "open" }))
-                  }
-                />
-                <FilterChip
-                  active={sort === "most-reacted"}
-                  label="Most liked"
-                  onClick={() =>
-                    navigate(buildParams({ sort: "most-reacted", filters: "open" }))
-                  }
-                />
-              </div>
-            </div>
+      {/* Row 2: Popular tags + More button */}
+      {availableTags.length > 0 ? (
+        <div className="mt-3 flex max-h-[38px] flex-wrap items-center gap-2 overflow-hidden md:max-h-none">
+          {popularTags.map((tag) => {
+            const active = tags.includes(tag.toLowerCase());
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleTag(tag)}
+                className={`inline-flex h-[30px] items-center rounded-full px-3 text-[13px] leading-5 font-medium transition ${
+                  active
+                    ? "bg-[var(--foreground)] text-[var(--background)]"
+                    : "border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--surface-hover)]"
+                }`}
+              >
+                {tag}
+              </button>
+            );
+          })}
 
-            <div>
-              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[var(--foreground)]">
-                Source type
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <FilterChip
-                  active={source === "all"}
-                  label="All"
-                  onClick={() => navigate(buildParams({ source: "all", filters: "open" }))}
-                />
-                <FilterChip
-                  active={source === "article"}
-                  label="Articles"
-                  onClick={() =>
-                    navigate(buildParams({ source: "article", filters: "open" }))
-                  }
-                />
-                <FilterChip
-                  active={source === "book"}
-                  label="Books"
-                  onClick={() =>
-                    navigate(buildParams({ source: "book", filters: "open" }))
-                  }
-                />
-              </div>
-            </div>
+        </div>
+      ) : null}
 
-            <div>
-              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[var(--foreground)]">
-                Filter by tags
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {availableTags.map((tag) => (
-                  <FilterChip
-                    key={tag}
-                    active={tags.includes(tag.toLowerCase())}
-                    label={tag}
-                    onClick={() => toggleTag(tag)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+      {/* Row 3: Selected tag chips */}
+      {tags.length > 0 ? (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <span className="text-[12px] leading-4 text-[var(--muted)]">Filtered:</span>
+          {tags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => removeTag(tag)}
+              className="inline-flex h-[24px] items-center gap-1 rounded-full bg-[var(--tag-bg)] px-2.5 text-[12px] leading-4 font-medium text-[var(--tag-text)]"
+            >
+              {tag}
+              <CloseIcon />
+            </button>
+          ))}
         </div>
       ) : null}
     </section>
