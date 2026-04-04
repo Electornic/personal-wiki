@@ -9,7 +9,7 @@ export default function AuthorLayout({ children }: { children: React.ReactNode }
       <Suspense fallback={<SidebarSkeleton />}>
         <AuthorSidebar />
       </Suspense>
-      <div className="flex flex-1 flex-col overflow-hidden rounded-r-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] backdrop-blur-sm lg:rounded-r-[12px]">
+      <div className="surface-light flex flex-1 flex-col overflow-hidden rounded-r-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] backdrop-blur-sm lg:rounded-r-[12px]">
         <div className="flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-[calc(1096px-var(--sidebar-width))]">
             {children}

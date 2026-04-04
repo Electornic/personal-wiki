@@ -32,7 +32,7 @@ function MyLibraryIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 export default function MyLibraryPage({ searchParams }: PageProps) {
   return (
-    <main className="site-shell pb-20 pt-12">
+    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-12 backdrop-blur-sm">
       <section className="w-full">
         <h1 className="text-[36px] leading-10 font-semibold tracking-[-0.72px] text-[var(--foreground)]">
           My Library

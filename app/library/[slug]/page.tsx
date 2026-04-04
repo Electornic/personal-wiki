@@ -109,7 +109,7 @@ function buildRelatedReasonText(
 
 export default function LibraryDocumentPage({ params, searchParams }: PageProps) {
   return (
-    <main className="site-shell pb-20 pt-8">
+    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-8 backdrop-blur-sm">
       <div className="site-shell-content">
         <Link
           href="/"

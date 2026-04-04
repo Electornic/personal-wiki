@@ -52,7 +52,7 @@ function BookIcon() {
 
 export default function TopicHubPage({ params }: PageProps) {
   return (
-    <main className="site-shell pb-20 pt-12 md:pt-16">
+    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-12 backdrop-blur-sm md:pt-16">
       <div className="w-full">
         <Link
           href="/#library"

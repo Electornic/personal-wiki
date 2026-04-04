@@ -8,7 +8,7 @@ import { parseDiscoveryState } from "@/lib/wiki/discovery";
 
 export default function LandingPage() {
   return (
-    <main className="site-shell pb-20 pt-16 md:pt-24">
+    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-16 backdrop-blur-sm md:pt-24">
       <section className="mx-auto max-w-[640px] text-center">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--surface-warm)]">
           <svg aria-hidden="true" className="h-8 w-8 text-[var(--accent)]" fill="none" viewBox="0 0 32 32">
