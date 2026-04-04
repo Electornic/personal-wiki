@@ -8,7 +8,7 @@ import { PaginationNav } from "@/components/pagination-nav";
 import { listAuthorDocumentsPage } from "@/entities/record/api/documents";
 import { formatLongDisplayDate } from "@/entities/record/model/content";
 import { getAuthorAccess } from "@/lib/wiki/auth";
-import { buildLibraryHref } from "@/lib/wiki/routes";
+
 import { hasAuthoringEnv } from "@/shared/config/env";
 
 function NewRecordIcon() {
@@ -366,13 +366,11 @@ async function AuthorDocumentList({
               className="group relative rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-[24px] py-[24px] transition hover:bg-[var(--surface-hover)]"
             >
               <Link
-                href={buildLibraryHref(currentDocument.slug, {
-                  preview: currentDocument.visibility === "private",
-                })}
+                href={`/author/documents/${currentDocument.id}`}
                 prefetch={false}
                 className="absolute inset-0 z-0"
               >
-                <span className="sr-only">View {currentDocument.title}</span>
+                <span className="sr-only">Edit {currentDocument.title}</span>
               </Link>
 
               <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

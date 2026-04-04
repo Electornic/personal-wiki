@@ -604,7 +604,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
       </div>
 
       <div className="space-y-3">
-        <div className="rounded-[10px] bg-[#e8e3db] p-[3px] w-fit">
+        <div className="rounded-[10px] bg-[var(--surface-warm)] p-[3px] w-fit">
           <div className="flex items-center">
             <button
               type="button"

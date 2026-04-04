@@ -59,7 +59,7 @@ export function ErrorStateShell({
         "site-shell flex items-center py-16",
       ].join(" ")}
     >
-      <div className="relative w-full overflow-hidden rounded-[14px] border border-[rgba(42,36,25,0.1)] bg-[linear-gradient(180deg,#ffffff_0%,#faf8f5_100%)] px-8 py-10 text-center shadow-[0_24px_70px_rgba(42,36,25,0.08)] md:px-12 md:py-12">
+      <div className="relative w-full overflow-hidden rounded-[14px] border border-[rgba(42,36,25,0.1)] bg-[linear-gradient(180deg,#ffffff_0%,var(--card)_100%)] px-8 py-10 text-center shadow-[0_24px_70px_rgba(42,36,25,0.08)] md:px-12 md:py-12">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -top-16 left-8 h-32 w-32 rounded-full bg-[rgba(232,227,219,0.65)] blur-2xl"

@@ -37,7 +37,7 @@ function CommentNode({
     <div className={`space-y-3 ${getThreadOffset(comment.depth)}`}>
       <article className="rounded-[10px] border border-[rgba(42,36,25,0.08)] bg-[rgba(250,248,245,0.92)] px-4 py-4 shadow-[0_8px_24px_rgba(42,36,25,0.04)]">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e8e3db] text-[14px] leading-5 font-medium text-[var(--foreground)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-warm)] text-[14px] leading-5 font-medium text-[var(--foreground)]">
             {comment.userName.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">

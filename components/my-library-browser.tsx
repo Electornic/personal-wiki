@@ -42,16 +42,16 @@ export function MyLibraryBrowser({
           <div className="mx-auto flex h-12 w-12 items-center justify-center text-[#b7b0a2]">
             <MyLibraryIcon />
           </div>
-          <h2 className="mt-5 text-[20px] leading-7 font-semibold text-[#2a2419]">
+          <h2 className="mt-5 text-[20px] leading-7 font-semibold text-[var(--foreground)]">
             {records.length === 0 ? "No bookmarks yet" : "No matching records found"}
           </h2>
-          <p className="mx-auto mt-3 max-w-[360px] text-[18px] leading-[32.4px] text-[#6b6354]">
+          <p className="mx-auto mt-3 max-w-[360px] text-[18px] leading-[32.4px] text-[var(--muted)]">
             {records.length === 0
               ? "Bookmark public records you want to return to later"
               : "Adjust your search or filters to see more records."}
           </p>
           {records.length === 0 ? (
-            <Link href="/#library" className="mt-10 inline-flex text-[14px] leading-5 text-[#2a2419]">
+            <Link href="/#library" className="mt-10 inline-flex text-[14px] leading-5 text-[var(--foreground)]">
               Browse the library
             </Link>
           ) : null}

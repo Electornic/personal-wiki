@@ -24,7 +24,7 @@ export function CommentReplyToggle({
       <button
         type="button"
         onClick={() => setReplyOpen((current) => !current)}
-        className="mt-3 inline-flex items-center gap-1.5 rounded-[4px] px-2 py-1 text-[12px] leading-4 font-medium text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.2)]"
+        className="mt-3 inline-flex items-center gap-1.5 rounded-[4px] px-2 py-1 text-[12px] leading-4 font-medium text-[var(--foreground)] transition hover:bg-[rgba(232,227,219,0.2)]"
       >
         <svg
           aria-hidden="true"

@@ -20,7 +20,7 @@ function SubmitButton() {
 
   return (
     <button
-      className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] px-3 text-[14px] leading-5 font-medium text-[var(--foreground)]"
+      className="inline-flex h-8 items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-[var(--card)] px-3 text-[14px] leading-5 font-medium text-[var(--foreground)]"
       type="submit"
       disabled={pending}
     >
