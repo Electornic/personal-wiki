@@ -16,7 +16,7 @@ export default function GlobalError({
 
   return (
     <html lang="en">
-      <body className="bg-[#faf8f5] text-[#2a2419]">
+      <body className="bg-[var(--background)] text-[var(--foreground)]">
         <ErrorStateShell
           title="The app hit an unexpected problem"
           description="Reload the page or try again. If the issue persists, return to the home page and restart the flow."

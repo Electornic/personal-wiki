@@ -3,18 +3,19 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { deleteDocument, signOut } from "@/app/author/actions";
+import { DeleteDocumentButton } from "@/app/author/_components/delete-document-button";
 import { PaginationNav } from "@/components/pagination-nav";
 import { listAuthorDocumentsPage } from "@/entities/record/api/documents";
 import { formatLongDisplayDate } from "@/entities/record/model/content";
 import { getAuthorAccess } from "@/lib/wiki/auth";
-import { buildLibraryHref } from "@/lib/wiki/routes";
+
 import { hasAuthoringEnv } from "@/shared/config/env";
 
 function NewRecordIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-4 w-4 text-[#faf8f5]"
+      className="h-4 w-4 text-[var(--accent-text)]"
       fill="none"
       viewBox="0 0 16 16"
     >
@@ -54,19 +55,6 @@ function ArticleIcon() {
   );
 }
 
-function PreviewIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M1.333 8s2.424-4 6.667-4 6.667 4 6.667 4-2.424 4-6.667 4-6.667-4-6.667-4Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <circle cx="8" cy="8" r="1.75" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
 function EditIcon() {
   return (
     <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
@@ -80,18 +68,6 @@ function EditIcon() {
   );
 }
 
-function DeleteIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M5.333 4h5.334M6.667 2.667h2.666M5.333 6v5.333M8 6v5.333M10.667 6v5.333M4 4.667h8v7.666A1.333 1.333 0 0 1 10.667 13.667H5.333A1.333 1.333 0 0 1 4 12.333V4.667Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-    </svg>
-  );
-}
-
 function PrivateIcon() {
   return (
     <svg aria-hidden="true" className="h-3 w-3" fill="none" viewBox="0 0 12 12">
@@ -101,18 +77,6 @@ function PrivateIcon() {
   );
 }
 
-function PublicIcon() {
-  return (
-    <svg aria-hidden="true" className="h-3 w-3" fill="none" viewBox="0 0 12 12">
-      <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.1" />
-      <path
-        d="M1.5 6h9M6 1.5c1 1.1 1.5 2.533 1.5 4.5S7 9.4 6 10.5M6 1.5c-1 1.1-1.5 2.533-1.5 4.5S5 9.4 6 10.5"
-        stroke="currentColor"
-        strokeWidth="1.1"
-      />
-    </svg>
-  );
-}
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -238,7 +202,7 @@ async function AuthorPageContent({
 
   if (!hasAuthoringEnv()) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-8 px-6 py-12 md:px-10">
+      <div className="flex flex-col gap-8 px-6 py-8 lg:px-10">
         <p className="section-kicker">Author workspace</p>
         <div className="rounded-[2rem] border border-amber-300 bg-amber-50 p-8">
           <h1 className="text-3xl text-stone-900">Supabase setup required</h1>
@@ -253,15 +217,15 @@ async function AuthorPageContent({
             <li>`SUPABASE_SERVICE_ROLE_KEY`</li>
           </ul>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (!access.isAuthenticated) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 px-6 py-12 md:px-10">
+      <div className="flex flex-col gap-6 px-6 py-8 lg:px-10">
         <p className="section-kicker">Author workspace</p>
-        <div className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_28px_80px_rgba(51,39,18,0.08)]">
+        <div className="rounded-[2rem] border border-stone-200 bg-[var(--card)] p-8 shadow-[0_28px_80px_rgba(51,39,18,0.08)]">
           <h1 className="text-4xl text-stone-900">Account sign-in required</h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
             이 영역은 로그인한 사용자만 사용할 수 있습니다.
@@ -270,40 +234,40 @@ async function AuthorPageContent({
             sign in
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   const workspaceMessage = getWorkspaceMessage(resolvedSearchParams);
 
   return (
-    <main className="site-shell pb-20 pt-20">
+    <div className="px-6 py-8 lg:px-10">
       <section className="space-y-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-[40px] leading-[48px] font-semibold tracking-[-0.8px] text-[#2a2419]">
+            <h1 className="text-[40px] leading-[48px] font-semibold tracking-[-0.8px] text-[var(--foreground)]">
               Workspace
             </h1>
-            <p className="mt-2 text-[14px] leading-5 text-[#6b6354]">
+            <p className="mt-2 text-[14px] leading-5 text-[var(--muted)]">
               Signed in as{" "}
-              <span className="text-[#2a2419]">
+              <span className="text-[var(--foreground)]">
                 {access.userName ?? access.userEmail}
               </span>
             </p>
           </div>
           <div className="flex flex-col gap-3 md:flex-row">
             <Link
-              className="inline-flex h-[48px] items-center justify-center gap-2 rounded-[4px] bg-[#2a2419] px-6 text-[15px] leading-[22.5px] font-medium text-[#faf8f5]"
+              className="inline-flex h-[48px] items-center justify-center gap-2 rounded-[4px] bg-[var(--accent)] px-6 text-[15px] leading-[22.5px] font-medium text-[var(--accent-text)]"
               href="/author/documents/new"
             >
               <NewRecordIcon />
-              <span className="text-[15px] leading-[22.5px] font-medium text-[#faf8f5]">
+              <span className="text-[15px] leading-[22.5px] font-medium text-[var(--accent-text)]">
                 New Record
               </span>
             </Link>
             <form action={signOut}>
               <button
-                className="inline-flex h-[48px] w-full items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-6 text-[15px] leading-[22.5px] font-medium text-[#2a2419] md:w-auto"
+                className="inline-flex h-[48px] w-full items-center justify-center gap-2 rounded-[4px] border border-[var(--border)] bg-[var(--card)] px-6 text-[15px] leading-[22.5px] font-medium text-[var(--foreground)] md:w-auto"
                 type="submit"
               >
                 <SignOutIcon />
@@ -312,7 +276,7 @@ async function AuthorPageContent({
             </form>
           </div>
         </div>
-        <div className="h-px w-full bg-[rgba(42,36,25,0.1)]" />
+        <div className="h-px w-full bg-[var(--border)]" />
       </section>
 
       {workspaceMessage ? (
@@ -335,27 +299,27 @@ async function AuthorPageContent({
           searchParams={resolvedSearchParams}
         />
       </Suspense>
-    </main>
+    </div>
   );
 }
 
 function AuthorPageSkeleton() {
   return (
-    <main className="site-shell pb-20 pt-20">
+    <div className="px-6 py-8 lg:px-10">
       <section className="space-y-8 animate-pulse">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
-            <div className="h-12 w-48 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-            <div className="mt-3 h-5 w-64 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="h-12 w-48 rounded-[6px] bg-[var(--surface-warm)]" />
+            <div className="mt-3 h-5 w-64 rounded-[6px] bg-[var(--surface-warm)]" />
           </div>
           <div className="flex flex-col gap-3 md:flex-row">
-            <div className="h-12 w-36 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
-            <div className="h-12 w-32 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+            <div className="h-12 w-36 rounded-[4px] bg-[var(--surface-warm)]" />
+            <div className="h-12 w-32 rounded-[4px] bg-[var(--surface-warm)]" />
           </div>
         </div>
-        <div className="h-px w-full bg-[rgba(42,36,25,0.08)]" />
+        <div className="h-px w-full bg-[var(--surface-warm)]" />
       </section>
-    </main>
+    </div>
   );
 }
 
@@ -381,7 +345,7 @@ async function AuthorDocumentList({
   return (
     <>
       {documents.length ? (
-        <section className="mt-8 flex flex-col gap-2 text-[14px] leading-5 text-[#6b6354] md:flex-row md:items-center md:justify-between">
+        <section className="mt-8 flex flex-col gap-2 text-[14px] leading-5 text-[var(--muted)] md:flex-row md:items-center md:justify-between">
           <p>
             Showing {pageStart}-{pageEnd} of {paginatedDocuments.totalCount} records
           </p>
@@ -399,27 +363,30 @@ async function AuthorDocumentList({
           return (
             <article
               key={currentDocument.id}
-              className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-[24px] py-[24px]"
+              className="group relative rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-[24px] py-[24px] transition hover:bg-[var(--surface-hover)]"
             >
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <Link
+                href={`/author/documents/${currentDocument.id}`}
+                prefetch={false}
+                className="absolute inset-0 z-0"
+              >
+                <span className="sr-only">Edit {currentDocument.title}</span>
+              </Link>
+
+              <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
-                    <h2 className="max-w-[560px] text-[24px] leading-[33.6px] font-semibold text-[#2a2419]">
+                    <h2 className="max-w-[560px] text-[24px] leading-[33.6px] font-semibold text-[var(--foreground)]">
                       {currentDocument.title}
                     </h2>
-                    <span
-                      className={`inline-flex h-6 items-center gap-1 rounded-[4px] px-[10px] text-[12px] leading-4 font-medium ${
-                        currentDocument.visibility === "public"
-                          ? "bg-[#e8e3db] text-[#2a2419]"
-                          : "bg-[#e8e3db] text-[#6b6354]"
-                      }`}
-                    >
-                      {currentDocument.visibility === "public" ? <PublicIcon /> : <PrivateIcon />}
-                      {currentDocument.visibility === "public" ? "Public" : "Private"}
-                    </span>
+                    {currentDocument.visibility === "private" && (
+                      <span className="inline-flex h-6 w-6 items-center justify-center text-[var(--muted)]">
+                        <PrivateIcon />
+                      </span>
+                    )}
                   </div>
 
-                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-3 text-[14px] leading-5 text-[#6b6354]">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-3 text-[14px] leading-5 text-[var(--muted)]">
                     <span className="inline-flex items-center gap-1.5 capitalize">
                       <ArticleIcon />
                       {currentDocument.sourceType}
@@ -429,13 +396,13 @@ async function AuthorDocumentList({
                       {visibleTags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex h-5 items-center rounded-[4px] bg-[#e8e3db] px-2 text-[12px] leading-4 text-[#6b6354]"
+                          className="inline-flex h-5 items-center rounded-[4px] bg-[var(--tag-bg)] px-2 text-[12px] leading-4 text-[var(--tag-text)]"
                         >
                           {tag}
                         </span>
                       ))}
                       {remainingTagCount > 0 ? (
-                        <span className="inline-flex h-5 items-center text-[12px] leading-4 text-[#6b6354]">
+                        <span className="inline-flex h-5 items-center text-[12px] leading-4 text-[var(--muted)]">
                           +{remainingTagCount} more
                         </span>
                       ) : null}
@@ -445,32 +412,18 @@ async function AuthorDocumentList({
 
                 <div className="flex flex-wrap gap-2 md:ml-6 md:justify-end">
                   <Link
-                    className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
-                    prefetch={false}
-                    href={buildLibraryHref(currentDocument.slug, {
-                      preview: currentDocument.visibility === "private",
-                    })}
-                  >
-                    <PreviewIcon />
-                    <span className="hidden md:inline">Preview</span>
-                  </Link>
-                  <Link
-                    className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white px-[17px] text-[14px] leading-5 font-medium text-[#2a2419] max-md:w-[38px] max-md:px-0"
+                    className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[4px] border border-[var(--border)] bg-[var(--card)] px-[17px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-warm)] max-md:w-[38px] max-md:px-0"
                     prefetch={false}
                     href={`/author/documents/${currentDocument.id}`}
                   >
                     <EditIcon />
                     <span className="hidden md:inline">Edit</span>
                   </Link>
-                  <form action={deleteDocument}>
-                    <input type="hidden" name="documentId" value={currentDocument.id} />
-                    <button
-                      className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-[4px] border border-[rgba(42,36,25,0.1)] bg-white text-[#d45c4f]"
-                      type="submit"
-                    >
-                      <DeleteIcon />
-                    </button>
-                  </form>
+                  <DeleteDocumentButton
+                    documentId={currentDocument.id}
+                    documentTitle={currentDocument.title}
+                    action={deleteDocument}
+                  />
                 </div>
               </div>
             </article>
@@ -478,19 +431,19 @@ async function AuthorDocumentList({
         })}
 
         {documents.length === 0 ? (
-          <div className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-12 text-center">
-            <h2 className="text-[24px] leading-8 font-semibold text-[#2a2419]">
+          <div className="rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-6 py-12 text-center">
+            <h2 className="text-[24px] leading-8 font-semibold text-[var(--foreground)]">
               No records yet
             </h2>
-            <p className="mt-3 text-[16px] leading-6 text-[#6b6354]">
+            <p className="mt-3 text-[16px] leading-6 text-[var(--muted)]">
               Start your workspace by writing the first record.
             </p>
             <Link
-              className="mt-6 inline-flex h-[46px] items-center justify-center gap-2 rounded-[4px] bg-[#2a2419] px-6 text-[15px] leading-[22.5px] font-medium text-[#faf8f5]"
+              className="mt-6 inline-flex h-[46px] items-center justify-center gap-2 rounded-[4px] bg-[var(--accent)] px-6 text-[15px] leading-[22.5px] font-medium text-[var(--accent-text)]"
               href="/author/documents/new"
             >
               <NewRecordIcon />
-              <span className="text-[15px] leading-[22.5px] font-medium text-[#faf8f5]">
+              <span className="text-[15px] leading-[22.5px] font-medium text-[var(--accent-text)]">
                 New Record
               </span>
             </Link>
@@ -514,22 +467,22 @@ function DocumentListSkeleton() {
       {Array.from({ length: 3 }).map((_, index) => (
         <div
           key={index}
-          className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-[24px] py-[24px]"
+          className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-[var(--card)] px-[24px] py-[24px]"
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="flex-1">
-              <div className="h-8 w-3/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
-              <div className="mt-4 h-5 w-2/5 rounded-[6px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="h-8 w-3/5 rounded-[6px] bg-[var(--surface-warm)]" />
+              <div className="mt-4 h-5 w-2/5 rounded-[6px] bg-[var(--surface-warm)]" />
               <div className="mt-4 flex flex-wrap gap-2">
-                <div className="h-5 w-16 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
-                <div className="h-5 w-20 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
-                <div className="h-5 w-14 rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+                <div className="h-5 w-16 rounded-[4px] bg-[var(--surface-warm)]" />
+                <div className="h-5 w-20 rounded-[4px] bg-[var(--surface-warm)]" />
+                <div className="h-5 w-14 rounded-[4px] bg-[var(--surface-warm)]" />
               </div>
             </div>
             <div className="flex gap-2">
-              <div className="h-[38px] w-[92px] rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
-              <div className="h-[38px] w-[78px] rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
-              <div className="h-[34px] w-[34px] rounded-[4px] bg-[rgba(42,36,25,0.08)]" />
+              <div className="h-[38px] w-[92px] rounded-[4px] bg-[var(--surface-warm)]" />
+              <div className="h-[38px] w-[78px] rounded-[4px] bg-[var(--surface-warm)]" />
+              <div className="h-[34px] w-[34px] rounded-[4px] bg-[var(--surface-warm)]" />
             </div>
           </div>
         </div>

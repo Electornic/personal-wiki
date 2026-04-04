@@ -8,11 +8,11 @@ import { hasOpenAIEnv } from "@/shared/config/env";
 
 export default function ChatPage() {
   return (
-    <main className="site-shell flex min-h-[calc(100dvh-60px)] flex-col pb-4 pt-[72px]">
+    <div className="flex min-h-full flex-col">
       <Suspense fallback={<ChatSkeleton />}>
         <ChatContent />
       </Suspense>
-    </main>
+    </div>
   );
 }
 
@@ -29,8 +29,8 @@ async function ChatContent() {
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="rounded-[6px] border border-[rgba(42,36,25,0.08)] bg-white px-6 py-5 text-center shadow-[0px_1px_3px_rgba(0,0,0,0.06)]">
-          <p className="text-[15px] font-medium text-[#2a2419]">Chat is not available</p>
-          <p className="mt-1 text-[13px] text-[#6b6354]">
+          <p className="text-[15px] font-medium text-[var(--foreground)]">Chat is not available</p>
+          <p className="mt-1 text-[13px] text-[var(--muted)]">
             Set the <code className="rounded bg-[#f0ece6] px-1.5 py-0.5 text-[12px]">OPENAI_API_KEY</code> environment variable to enable chat.
           </p>
         </div>

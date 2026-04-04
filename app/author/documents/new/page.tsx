@@ -7,11 +7,11 @@ import { requireAuthorAccess } from "@/lib/wiki/auth";
 
 export default function NewAuthorDocumentPage() {
   return (
-    <main className="site-shell pb-20 pt-[154px]">
+    <div className="px-6 py-8 lg:px-10">
       <Suspense fallback={<EditorFormSkeleton />}>
         <NewDocumentContent />
       </Suspense>
-    </main>
+    </div>
   );
 }
 

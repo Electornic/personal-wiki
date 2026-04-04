@@ -11,6 +11,36 @@ type SiteHeaderClientProps = {
   initialAuthStatus: AuthStatus;
 };
 
+function LibraryIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+      <path d="M2 3h12M2 7h12M2 11h8" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M13 9l1 1-1 1" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+function SignInIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+      <circle cx="8" cy="5.333" r="2.667" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M3.333 14c0-2.577 2.09-4.667 4.667-4.667s4.667 2.09 4.667 4.667" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+      <path
+        d="M2.667 8L8 3.333 13.333 8M4 7v5.333A1.333 1.333 0 0 0 5.333 13.667h5.334A1.333 1.333 0 0 0 12 12.333V7"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+    </svg>
+  );
+}
+
 function WorkspaceIcon() {
   return (
     <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
@@ -23,43 +53,6 @@ function WorkspaceIcon() {
   );
 }
 
-function MyLibraryIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M4.667 2.667h6.666A1.333 1.333 0 0 1 12.667 4v9.333L8 10.667l-4.667 2.666V4a1.333 1.333 0 0 1 1.334-1.333Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-    </svg>
-  );
-}
-
-function WriteIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M10.667 2.667 13.333 5.333 6 12.667 3.333 13.333 4 10.667l6.667-8Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path d="m9.333 4 2.667 2.667" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
-function ChatIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M2.667 3.333A1.333 1.333 0 0 1 4 2h8a1.333 1.333 0 0 1 1.333 1.333v6.667A1.333 1.333 0 0 1 12 11.333H5.333L2.667 14V3.333Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
   const [authStatus, setAuthStatus] = useState<AuthStatus>(initialAuthStatus);
@@ -110,11 +103,11 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[rgba(42,36,25,0.1)] bg-[rgba(255,255,255,0.5)] backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-[var(--glass-border)] bg-[rgba(44,30,14,0.85)] backdrop-blur-[16px]">
       <div className="site-shell flex h-16 items-center justify-between">
         <Link
           href="/"
-          className="text-[20px] leading-7 font-semibold tracking-[-0.5px] text-[#2a2419] transition-opacity hover:opacity-70"
+          className="text-[20px] leading-7 font-semibold tracking-[-0.5px] text-[var(--foreground)] transition-opacity hover:opacity-70"
         >
           Personal Wiki
         </Link>
@@ -123,51 +116,54 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
           {authStatus === "authenticated" ? (
             <>
               <Link
-                href="/me/library"
-                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)] md:gap-2 md:px-[10px]"
+                href="/"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
-                <MyLibraryIcon />
+                <HomeIcon />
                 <span className="hidden text-[14px] leading-5 font-medium md:inline">
-                  My Library
+                  Home
+                </span>
+              </Link>
+              <Link
+                href="/library"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
+              >
+                <LibraryIcon />
+                <span className="hidden text-[14px] leading-5 font-medium md:inline">
+                  Library
                 </span>
               </Link>
               <Link
                 href="/author"
-                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)] md:gap-2 md:px-[10px]"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
                 <WorkspaceIcon />
                 <span className="hidden text-[14px] leading-5 font-medium md:inline">
                   Workspace
                 </span>
               </Link>
+            </>
+          ) : authStatus === "anonymous" ? (
+            <>
               <Link
-                href="/author/chat"
-                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)] md:gap-2 md:px-[10px]"
+                href="/library"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
-                <ChatIcon />
+                <LibraryIcon />
                 <span className="hidden text-[14px] leading-5 font-medium md:inline">
-                  Chat
+                  Library
                 </span>
               </Link>
               <Link
-                href="/author/documents/new"
-                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[#2a2419] transition hover:bg-[rgba(232,227,219,0.45)] md:gap-2 md:px-[10px]"
+                href="/author/sign-in"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
-                <WriteIcon />
+                <SignInIcon />
                 <span className="hidden text-[14px] leading-5 font-medium md:inline">
-                  Write
+                  Sign In
                 </span>
               </Link>
             </>
-          ) : authStatus === "anonymous" ? (
-            <Link
-              href="/author/sign-in"
-              className="inline-flex h-8 min-w-[70px] items-center justify-center rounded-[4px] bg-[#2a2419] px-3 text-[14px] leading-5 font-medium text-[#faf8f5] no-underline transition hover:opacity-90"
-            >
-              <span className="text-[14px] leading-5 font-medium text-[#faf8f5]">
-                Sign In
-              </span>
-            </Link>
           ) : (
             <div className="h-8 min-w-[70px]" aria-hidden="true" />
           )}

@@ -61,14 +61,14 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
   return (
     <div className="rounded-[6px] border border-[rgba(42,36,25,0.12)] bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.06)]">
       <div className="flex items-center gap-2 border-b border-[rgba(42,36,25,0.08)] px-4 py-3">
-        <p className="text-[12px] font-medium tracking-wide text-[#6b6354] uppercase">
+        <p className="text-[12px] font-medium tracking-wide text-[var(--muted)] uppercase">
           Document Preview
         </p>
-        <span className="rounded-full bg-[#f0ece6] px-2 py-0.5 text-[11px] font-medium text-[#6b6354]">
+        <span className="rounded-full bg-[#f0ece6] px-2 py-0.5 text-[11px] font-medium text-[var(--muted)]">
           {sourceType === "book" ? "Book" : "Article"}
         </span>
         {sourceType === "book" && bookTitle && (
-          <span className="truncate text-[12px] text-[#6b6354]">
+          <span className="truncate text-[12px] text-[var(--muted)]">
             from {bookTitle}
           </span>
         )}
@@ -77,7 +77,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
       <div className="space-y-4 px-4 py-4">
         <Field label="Title">
           <input
-            className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 text-[14px] text-[#2a2419] outline-none focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
+            className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[var(--background)] px-3 text-[14px] text-[var(--foreground)] outline-none focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
             onChange={(e) => setTitle(e.target.value)}
             value={title}
           />
@@ -86,7 +86,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Type">
             <select
-              className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 text-[14px] text-[#2a2419] outline-none focus:border-[rgba(42,36,25,0.3)]"
+              className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[var(--background)] px-3 text-[14px] text-[var(--foreground)] outline-none focus:border-[rgba(42,36,25,0.3)]"
               onChange={(e) => setSourceType(e.target.value as "book" | "article")}
               value={sourceType}
             >
@@ -97,7 +97,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
 
           <Field label="Visibility">
             <select
-              className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 text-[14px] text-[#2a2419] outline-none focus:border-[rgba(42,36,25,0.3)]"
+              className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[var(--background)] px-3 text-[14px] text-[var(--foreground)] outline-none focus:border-[rgba(42,36,25,0.3)]"
               onChange={(e) => setVisibility(e.target.value as "public" | "private")}
               value={visibility}
             >
@@ -110,7 +110,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
         {sourceType === "book" && (
           <Field label="Book Title">
             <input
-              className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 text-[14px] text-[#2a2419] outline-none focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
+              className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[var(--background)] px-3 text-[14px] text-[var(--foreground)] outline-none focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
               onChange={(e) => setBookTitle(e.target.value)}
               value={bookTitle}
             />
@@ -119,7 +119,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
 
         <Field label="Tags">
           <input
-            className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 text-[14px] text-[#2a2419] outline-none focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
+            className="h-9 w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[var(--background)] px-3 text-[14px] text-[var(--foreground)] outline-none focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
             onChange={(e) => setTags(e.target.value)}
             placeholder="Separate with commas"
             value={tags}
@@ -128,7 +128,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
 
         <Field label="Contents">
           <textarea
-            className="min-h-[120px] w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[#faf8f5] px-3 py-2 text-[14px] leading-relaxed text-[#2a2419] outline-none focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
+            className="min-h-[120px] w-full rounded-[4px] border border-[rgba(42,36,25,0.12)] bg-[var(--background)] px-3 py-2 text-[14px] leading-relaxed text-[var(--foreground)] outline-none focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
             onChange={(e) => setContents(e.target.value)}
             value={contents}
           />
@@ -141,7 +141,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
 
       <div className="flex items-center justify-end gap-2 border-t border-[rgba(42,36,25,0.08)] px-4 py-3">
         <button
-          className="h-9 rounded-[4px] bg-[#2a2419] px-4 text-[13px] font-medium text-[#faf8f5] hover:bg-[#3d362b] disabled:opacity-50"
+          className="h-9 rounded-[4px] bg-[var(--foreground)] px-4 text-[13px] font-medium text-[var(--background)] hover:bg-[var(--accent-hover)] disabled:opacity-50"
           disabled={isPending || !title.trim()}
           onClick={handleSave}
           type="button"
@@ -156,7 +156,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[12px] font-medium text-[#6b6354]">{label}</span>
+      <span className="mb-1 block text-[12px] font-medium text-[var(--muted)]">{label}</span>
       {children}
     </label>
   );

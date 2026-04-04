@@ -12,7 +12,7 @@ function ArticleIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[#6b6354]"
+      className="h-5 w-5 text-[var(--muted)]"
       fill="none"
       viewBox="0 0 20 20"
     >
@@ -32,7 +32,7 @@ function BookIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[#6b6354]"
+      className="h-5 w-5 text-[var(--muted)]"
       fill="none"
       viewBox="0 0 20 20"
     >
@@ -49,18 +49,18 @@ function BookIcon() {
 export function DocumentCard({ document }: DocumentCardProps) {
   return (
     <Link href={`/library/${document.slug}`} prefetch={false} className="block group">
-      <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition group-hover:bg-[rgba(255,255,255,0.72)]">
+      <article className="rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-6 py-6 transition group-hover:bg-[rgba(255,255,255,0.72)]">
         <div className="flex min-h-full flex-col">
           <div className="flex items-start gap-3">
             <div className="mt-1 shrink-0">
               {document.sourceType === "book" ? <BookIcon /> : <ArticleIcon />}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-[24px] leading-8 font-semibold tracking-[-0.01em] text-[#2a2419] transition-colors group-hover:text-[#3a3328]">
+              <h3 className="text-[24px] leading-8 font-semibold tracking-[-0.01em] text-[var(--foreground)] transition-colors group-hover:text-[#3a3328]">
                 {document.title}
               </h3>
               {document.sourceType === "book" && document.bookTitle ? (
-                <p className="mt-1 text-[14px] leading-5 italic text-[#6b6354]">
+                <p className="mt-1 text-[14px] leading-5 italic text-[var(--muted)]">
                   from {document.bookTitle}
                 </p>
               ) : null}
@@ -77,7 +77,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
             ))}
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-[14px] leading-5 text-[#6b6354]">
+          <div className="mt-4 flex items-center justify-between text-[14px] leading-5 text-[var(--muted)]">
             <span className="font-medium">{document.writerName}</span>
             <span>{formatDisplayDate(document.publishedAt)}</span>
           </div>

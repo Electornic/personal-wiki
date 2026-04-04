@@ -81,10 +81,10 @@ function PaginationLink({
       aria-current={active ? "page" : undefined}
       className={`inline-flex h-10 min-w-10 items-center justify-center rounded-[4px] border px-2.5 text-[13px] leading-5 font-medium md:h-[42px] md:min-w-[42px] md:px-3 md:text-[14px] ${
         active
-          ? "border-[#2a2419] bg-[#2a2419] !text-[#faf8f5] visited:!text-[#faf8f5]"
+          ? "border-[var(--foreground)] bg-[var(--foreground)] !text-[var(--accent-text)] visited:!text-[var(--accent-text)]"
           : disabled
             ? "pointer-events-none border-[rgba(42,36,25,0.08)] text-[rgba(42,36,25,0.35)]"
-            : "border-[rgba(42,36,25,0.1)] bg-white text-[#2a2419]"
+            : "border-[rgba(42,36,25,0.1)] bg-white text-[var(--foreground)]"
       }`}
     >
       {children}
@@ -115,10 +115,10 @@ export function PaginationNav({
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[14px] leading-5 text-[#6b6354]">
+          <p className="text-[14px] leading-5 text-[var(--muted)]">
             Page {currentPage} of {totalPages}
           </p>
-          <div className="inline-flex w-fit items-center rounded-full border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.2)] px-3 py-1 text-[12px] leading-4 text-[#6b6354]">
+          <div className="inline-flex w-fit items-center rounded-full border border-[rgba(42,36,25,0.08)] bg-[rgba(232,227,219,0.2)] px-3 py-1 text-[12px] leading-4 text-[var(--muted)]">
             {totalPages} pages total
           </div>
         </div>

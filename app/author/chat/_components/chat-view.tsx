@@ -163,10 +163,10 @@ export function ChatView() {
         <div className="mx-auto max-w-[640px] space-y-4">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-[18px] font-medium text-[#2a2419]">
+              <p className="text-[18px] font-medium text-[var(--foreground)]">
                 What have you been reading?
               </p>
-              <p className="mt-2 text-[14px] text-[#6b6354]">
+              <p className="mt-2 text-[14px] text-[var(--muted)]">
                 Share your thoughts and I&apos;ll help turn them into a document for your library.
               </p>
             </div>
@@ -190,9 +190,9 @@ export function ChatView() {
             <div className="flex justify-start">
               <div className="rounded-[12px] rounded-bl-[4px] border border-[rgba(42,36,25,0.08)] bg-white px-4 py-2.5 shadow-[0px_1px_3px_rgba(0,0,0,0.04)]">
                 <div className="flex gap-1">
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-[#6b6354] [animation-delay:0ms]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-[#6b6354] [animation-delay:150ms]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-[#6b6354] [animation-delay:300ms]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--muted)] [animation-delay:0ms]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--muted)] [animation-delay:150ms]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--muted)] [animation-delay:300ms]" />
                 </div>
               </div>
             </div>
@@ -202,11 +202,11 @@ export function ChatView() {
         </div>
       </div>
 
-      <div className="border-t border-[rgba(42,36,25,0.08)] bg-[#faf8f5] px-4 py-3">
+      <div className="border-t border-[rgba(42,36,25,0.08)] bg-[var(--background)] px-4 py-3">
         <div className="mx-auto flex max-w-[640px] gap-2">
           <textarea
             ref={textareaRef}
-            className="flex-1 resize-none rounded-[6px] border border-[rgba(42,36,25,0.12)] bg-white px-3 py-2.5 text-[14px] leading-relaxed text-[#2a2419] outline-none placeholder:text-[#a09888] focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
+            className="flex-1 resize-none rounded-[6px] border border-[rgba(42,36,25,0.12)] bg-white px-3 py-2.5 text-[14px] leading-relaxed text-[var(--foreground)] outline-none placeholder:text-[#a09888] focus:border-[rgba(42,36,25,0.3)] focus:shadow-[0_0_0_1px_rgba(42,36,25,0.1)]"
             disabled={isStreaming}
             onKeyDown={handleKeyDown}
             onChange={(e) => setInput(e.target.value)}
@@ -215,7 +215,7 @@ export function ChatView() {
             value={input}
           />
           <button
-            className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-[6px] bg-[#2a2419] text-[#faf8f5] hover:bg-[#3d362b] disabled:opacity-40"
+            className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-[6px] bg-[var(--foreground)] text-[var(--background)] hover:bg-[var(--accent-hover)] disabled:opacity-40"
             disabled={!input.trim() || isStreaming}
             onClick={handleSubmit}
             type="button"

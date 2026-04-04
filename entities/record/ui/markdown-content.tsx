@@ -52,7 +52,7 @@ export function MarkdownContent({
   return (
     <div
       className={[
-        "max-w-none text-[#2a2419]",
+        "max-w-none text-[var(--foreground)]",
         className ?? "",
       ].join(" ")}
     >
@@ -67,22 +67,22 @@ export function MarkdownContent({
         }}
         components={{
           h1: ({ children }) => (
-            <h1 className="mt-0 mb-4 text-[30px] leading-9 font-semibold tracking-[-0.3px] text-[#2a2419]">
+            <h1 className="mt-0 mb-4 text-[30px] leading-9 font-semibold tracking-[-0.3px] text-[var(--foreground)]">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="mt-10 mb-3 text-[24px] leading-8 font-semibold text-[#2a2419]">
+            <h2 className="mt-10 mb-3 text-[24px] leading-8 font-semibold text-[var(--foreground)]">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="mt-8 mb-3 text-[20px] leading-7 font-semibold text-[#2a2419]">
+            <h3 className="mt-8 mb-3 text-[20px] leading-7 font-semibold text-[var(--foreground)]">
               {children}
             </h3>
           ),
           p: ({ children }) => (
-            <p className="mb-6 text-[18px] leading-[29.25px] text-[#2a2419]">
+            <p className="mb-6 text-[18px] leading-[29.25px] text-[var(--foreground)]">
               {children}
             </p>
           ),
@@ -92,22 +92,22 @@ export function MarkdownContent({
             </blockquote>
           ),
           ul: ({ children }) => (
-            <ul className="my-6 list-disc pl-6 text-[18px] leading-[29.25px] text-[#2a2419]">
+            <ul className="my-6 list-disc pl-6 text-[18px] leading-[29.25px] text-[var(--foreground)]">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="my-6 list-decimal pl-6 text-[18px] leading-[29.25px] text-[#2a2419]">
+            <ol className="my-6 list-decimal pl-6 text-[18px] leading-[29.25px] text-[var(--foreground)]">
               {children}
             </ol>
           ),
           li: ({ children }) => (
-            <li className="mb-2 pl-1 marker:text-[#2a2419]">{children}</li>
+            <li className="mb-2 pl-1 marker:text-[var(--foreground)]">{children}</li>
           ),
           a: ({ href, children }) => (
             <a
               href={href}
-              className="font-medium text-[#5b4330] underline decoration-[rgba(91,67,48,0.55)] underline-offset-4 hover:text-[#2a2419]"
+              className="font-medium text-[#5b4330] underline decoration-[rgba(91,67,48,0.55)] underline-offset-4 hover:text-[var(--foreground)]"
               target={href?.startsWith("http") ? "_blank" : undefined}
               rel={href?.startsWith("http") ? "noreferrer" : undefined}
             >
@@ -150,13 +150,13 @@ export function MarkdownContent({
             );
           },
           strong: ({ children }) => (
-            <strong className="font-semibold text-[#2a2419]">{children}</strong>
+            <strong className="font-semibold text-[var(--foreground)]">{children}</strong>
           ),
           em: ({ children }) => (
             <em className="italic text-[rgba(42,36,25,0.85)]">{children}</em>
           ),
           code: ({ children }) => (
-            <code className="rounded bg-[rgba(232,227,219,0.6)] px-1.5 py-0.5 text-[0.95em] text-[#2a2419]">
+            <code className="rounded bg-[rgba(232,227,219,0.6)] px-1.5 py-0.5 text-[0.95em] text-[var(--foreground)]">
               {children}
             </code>
           ),

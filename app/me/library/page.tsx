@@ -32,12 +32,12 @@ function MyLibraryIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 export default function MyLibraryPage({ searchParams }: PageProps) {
   return (
-    <main className="site-shell pb-20 pt-12">
+    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-12 backdrop-blur-sm">
       <section className="w-full">
-        <h1 className="text-[36px] leading-10 font-semibold tracking-[-0.72px] text-[#2a2419]">
+        <h1 className="text-[36px] leading-10 font-semibold tracking-[-0.72px] text-[var(--foreground)]">
           My Library
         </h1>
-        <p className="mt-3 text-[18px] leading-7 text-[#6b6354]">
+        <p className="mt-3 text-[18px] leading-7 text-[var(--muted)]">
           Your personal collection of bookmarked reading
         </p>
       </section>
@@ -75,13 +75,14 @@ async function MyLibraryContent({
 
   return (
     <section className="mt-10 w-full">
-      <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 py-2 text-[14px] leading-5 font-medium text-[#2a2419]">
+      <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 py-2 text-[14px] leading-5 font-medium text-[var(--foreground)]">
         <MyLibraryIcon />
         Bookmarks
       </div>
 
       <MyLibraryBrowser
         records={paginated.documents}
+        totalCount={paginated.totalCount}
         controlsSlot={(
           <Suspense fallback={<MyLibraryDiscoveryControlsFallback />}>
             <MyLibraryDiscoveryControls discoveryState={discoveryState} userId={userId} />

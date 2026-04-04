@@ -50,8 +50,8 @@ function FilterChip({
       onClick={onClick}
       className={`inline-flex h-[34px] items-center justify-center rounded-full border px-[13px] text-[14px] leading-5 font-medium ${
         active
-          ? "border-[#2a2419] bg-[#2a2419] text-[#faf8f5]"
-          : "border-[rgba(42,36,25,0.1)] bg-[#faf8f5] text-[#2a2419]"
+          ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+          : "border-[rgba(42,36,25,0.1)] bg-[var(--background)] text-[var(--foreground)]"
       }`}
     >
       {label}
@@ -213,7 +213,7 @@ export function DiscoveryControls({
             onChange={(event) => setQueryValue(event.currentTarget.value)}
             placeholder="Search records..."
             aria-busy={isPending}
-            className="h-[42px] w-full rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] pl-4 pr-[42px] text-[14px] leading-5 text-[#2a2419] placeholder:text-[rgba(42,36,25,0.5)]"
+            className="h-[42px] w-full rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[var(--background)] pl-4 pr-[42px] text-[14px] leading-5 text-[var(--foreground)] placeholder:text-[rgba(42,36,25,0.5)]"
           />
         </form>
 
@@ -224,8 +224,8 @@ export function DiscoveryControls({
           }
           className={`inline-flex h-[42px] shrink-0 items-center justify-center gap-2 rounded-[6px] px-3 text-[14px] leading-5 font-medium ${
             showPanel
-              ? "border border-[#2a2419] bg-[#2a2419] text-[#faf8f5]"
-              : "border border-[rgba(42,36,25,0.1)] bg-[#faf8f5] text-[#2a2419]"
+              ? "border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+              : "border border-[rgba(42,36,25,0.1)] bg-[var(--background)] text-[var(--foreground)]"
           }`}
         >
           <FilterIcon />
@@ -237,7 +237,7 @@ export function DiscoveryControls({
         <div className="mt-4 rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-[rgba(232,227,219,0.2)] px-4 py-[17px] md:px-[17px]">
           <div className="space-y-4">
             <div>
-              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[#2a2419]">
+              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[var(--foreground)]">
                 Sort by
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -276,7 +276,7 @@ export function DiscoveryControls({
             </div>
 
             <div>
-              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[#2a2419]">
+              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[var(--foreground)]">
                 Source type
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -303,7 +303,7 @@ export function DiscoveryControls({
             </div>
 
             <div>
-              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[#2a2419]">
+              <p className="text-[14px] leading-5 font-medium font-[Inter] text-[var(--foreground)]">
                 Filter by tags
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
