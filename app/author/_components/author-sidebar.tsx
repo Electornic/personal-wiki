@@ -77,6 +77,8 @@ const NAV_ITEMS = [
 export function AuthorSidebar() {
   const pathname = usePathname();
 
+  if (pathname === "/author/sign-in") return null;
+
   return (
     <aside className="sticky top-16 hidden h-[calc(100dvh-64px-2rem)] w-[var(--sidebar-width)] shrink-0 flex-col overflow-y-auto rounded-l-[12px] border border-r-0 border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-[var(--glass-blur)] lg:flex">
       <nav className="flex flex-1 flex-col px-3 py-4">

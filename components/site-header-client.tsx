@@ -11,6 +11,18 @@ type SiteHeaderClientProps = {
   initialAuthStatus: AuthStatus;
 };
 
+function LibraryIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
+      <path
+        d="M4.667 2.667h6.666A1.333 1.333 0 0 1 12.667 4v9.333L8 10.667l-4.667 2.666V4a1.333 1.333 0 0 1 1.334-1.333Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+    </svg>
+  );
+}
+
 function HomeIcon() {
   return (
     <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
@@ -99,7 +111,7 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
             <>
               <Link
                 href="/"
-                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[var(--foreground)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
                 <HomeIcon />
                 <span className="hidden text-[14px] leading-5 font-medium md:inline">
@@ -107,8 +119,17 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
                 </span>
               </Link>
               <Link
+                href="/library"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
+              >
+                <LibraryIcon />
+                <span className="hidden text-[14px] leading-5 font-medium md:inline">
+                  Library
+                </span>
+              </Link>
+              <Link
                 href="/author"
-                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[var(--foreground)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
               >
                 <WorkspaceIcon />
                 <span className="hidden text-[14px] leading-5 font-medium md:inline">
@@ -117,12 +138,25 @@ export function SiteHeaderClient({ initialAuthStatus }: SiteHeaderClientProps) {
               </Link>
             </>
           ) : authStatus === "anonymous" ? (
-            <Link
-              href="/author/sign-in"
-              className="inline-flex h-8 min-w-[70px] items-center justify-center rounded-[4px] bg-[var(--accent)] px-3 text-[14px] leading-5 font-medium text-[var(--accent-text)] no-underline transition hover:bg-[var(--accent-hover)]"
-            >
-              Sign In
-            </Link>
+            <>
+              <Link
+                href="/library"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
+              >
+                <LibraryIcon />
+                <span className="hidden text-[14px] leading-5 font-medium md:inline">
+                  Library
+                </span>
+              </Link>
+              <Link
+                href="/author/sign-in"
+                className="inline-flex h-8 items-center justify-center rounded-[4px] px-2 !text-[var(--foreground-strong)] transition hover:bg-[var(--surface-hover)] md:gap-2 md:px-[10px]"
+              >
+                <span className="text-[14px] leading-5 font-medium">
+                  Sign In
+                </span>
+              </Link>
+            </>
           ) : (
             <div className="h-8 min-w-[70px]" aria-hidden="true" />
           )}

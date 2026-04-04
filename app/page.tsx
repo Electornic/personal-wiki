@@ -5,6 +5,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { listPublicDiscoveryPage } from "@/entities/record/api/documents";
 import { DocumentCard } from "@/entities/record/ui/document-card";
 import { parseDiscoveryState } from "@/lib/wiki/discovery";
+import { getAuthStatus } from "@/lib/wiki/auth";
 
 export default function LandingPage() {
   return (
@@ -25,20 +26,9 @@ export default function LandingPage() {
         <p className="mx-auto mt-5 max-w-[480px] text-[18px] leading-[28px] text-[var(--muted)]">
           Read, reflect, and record. A quiet space to collect your thoughts on books and articles.
         </p>
-        <div className="mt-8 flex items-center justify-center gap-3">
-          <Link
-            href="/library"
-            className="inline-flex h-11 items-center justify-center rounded-[6px] bg-[var(--accent)] px-6 text-[15px] font-medium !text-[var(--accent-text)] transition hover:bg-[var(--accent-hover)]"
-          >
-            Browse Library
-          </Link>
-          <Link
-            href="/author/sign-in"
-            className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
-          >
-            Sign In
-          </Link>
-        </div>
+        <Suspense fallback={<HeroButtonsFallback />}>
+          <HeroButtons />
+        </Suspense>
       </section>
 
       <section className="mt-20 md:mt-28">
@@ -92,6 +82,45 @@ async function getCachedRecentDocs() {
     parseDiscoveryState({}),
     1,
     3,
+  );
+}
+
+async function HeroButtons() {
+  const { isAuthenticated } = await getAuthStatus();
+
+  return (
+    <div className="mt-8 flex items-center justify-center gap-3">
+      <Link
+        href="/library"
+        className="inline-flex h-11 items-center justify-center rounded-[6px] bg-[var(--accent)] px-6 text-[15px] font-medium !text-[var(--accent-text)] transition hover:bg-[var(--accent-hover)]"
+      >
+        Browse Library
+      </Link>
+      {isAuthenticated ? (
+        <Link
+          href="/author"
+          className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+        >
+          Workspace
+        </Link>
+      ) : (
+        <Link
+          href="/author/sign-in"
+          className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--border)] px-6 text-[15px] font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+        >
+          Sign In
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function HeroButtonsFallback() {
+  return (
+    <div className="mt-8 flex items-center justify-center gap-3">
+      <div className="h-11 w-36 animate-pulse rounded-[6px] bg-[var(--surface-warm)]" />
+      <div className="h-11 w-24 animate-pulse rounded-[6px] bg-[var(--surface-warm)]" />
+    </div>
   );
 }
 

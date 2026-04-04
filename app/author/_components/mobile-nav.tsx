@@ -25,6 +25,8 @@ export function MobileNavToggle() {
   const pathname = usePathname();
   const close = useCallback(() => setOpen(false), []);
 
+  if (pathname === "/author/sign-in") return null;
+
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
