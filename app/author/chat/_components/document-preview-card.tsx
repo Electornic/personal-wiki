@@ -141,7 +141,7 @@ export function DocumentPreviewCard({ proposal }: DocumentPreviewCardProps) {
 
       <div className="flex items-center justify-end gap-2 border-t border-[rgba(42,36,25,0.08)] px-4 py-3">
         <button
-          className="h-9 rounded-[4px] bg-[var(--foreground)] px-4 text-[13px] font-medium text-[var(--background)] hover:bg-[#3d362b] disabled:opacity-50"
+          className="h-9 rounded-[4px] bg-[var(--foreground)] px-4 text-[13px] font-medium text-[var(--background)] hover:bg-[var(--accent-hover)] disabled:opacity-50"
           disabled={isPending || !title.trim()}
           onClick={handleSave}
           type="button"

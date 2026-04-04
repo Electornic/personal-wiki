@@ -215,7 +215,7 @@ export function ChatView() {
             value={input}
           />
           <button
-            className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-[6px] bg-[var(--foreground)] text-[var(--background)] hover:bg-[#3d362b] disabled:opacity-40"
+            className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-[6px] bg-[var(--foreground)] text-[var(--background)] hover:bg-[var(--accent-hover)] disabled:opacity-40"
             disabled={!input.trim() || isStreaming}
             onClick={handleSubmit}
             type="button"

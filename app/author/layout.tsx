@@ -25,6 +25,6 @@ export default function AuthorLayout({ children }: { children: React.ReactNode }
 
 function SidebarSkeleton() {
   return (
-    <aside className="hidden w-[var(--sidebar-width)] shrink-0 border-r border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] lg:flex" />
+    <aside className="sticky top-16 hidden h-[calc(100dvh-64px)] w-[var(--sidebar-width)] shrink-0 border-r border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] lg:flex" />
   );
 }

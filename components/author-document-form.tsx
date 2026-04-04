@@ -507,7 +507,7 @@ export function AuthorDocumentForm({ document }: AuthorDocumentFormProps) {
                   )
                 }
                 className={`relative inline-flex h-[18px] w-8 items-center rounded-full border border-transparent ${
-                  visibility === "public" ? "bg-[var(--foreground)]" : "bg-[#d9d2c8]"
+                  visibility === "public" ? "bg-[var(--foreground)]" : "bg-[var(--surface-warm)]"
                 }`}
               >
                 <span
