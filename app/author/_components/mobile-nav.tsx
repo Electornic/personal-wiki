@@ -26,7 +26,6 @@ export function MobileNavToggle() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const close = useCallback(() => setOpen(false), []);
-  const isSignIn = pathname === "/author/sign-in";
 
   useEffect(() => {
     if (open) {
@@ -39,12 +38,10 @@ export function MobileNavToggle() {
     };
   }, [open]);
 
-  if (isSignIn) return null;
-
   return (
     <>
       <button
-        className="fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] shadow-lg lg:hidden"
+        className="fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--glass-border)] bg-[rgba(44,30,14,0.85)] text-[var(--sidebar-text)] shadow-lg backdrop-blur-[12px] lg:hidden"
         onClick={() => setOpen(!open)}
         type="button"
         aria-label={open ? "Close navigation" : "Open navigation"}
@@ -58,7 +55,7 @@ export function MobileNavToggle() {
             className="fixed inset-0 z-40 bg-black/40 lg:hidden"
             onClick={() => setOpen(false)}
           />
-          <nav className="fixed inset-y-0 left-0 z-40 w-[280px] overflow-y-auto bg-[var(--sidebar-bg)] px-4 py-6 lg:hidden">
+          <nav className="fixed inset-y-0 left-0 z-40 w-[280px] overflow-y-auto bg-[rgba(44,30,14,0.95)] px-4 py-6 backdrop-blur-[16px] lg:hidden">
             <div className="mb-6">
               <p className="text-[11px] font-medium tracking-wider text-[var(--sidebar-text-muted)] uppercase">
                 Workspace
