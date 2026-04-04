@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 
+import { BackButton } from "@/app/library/[slug]/_components/back-button";
 import { ConversationSection } from "@/app/library/[slug]/_components/conversation-section";
 import { RecordReactionsSection } from "@/app/library/[slug]/_components/record-reactions-section";
 import {
@@ -19,24 +20,6 @@ type PageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-function BackIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-4 w-4"
-      fill="none"
-      viewBox="0 0 16 16"
-    >
-      <path
-        d="M10 3.333 5.333 8 10 12.667"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path d="M6 8h6" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
 
 function ArticleIcon() {
   return (
@@ -111,13 +94,7 @@ export default function LibraryDocumentPage({ params, searchParams }: PageProps)
   return (
     <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-8 backdrop-blur-sm">
       <div className="site-shell-content">
-        <Link
-          href="/"
-          className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[rgba(232,227,219,0.45)]"
-        >
-          <BackIcon />
-          Library
-        </Link>
+        <BackButton />
 
         <Suspense fallback={<DocumentContentSkeleton />}>
           <DocumentContent params={params} searchParams={searchParams} />
