@@ -32,16 +32,17 @@ function BookIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[var(--muted)]"
+      className="h-5 w-5 text-[#8B6914]"
       fill="none"
       viewBox="0 0 20 20"
     >
       <path
-        d="M5.833 3.333h6.25A2.083 2.083 0 0 1 14.167 5.417v10.416a1.667 1.667 0 0 0-1.667-1.666h-6.25A1.667 1.667 0 0 0 4.583 15.833V4.583a1.25 1.25 0 0 1 1.25-1.25Z"
+        d="M10 5C8.333 3.667 6.25 3.333 4.167 3.333v11.334C6.25 14.667 8.333 15 10 16.333c1.667-1.333 3.75-1.666 5.833-1.666V3.333C13.75 3.333 11.667 3.667 10 5Z"
         stroke="currentColor"
         strokeWidth="1.25"
+        strokeLinejoin="round"
       />
-      <path d="M14.167 5v10.833" stroke="currentColor" strokeWidth="1.25" />
+      <path d="M10 5v11.333" stroke="currentColor" strokeWidth="1.25" />
     </svg>
   );
 }
@@ -49,7 +50,7 @@ function BookIcon() {
 export function MyLibraryCard({ document }: MyLibraryCardProps) {
   return (
     <Link href={`/library/${document.slug}`} prefetch={false} className="block group">
-      <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-6 py-6 transition group-hover:bg-[rgba(255,255,255,0.72)]">
+      <article className="rounded-[6px] border border-[rgba(42,36,25,0.1)] bg-white px-4 py-4 transition group-hover:bg-[rgba(255,255,255,0.72)] md:px-6 md:py-6">
         <div className="flex min-h-full flex-col">
           <div className="flex items-start gap-3">
             <div className="mt-1 shrink-0">
@@ -67,7 +68,7 @@ export function MyLibraryCard({ document }: MyLibraryCardProps) {
             </div>
           </div>
 
-          <p className="mt-4 text-[16px] leading-[26px] text-[rgba(42,36,25,0.8)]">
+          <p className="mt-4 line-clamp-3 text-[16px] leading-[26px] text-[rgba(42,36,25,0.8)] md:line-clamp-none">
             {document.excerpt}
           </p>
 
