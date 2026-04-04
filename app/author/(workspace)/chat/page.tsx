@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
-import { ChatView } from "@/app/author/chat/_components/chat-view";
+import { ChatView } from "@/app/author/(workspace)/chat/_components/chat-view";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import { hasOpenAIEnv } from "@/shared/config/env";
 
