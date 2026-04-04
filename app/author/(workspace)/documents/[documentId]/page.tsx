@@ -3,20 +3,18 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { AuthorDocumentView } from "@/app/author/(workspace)/documents/[documentId]/_components/author-document-view";
-import { AuthorDocumentForm } from "@/components/author-document-form";
 import { requireAuthorAccess } from "@/lib/wiki/auth";
 import { getAuthorDocumentById } from "@/entities/record/api/documents";
 
 type PageProps = {
   params: Promise<{ documentId: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default function AuthorDocumentPage({ params, searchParams }: PageProps) {
+export default function AuthorDocumentPage({ params }: PageProps) {
   return (
     <div className="px-6 py-8 lg:px-10">
       <Suspense fallback={<DocumentSkeleton />}>
-        <DocumentContent params={params} searchParams={searchParams} />
+        <DocumentContent params={params} />
       </Suspense>
     </div>
   );
@@ -24,13 +22,10 @@ export default function AuthorDocumentPage({ params, searchParams }: PageProps) 
 
 async function DocumentContent({
   params,
-  searchParams,
 }: {
   params: Promise<{ documentId: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { documentId } = await params;
-  const resolvedSearchParams = await searchParams;
   await connection();
 
   const access = await requireAuthorAccess();
@@ -43,12 +38,6 @@ async function DocumentContent({
 
   if (!fetchedDocument) {
     notFound();
-  }
-
-  const editMode = resolvedSearchParams.mode === "edit";
-
-  if (editMode) {
-    return <AuthorDocumentForm document={fetchedDocument} />;
   }
 
   return <AuthorDocumentView doc={fetchedDocument} />;
