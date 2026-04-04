@@ -39,20 +39,21 @@ function ArticleIcon() {
 
 function BookIcon() {
   return (
-    <svg aria-hidden="true" className="h-5 w-5 text-[var(--muted)]" fill="none" viewBox="0 0 20 20">
+    <svg aria-hidden="true" className="h-5 w-5 text-[#8B6914]" fill="none" viewBox="0 0 20 20">
       <path
-        d="M5.833 3.333h6.25A2.083 2.083 0 0 1 14.167 5.417v10.416a1.667 1.667 0 0 0-1.667-1.666h-6.25A1.667 1.667 0 0 0 4.583 15.833V4.583a1.25 1.25 0 0 1 1.25-1.25Z"
+        d="M10 5C8.333 3.667 6.25 3.333 4.167 3.333v11.334C6.25 14.667 8.333 15 10 16.333c1.667-1.333 3.75-1.666 5.833-1.666V3.333C13.75 3.333 11.667 3.667 10 5Z"
         stroke="currentColor"
         strokeWidth="1.25"
+        strokeLinejoin="round"
       />
-      <path d="M14.167 5v10.833" stroke="currentColor" strokeWidth="1.25" />
+      <path d="M10 5v11.333" stroke="currentColor" strokeWidth="1.25" />
     </svg>
   );
 }
 
 export default function TopicHubPage({ params }: PageProps) {
   return (
-    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-20 pt-12 backdrop-blur-sm md:pt-16">
+    <main className="surface-light site-shell mx-auto my-0 max-w-[1096px] rounded-none bg-[var(--content-bg)] pb-20 pt-12 backdrop-blur-sm md:my-4 md:rounded-[12px] md:border md:border-[var(--content-border)] md:pt-16">
       <div className="w-full">
         <Link
           href="/#library"

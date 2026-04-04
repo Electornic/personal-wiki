@@ -18,7 +18,7 @@ type PageProps = {
 
 export default function LibraryPage({ searchParams }: PageProps) {
   return (
-    <main className="surface-light site-shell mx-auto my-4 max-w-[1096px] rounded-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] pb-16 pt-12 backdrop-blur-sm md:pb-20 md:pt-16">
+    <main className="surface-light site-shell mx-auto my-0 max-w-[1096px] rounded-none bg-[var(--content-bg)] pb-16 pt-12 backdrop-blur-sm md:my-4 md:rounded-[12px] md:border md:border-[var(--content-border)] md:pb-20 md:pt-16">
       <section>
         <h1 className="text-[32px] leading-[1.2] font-semibold tracking-[-0.02em] text-[var(--foreground)] md:text-[40px]">
           Library
