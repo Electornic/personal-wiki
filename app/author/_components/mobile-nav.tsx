@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 function MenuIcon() {
   return (
@@ -23,10 +23,7 @@ function CloseIcon() {
 export function MobileNavToggle() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
     if (open) {
@@ -64,15 +61,15 @@ export function MobileNavToggle() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <MobileNavLink href="/author" label="Documents" pathname={pathname} exact />
-              <MobileNavLink href="/author/chat" label="Chat" pathname={pathname} />
-              <MobileNavLink href="/author/documents/new" label="New Record" pathname={pathname} />
-              <MobileNavLink href="/me/library" label="My Library" pathname={pathname} />
+              <MobileNavLink href="/author" label="Documents" pathname={pathname} exact onClick={close} />
+              <MobileNavLink href="/author/chat" label="Chat" pathname={pathname} onClick={close} />
+              <MobileNavLink href="/author/documents/new" label="New Record" pathname={pathname} onClick={close} />
+              <MobileNavLink href="/me/library" label="My Library" pathname={pathname} onClick={close} />
             </div>
 
             <div className="mt-8 border-t border-[var(--sidebar-border)] pt-4">
-              <MobileNavLink href="/" label="Home" pathname={pathname} exact />
-              <MobileNavLink href="/library" label="Public Library" pathname={pathname} />
+              <MobileNavLink href="/" label="Home" pathname={pathname} exact onClick={close} />
+              <MobileNavLink href="/library" label="Public Library" pathname={pathname} onClick={close} />
             </div>
           </nav>
         </>
@@ -86,17 +83,20 @@ function MobileNavLink({
   label,
   pathname,
   exact,
+  onClick,
 }: {
   href: string;
   label: string;
   pathname: string;
   exact?: boolean;
+  onClick?: () => void;
 }) {
   const active = exact ? pathname === href : pathname.startsWith(href);
 
   return (
     <Link
       href={href}
+      onClick={onClick}
       className={`rounded-md px-3 py-2.5 text-[15px] font-medium transition ${
         active
           ? "bg-[var(--sidebar-active)] text-[var(--sidebar-text)]"

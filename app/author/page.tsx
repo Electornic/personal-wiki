@@ -55,19 +55,6 @@ function ArticleIcon() {
   );
 }
 
-function PreviewIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M1.333 8s2.424-4 6.667-4 6.667 4 6.667 4-2.424 4-6.667 4-6.667-4-6.667-4Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <circle cx="8" cy="8" r="1.75" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
 function EditIcon() {
   return (
     <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
@@ -81,18 +68,6 @@ function EditIcon() {
   );
 }
 
-function DeleteIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 16 16">
-      <path
-        d="M5.333 4h5.334M6.667 2.667h2.666M5.333 6v5.333M8 6v5.333M10.667 6v5.333M4 4.667h8v7.666A1.333 1.333 0 0 1 10.667 13.667H5.333A1.333 1.333 0 0 1 4 12.333V4.667Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-    </svg>
-  );
-}
-
 function PrivateIcon() {
   return (
     <svg aria-hidden="true" className="h-3 w-3" fill="none" viewBox="0 0 12 12">
@@ -102,18 +77,6 @@ function PrivateIcon() {
   );
 }
 
-function PublicIcon() {
-  return (
-    <svg aria-hidden="true" className="h-3 w-3" fill="none" viewBox="0 0 12 12">
-      <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.1" />
-      <path
-        d="M1.5 6h9M6 1.5c1 1.1 1.5 2.533 1.5 4.5S7 9.4 6 10.5M6 1.5c-1 1.1-1.5 2.533-1.5 4.5S5 9.4 6 10.5"
-        stroke="currentColor"
-        strokeWidth="1.1"
-      />
-    </svg>
-  );
-}
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
