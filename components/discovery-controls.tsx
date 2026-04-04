@@ -239,7 +239,7 @@ export function DiscoveryControls({
 
       {/* Row 2: Tag pills */}
       {tagOptions.length > 0 ? (
-        <div className="mt-3 flex max-h-[38px] flex-wrap items-center gap-2 overflow-hidden md:max-h-none">
+        <div className="relative mt-3 flex max-h-[38px] flex-wrap items-center gap-2 overflow-hidden md:max-h-none">
           {visibleTags.map((tag) => {
             const active = selectedTags.includes(tag.toLowerCase());
             return (
