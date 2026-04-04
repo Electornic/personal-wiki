@@ -16,11 +16,11 @@ export async function MyLibraryDiscoveryControls({
   return (
     <DiscoveryControls
       className="mt-10"
-      availableTags={availableTags}
+      tagOptions={availableTags}
       query={discoveryState.query}
       sort={discoveryState.sort}
       source={discoveryState.source}
-      tags={discoveryState.tags}
+      selectedTags={discoveryState.tags}
     />
   );
 }

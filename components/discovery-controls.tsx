@@ -6,11 +6,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { DiscoverySort, DiscoverySource } from "@/lib/wiki/discovery";
 
 type DiscoveryControlsProps = {
-  availableTags: string[];
+  tagOptions: string[];
   query: string;
   sort: DiscoverySort;
   source: DiscoverySource;
-  tags: string[];
+  selectedTags: string[];
   popularTagLimit?: number;
   preserveParams?: Record<string, string>;
   className?: string;
@@ -44,11 +44,11 @@ function ChevronDownIcon() {
 }
 
 export function DiscoveryControls({
-  availableTags,
+  tagOptions,
   query,
   sort,
   source,
-  tags,
+  selectedTags,
   popularTagLimit = DEFAULT_POPULAR_LIMIT,
   preserveParams,
   className,
@@ -160,19 +160,19 @@ export function DiscoveryControls({
 
   function toggleTag(tag: string) {
     const normalized = tag.toLowerCase();
-    const nextTags = tags.includes(normalized)
-      ? tags.filter((value) => value !== normalized)
-      : [...tags, normalized];
+    const nextTags = selectedTags.includes(normalized)
+      ? selectedTags.filter((value) => value !== normalized)
+      : [...selectedTags, normalized];
 
     navigate(buildParams({ tags: nextTags }));
   }
 
   function removeTag(tag: string) {
-    const nextTags = tags.filter((value) => value !== tag);
+    const nextTags = selectedTags.filter((value) => value !== tag);
     navigate(buildParams({ tags: nextTags }));
   }
 
-  const popularTags = availableTags.slice(0, popularTagLimit);
+  const visibleTags = tagOptions.slice(0, popularTagLimit);
 
   return (
     <section className={className}>
@@ -199,13 +199,13 @@ export function DiscoveryControls({
         </form>
 
         <div className="flex flex-1 gap-2 md:flex-none">
-          <div className="relative">
+          <div className="relative flex-1 md:flex-none">
             <select
               value={sort}
               onChange={(event) =>
                 navigate(buildParams({ sort: event.target.value }))
               }
-              className="h-[44px] min-w-0 flex-1 appearance-none rounded-[6px] border border-[var(--border)] bg-[var(--background)] pl-3 pr-8 font-[Inter,system-ui,sans-serif] text-[16px] leading-5 font-medium text-[var(--foreground)] md:h-[42px] md:min-w-[120px] md:flex-none md:text-[14px]"
+              className="h-[44px] w-full appearance-none rounded-[6px] border border-[var(--border)] bg-[var(--background)] pl-3 pr-8 font-[Inter,system-ui,sans-serif] text-[16px] leading-5 font-medium text-[var(--foreground)] md:h-[42px] md:w-auto md:min-w-[120px] md:text-[14px]"
             >
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
@@ -218,13 +218,13 @@ export function DiscoveryControls({
             </span>
           </div>
 
-          <div className="relative">
+          <div className="relative flex-1 md:flex-none">
             <select
               value={source}
               onChange={(event) =>
                 navigate(buildParams({ source: event.target.value }))
               }
-              className="h-[44px] min-w-0 flex-1 appearance-none rounded-[6px] border border-[var(--border)] bg-[var(--background)] pl-3 pr-8 font-[Inter,system-ui,sans-serif] text-[16px] leading-5 font-medium text-[var(--foreground)] md:h-[42px] md:min-w-[110px] md:flex-none md:text-[14px]"
+              className="h-[44px] w-full appearance-none rounded-[6px] border border-[var(--border)] bg-[var(--background)] pl-3 pr-8 font-[Inter,system-ui,sans-serif] text-[16px] leading-5 font-medium text-[var(--foreground)] md:h-[42px] md:w-auto md:min-w-[110px] md:text-[14px]"
             >
               <option value="all">All types</option>
               <option value="article">Articles</option>
@@ -237,11 +237,11 @@ export function DiscoveryControls({
         </div>
       </div>
 
-      {/* Row 2: Popular tags + More button */}
-      {availableTags.length > 0 ? (
+      {/* Row 2: Tag pills */}
+      {tagOptions.length > 0 ? (
         <div className="mt-3 flex max-h-[38px] flex-wrap items-center gap-2 overflow-hidden md:max-h-none">
-          {popularTags.map((tag) => {
-            const active = tags.includes(tag.toLowerCase());
+          {visibleTags.map((tag) => {
+            const active = selectedTags.includes(tag.toLowerCase());
             return (
               <button
                 key={tag}
@@ -257,15 +257,14 @@ export function DiscoveryControls({
               </button>
             );
           })}
-
         </div>
       ) : null}
 
       {/* Row 3: Selected tag chips */}
-      {tags.length > 0 ? (
+      {selectedTags.length > 0 ? (
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <span className="text-[12px] leading-4 text-[var(--muted)]">Filtered:</span>
-          {tags.map((tag) => (
+          {selectedTags.map((tag) => (
             <button
               key={tag}
               type="button"
