@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { WORKSPACE_NAV_ITEMS } from "@/app/author/_components/nav-items";
+
 function MenuIcon() {
   return (
     <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 20 20">
@@ -64,10 +66,16 @@ export function MobileNavToggle() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <MobileNavLink href="/author" label="Documents" pathname={pathname} exact onClick={close} />
-              <MobileNavLink href="/author/chat" label="Chat" pathname={pathname} onClick={close} />
-              <MobileNavLink href="/author/documents/new" label="New Record" pathname={pathname} onClick={close} />
-              <MobileNavLink href="/me/library" label="My Library" pathname={pathname} onClick={close} />
+              {WORKSPACE_NAV_ITEMS.map((item) => (
+                <MobileNavLink
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  pathname={pathname}
+                  exact={item.exact}
+                  onClick={close}
+                />
+              ))}
             </div>
 
             <div className="mt-8 border-t border-[var(--sidebar-border)] pt-4">

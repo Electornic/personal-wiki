@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { WORKSPACE_NAV_ITEMS } from "@/app/author/_components/nav-items";
+
 function DocumentIcon() {
   return (
     <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 16 16">
@@ -67,12 +69,12 @@ function SettingsIcon() {
   );
 }
 
-const NAV_ITEMS = [
-  { href: "/author", label: "Documents", icon: DocumentIcon, exact: true },
-  { href: "/author/chat", label: "Chat", icon: ChatIcon },
-  { href: "/author/documents/new", label: "New Record", icon: WriteIcon },
-  { href: "/me/library", label: "My Library", icon: LibraryIcon },
-];
+const ICON_MAP = {
+  documents: DocumentIcon,
+  chat: ChatIcon,
+  write: WriteIcon,
+  library: LibraryIcon,
+} as const;
 
 export function AuthorSidebar() {
   const pathname = usePathname();
@@ -89,8 +91,8 @@ export function AuthorSidebar() {
         </div>
 
         <div className="flex flex-1 flex-col gap-1">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
+          {WORKSPACE_NAV_ITEMS.map((item) => {
+            const Icon = ICON_MAP[item.iconName];
             const active = item.exact
               ? pathname === item.href
               : pathname.startsWith(item.href);
