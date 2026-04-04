@@ -74,7 +74,7 @@ async function SignInContent({
             <span aria-hidden="true" className="text-[18px] leading-none">
               ←
             </span>
-            Back to Library
+            Back to Home
           </Link>
 
           <div className="mt-8 rounded-[6px] border border-[var(--border)] bg-[var(--card)] px-[32px] py-[32px] shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_rgba(0,0,0,0.1)] transition-shadow duration-200 md:px-[33px] md:py-[33px] hover:shadow-[0px_18px_40px_var(--surface-warm)]">

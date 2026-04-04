@@ -82,6 +82,7 @@ async function MyLibraryContent({
 
       <MyLibraryBrowser
         records={paginated.documents}
+        totalCount={paginated.totalCount}
         controlsSlot={(
           <Suspense fallback={<MyLibraryDiscoveryControlsFallback />}>
             <MyLibraryDiscoveryControls discoveryState={discoveryState} userId={userId} />

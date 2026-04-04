@@ -13,10 +13,18 @@ function BackIcon() {
 export function BackButton() {
   const router = useRouter();
 
+  function handleBack() {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/library");
+    }
+  }
+
   return (
     <button
       type="button"
-      onClick={() => router.back()}
+      onClick={handleBack}
       className="inline-flex h-8 items-center gap-2 rounded-[4px] px-[10px] text-[14px] leading-5 font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
     >
       <BackIcon />
