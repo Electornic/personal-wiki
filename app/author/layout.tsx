@@ -5,11 +5,11 @@ import { MobileNavToggle } from "@/app/author/_components/mobile-nav";
 
 export default function AuthorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-64px)] max-w-[1096px]">
+    <div className="mx-auto flex min-h-[calc(100dvh-64px)] max-w-[1096px] gap-0 px-4 py-4 lg:px-0">
       <Suspense fallback={<SidebarSkeleton />}>
         <AuthorSidebar />
       </Suspense>
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden rounded-r-[12px] border border-[var(--content-border)] bg-[var(--content-bg)] backdrop-blur-sm lg:rounded-r-[12px]">
         <div className="flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-[calc(1096px-var(--sidebar-width))]">
             {children}
@@ -25,6 +25,6 @@ export default function AuthorLayout({ children }: { children: React.ReactNode }
 
 function SidebarSkeleton() {
   return (
-    <aside className="sticky top-16 hidden h-[calc(100dvh-64px)] w-[var(--sidebar-width)] shrink-0 border-r border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] lg:flex" />
+    <aside className="sticky top-16 hidden h-[calc(100dvh-64px-2rem)] w-[var(--sidebar-width)] shrink-0 rounded-l-[12px] border border-r-0 border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-[var(--glass-blur)] lg:flex" />
   );
 }

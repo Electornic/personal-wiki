@@ -2,34 +2,46 @@
 @import "tailwindcss";
 
 :root {
-  /* Walnut library palette */
-  --background: #f7f3ed;
-  --foreground: #2c1e0e;
-  --muted: #7a6b56;
-  --panel: #faf6f0;
-  --line: rgba(44, 30, 14, 0.1);
+  /* Walnut library palette — dark walnut background */
+  --background: #2c1e0e;
+  --foreground: #f0e8dc;
+  --foreground-strong: #fffdf9;
+  --muted: #a09080;
+  --panel: rgba(240, 232, 220, 0.08);
+  --line: rgba(240, 232, 220, 0.1);
   --card: #fffdf9;
-  --border: rgba(44, 30, 14, 0.1);
+  --card-text: #2c1e0e;
+  --card-muted: #7a6b56;
+  --border: rgba(240, 232, 220, 0.12);
   --input-background: #fffdf9;
 
-  /* Accent & surface tokens */
-  --accent: #5c3d1e;
-  --accent-hover: #4a3118;
-  --accent-text: #f7f3ed;
-  --surface-warm: #f0e8dc;
-  --surface-hover: rgba(92, 61, 30, 0.06);
-  --tag-bg: #ece4d6;
-  --tag-text: #5c3d1e;
-  --danger: #9e2b2b;
-  --danger-hover: #832323;
+  /* Glass surfaces */
+  --glass-bg: rgba(240, 232, 220, 0.06);
+  --glass-border: rgba(240, 232, 220, 0.1);
+  --glass-blur: 12px;
 
-  /* Sidebar */
-  --sidebar-bg: #2c1e0e;
-  --sidebar-text: #e8dfd2;
+  /* Content surface — cream box for main content */
+  --content-bg: rgba(250, 246, 240, 0.95);
+  --content-border: rgba(44, 30, 14, 0.08);
+
+  /* Accent & surface tokens */
+  --accent: #c49a6c;
+  --accent-hover: #b38a5c;
+  --accent-text: #2c1e0e;
+  --surface-warm: rgba(240, 232, 220, 0.1);
+  --surface-hover: rgba(240, 232, 220, 0.06);
+  --tag-bg: rgba(196, 154, 108, 0.15);
+  --tag-text: #c49a6c;
+  --danger: #e05252;
+  --danger-hover: #c94444;
+
+  /* Sidebar — glass style on dark bg */
+  --sidebar-bg: rgba(240, 232, 220, 0.05);
+  --sidebar-text: #f0e8dc;
   --sidebar-text-muted: #a09080;
-  --sidebar-hover: rgba(255, 255, 255, 0.08);
-  --sidebar-active: rgba(255, 255, 255, 0.12);
-  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-hover: rgba(240, 232, 220, 0.08);
+  --sidebar-active: rgba(240, 232, 220, 0.12);
+  --sidebar-border: rgba(240, 232, 220, 0.08);
   --sidebar-width: 240px;
 }
 

@@ -93,7 +93,7 @@ export function AuthorSidebar() {
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/");
 
   return (
-    <aside className="sticky top-16 hidden h-[calc(100dvh-64px)] w-[var(--sidebar-width)] shrink-0 flex-col overflow-y-auto border-r border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] lg:flex">
+    <aside className="sticky top-16 hidden h-[calc(100dvh-64px-2rem)] w-[var(--sidebar-width)] shrink-0 flex-col overflow-y-auto rounded-l-[12px] border border-r-0 border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-[var(--glass-blur)] lg:flex">
       {section === "menu" ? (
         <MainMenu
           onNavigate={setSection}
