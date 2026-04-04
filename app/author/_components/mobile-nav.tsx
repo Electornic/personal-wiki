@@ -99,8 +99,8 @@ function MobileNavLink({
       onClick={onClick}
       className={`rounded-md px-3 py-2.5 text-[15px] font-medium transition ${
         active
-          ? "bg-[var(--sidebar-active)] text-[var(--sidebar-text)]"
-          : "text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text)]"
+          ? "bg-[var(--sidebar-active)] !text-[var(--sidebar-text)]"
+          : "!text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:!text-[var(--sidebar-text)]"
       }`}
     >
       {label}

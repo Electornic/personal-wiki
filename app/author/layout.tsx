@@ -5,7 +5,7 @@ import { MobileNavToggle } from "@/app/author/_components/mobile-nav";
 
 export default function AuthorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-[calc(100dvh-64px)]">
+    <div className="mx-auto flex min-h-[calc(100dvh-64px)] max-w-[1096px]">
       <Suspense fallback={<SidebarSkeleton />}>
         <AuthorSidebar />
       </Suspense>

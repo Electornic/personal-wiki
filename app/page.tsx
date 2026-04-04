@@ -28,7 +28,7 @@ export default function LandingPage() {
         <div className="mt-8 flex items-center justify-center gap-3">
           <Link
             href="/library"
-            className="inline-flex h-11 items-center justify-center rounded-[6px] bg-[var(--accent)] px-6 text-[15px] font-medium text-[var(--accent-text)] transition hover:bg-[var(--accent-hover)]"
+            className="inline-flex h-11 items-center justify-center rounded-[6px] bg-[var(--accent)] px-6 text-[15px] font-medium !text-[var(--accent-text)] transition hover:bg-[var(--accent-hover)]"
           >
             Browse Library
           </Link>

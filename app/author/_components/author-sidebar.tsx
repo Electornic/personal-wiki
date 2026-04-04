@@ -213,8 +213,8 @@ function DocumentsSection({ pathname }: { pathname: string }) {
         href="/author"
         className={`rounded-md px-3 py-2 text-[13px] transition ${
           pathname === "/author"
-            ? "bg-[var(--sidebar-active)] text-[var(--sidebar-text)]"
-            : "text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text)]"
+            ? "bg-[var(--sidebar-active)] !text-[var(--sidebar-text)]"
+            : "!text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:!text-[var(--sidebar-text)]"
         }`}
       >
         All Documents
@@ -233,8 +233,8 @@ function ChatSection({ pathname }: { pathname: string }) {
         href="/author/chat"
         className={`rounded-md px-3 py-2 text-[13px] transition ${
           pathname === "/author/chat"
-            ? "bg-[var(--sidebar-active)] text-[var(--sidebar-text)]"
-            : "text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text)]"
+            ? "bg-[var(--sidebar-active)] !text-[var(--sidebar-text)]"
+            : "!text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:!text-[var(--sidebar-text)]"
         }`}
       >
         Start New Chat
@@ -253,8 +253,8 @@ function WriteSection({ pathname }: { pathname: string }) {
         href="/author/documents/new"
         className={`rounded-md px-3 py-2 text-[13px] transition ${
           pathname === "/author/documents/new"
-            ? "bg-[var(--sidebar-active)] text-[var(--sidebar-text)]"
-            : "text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text)]"
+            ? "bg-[var(--sidebar-active)] !text-[var(--sidebar-text)]"
+            : "!text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:!text-[var(--sidebar-text)]"
         }`}
       >
         Write New Record
@@ -271,7 +271,7 @@ function LibrarySection() {
     <div className="flex flex-col gap-2">
       <Link
         href="/me/library"
-        className="rounded-md px-3 py-2 text-[13px] text-[var(--sidebar-text-muted)] transition hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text)]"
+        className="rounded-md px-3 py-2 text-[13px] !text-[var(--sidebar-text-muted)] transition hover:bg-[var(--sidebar-hover)] hover:!text-[var(--sidebar-text)]"
       >
         View My Library
       </Link>
